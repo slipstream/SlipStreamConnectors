@@ -66,7 +66,7 @@
           <mappings>
 
             <mapping>
-              <directory>${jetty.lib.ext.dir}</directory>
+              <directory>${jetty.connector.dir}</directory>
               <filemode>775</filemode>
               <username>slipstream</username>
               <groupname>slipstream</groupname>
