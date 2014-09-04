@@ -18,7 +18,6 @@
 
   <modules>
     <module>cloudstack</module>
-    <module>okeanos</module>
     <module>openstack</module>
     <module>physicalhost</module>
     <module>stratuslab</module>
