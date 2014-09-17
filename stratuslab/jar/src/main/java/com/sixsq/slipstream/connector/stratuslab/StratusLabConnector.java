@@ -157,7 +157,7 @@ public class StratusLabConnector extends CliConnectorBase {
 			ImageModule machine = ImageModule.load(run.getModuleResourceUrl());
 			String networkType = machine.getParameterValue(ImageModule.NETWORK_KEY, null);
 			if (networkType.equals(NetworkType.Private.name())){
-				return " --private-ip";
+				return " --local-ip";
 			}
 		}
 		return ""; // empty = public
