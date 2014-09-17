@@ -52,6 +52,7 @@ import com.sixsq.slipstream.persistence.RunType;
 import com.sixsq.slipstream.persistence.ServiceConfigurationParameter;
 import com.sixsq.slipstream.persistence.User;
 import com.sixsq.slipstream.persistence.UserParameter;
+import com.sixsq.slipstream.persistence.NetworkType;
 import com.sixsq.slipstream.util.ProcessUtils;
 
 public class StratusLabConnector extends CliConnectorBase {
@@ -83,6 +84,10 @@ public class StratusLabConnector extends CliConnectorBase {
 
 	public String getCloudServiceName() {
 		return CLOUD_SERVICE_NAME;
+	}
+
+	public String getCloudConnectorPythonModuleName() {
+		return CLOUDCONNECTOR_PYTHON_MODULENAME;
 	}
 
 	@Override
@@ -134,21 +139,38 @@ public class StratusLabConnector extends CliConnectorBase {
 		String publicSshKey = getPublicSshKeyFileName(run, user);
 		String imageId = getImageId(run, user);
 		String vmName = getVmName(run);
-
 		String extraDisksCommand = getExtraDisksCommand(run);
-
 		String instanceSizeCommand = getInstanceSizeCommand(run);
+		String networkCommand = getNetworkCommand(run);
 
 		return "/usr/bin/stratus-run-instance " + imageId + " --quiet --key "
-				+ publicSshKey + " -u " + getKey(user) + " -p "
-				+ getSecret(user) + " --endpoint " + getEndpoint(user)
+				+ publicSshKey + " -u " + getKey(user) + " -p " + getSecret(user)
+				+ " --endpoint " + getEndpoint(user)
 				+ " --marketplace-endpoint " + getMarketplaceEndpoint(user)
-				+ " --context " + context + " --vm-name " + vmName + ":"
-				+ run.getName() + extraDisksCommand + instanceSizeCommand;
+				+ " --context " + context
+				+ " --vm-name " + vmName + ":" + run.getName()
+				+ extraDisksCommand + instanceSizeCommand + networkCommand;
 	}
 
-	private String getInstanceSizeCommand(Run run) throws ValidationException {
-		if (run.getType() == RunType.Run) {
+	protected String getNetworkCommand(Run run) throws ValidationException{
+		if (!isInOrchestrationContext(run)) {
+			ImageModule machine = ImageModule.load(run.getModuleResourceUrl());
+			String networkType = machine.getParameterValue(ImageModule.NETWORK_KEY, null);
+			if (networkType.equals(NetworkType.Private.name())){
+				return " --private-ip";
+			}
+		}
+		return ""; // empty = public
+	}
+
+	protected String getInstanceSizeCommand(Run run) throws ValidationException {
+		if (isInOrchestrationContext(run)) {
+			String instanceType = Configuration
+					.getInstance()
+					.getRequiredProperty(
+							constructKey(StratusLabUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME));
+			return " --type " + instanceType;
+		} else {
 			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
 			try {
 				String cpu = getCpu(image);
@@ -161,12 +183,6 @@ public class StratusLabConnector extends CliConnectorBase {
 			} catch (ValidationException e) {
 				return " --type " + getInstanceType(image);
 			}
-		} else {
-			String instanceType = Configuration
-					.getInstance()
-					.getRequiredProperty(
-							constructKey(StratusLabUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME));
-			return " --type " + instanceType;
 		}
 	}
 
@@ -320,7 +336,7 @@ public class StratusLabConnector extends CliConnectorBase {
 				+ "#";
 
 		contextualization += "CLOUDCONNECTOR_PYTHON_MODULENAME="
-				+ CLOUDCONNECTOR_PYTHON_MODULENAME + "#";
+				+ getCloudConnectorPythonModuleName() + "#";
 
 		contextualization += "SLIPSTREAM_BOOTSTRAP_BIN="
 				+ configuration

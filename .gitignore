@@ -16,3 +16,10 @@ hs_err_pid*
 
 # intellj files
 *.iml
+
+# Eclipse
+*.project
+*.settings
+*.pydevproject
+*.classpath
+
