@@ -13,18 +13,15 @@ import com.sixsq.slipstream.persistence.User;
 public class CloudStackAdvancedZoneConnector extends CloudStackConnector {
 
 	public static final String ZONE_TYPE = "Advanced";
-	public static final String NEW_CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream.cloudconnectors.cloudstack.CloudStackAdvancedZoneClientCloud";
-
-    public static final String CLOUD_SERVICE_NAME = "cloudstackadvancedzone";
+	public static final String CLOUD_SERVICE_NAME = "cloudstackadvancedzone";
+	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream.cloudconnectors.cloudstack.CloudStackAdvancedZoneClientCloud";
 
 	public CloudStackAdvancedZoneConnector() {
 		this(CLOUD_SERVICE_NAME);
-		this.CLOUDCONNECTOR_PYTHON_MODULENAME = NEW_CLOUDCONNECTOR_PYTHON_MODULENAME;
 	}
 
 	public CloudStackAdvancedZoneConnector(String instanceName) {
 		super(instanceName);
-		this.CLOUDCONNECTOR_PYTHON_MODULENAME = NEW_CLOUDCONNECTOR_PYTHON_MODULENAME;
 	}
 
 	@Override
@@ -42,12 +39,15 @@ public class CloudStackAdvancedZoneConnector extends CloudStackConnector {
         return CLOUD_SERVICE_NAME;
     }
 
-/*
-	@Override
-	protected void validateCapabilities(Run run) throws SlipStreamException {
-		return;
+    @Override
+	protected String getCloudConnectorPythonModule() {
+		return CLOUDCONNECTOR_PYTHON_MODULENAME;
 	}
-*/
+
+    @Override
+    protected String getCommandGenericPart(){
+		return getCliLocation() + "/" + super.getCloudServiceName();
+	}
 
 	@Override
 	protected String getNetworks(Run run, User user) throws ValidationException{
