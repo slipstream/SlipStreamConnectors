@@ -48,7 +48,7 @@ import com.sixsq.slipstream.persistence.ModuleCategory;
 import com.sixsq.slipstream.persistence.ModuleParameter;
 import com.sixsq.slipstream.persistence.Node;
 import com.sixsq.slipstream.persistence.Run;
-import com.sixsq.slipstream.persistence.RunType;
+import com.sixsq.slipstream.persistence.RuntimeParameter;
 import com.sixsq.slipstream.persistence.ServiceConfigurationParameter;
 import com.sixsq.slipstream.persistence.User;
 import com.sixsq.slipstream.persistence.UserParameter;
@@ -374,27 +374,28 @@ public class StratusLabConnector extends CliConnectorBase {
 	}
 
 	private String getExtraDisksCommand(Run run) {
-        if (run.getType() == RunType.Machine) {
-            StringBuilder disksParams = new StringBuilder();
-            for (String diskName : EXTRADISK_NAMES) {
-                String extraDiskName = Run.MACHINE_NAME_PREFIX + ImageModule.EXTRADISK_PARAM_PREFIX + diskName;
-                String extraDiskValue = "";
-                try {
-                    extraDiskValue = run.getRuntimeParameterValue(extraDiskName);
-
-                    if (!extraDiskValue.isEmpty()) {
-                        disksParams.append(" --").append(diskName).append("-disk ").append(extraDiskValue);
-                    }
-
-                } catch (NotFoundException consumed) {
-                    //ignore
-                } catch (AbortException consumed) {
-                    //ignore
-                }
-            }
-            return disksParams.toString();
+        if (isInOrchestrationContext(run)) {
+        	return "";
         } else {
-            return "";
+            StringBuilder disksParams = new StringBuilder();
+			for (String diskName : EXTRADISK_NAMES) {
+				String extraDiskName = Run.MACHINE_NAME_PREFIX + ImageModule.EXTRADISK_PARAM_PREFIX
+						+ RuntimeParameter.PARAM_WORD_SEPARATOR + diskName;
+				String extraDiskValue = "";
+				try {
+					extraDiskValue = run.getRuntimeParameterValue(extraDiskName);
+
+					if (!extraDiskValue.isEmpty()) {
+						disksParams.append(" --").append(diskName).append("-disk ").append(extraDiskValue);
+					}
+
+				} catch (NotFoundException consumed) {
+					// ignore
+				} catch (AbortException consumed) {
+					// ignore
+				}
+			}
+            return disksParams.toString();
         }
 	}
 
