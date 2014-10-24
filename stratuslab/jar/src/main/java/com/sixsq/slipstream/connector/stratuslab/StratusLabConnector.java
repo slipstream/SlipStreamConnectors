@@ -385,8 +385,8 @@ public class StratusLabConnector extends CliConnectorBase {
 				try {
 					extraDiskValue = run.getRuntimeParameterValue(extraDiskName);
 
-					if (!extraDiskValue.isEmpty()) {
-						disksParams.append(" --").append(diskName).append("-disk ").append(extraDiskValue);
+					if (extraDiskValue != null && !extraDiskValue.trim().isEmpty()) {
+						disksParams.append(" --").append(diskName).append("-disk ").append(extraDiskValue.trim());
 					}
 
 				} catch (NotFoundException consumed) {
