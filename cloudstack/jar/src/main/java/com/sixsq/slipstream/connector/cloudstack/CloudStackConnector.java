@@ -343,7 +343,7 @@ public class CloudStackConnector extends CliConnectorBase {
 		userData += "export SLIPSTREAM_VERBOSITY_LEVEL=\"" + getVerboseParameterValue(user) + "\"\n";
 
 		userData += "mkdir -p " + SLIPSTREAM_REPORT_DIR + "\n"
-				+ "wget --secure-protocol=SSLv3 --no-check-certificate -O " + bootstrap
+				+ "wget --no-check-certificate -O " + bootstrap
 				+ " $SLIPSTREAM_BOOTSTRAP_BIN > " + SLIPSTREAM_REPORT_DIR + "/"
 				+ logfilename + " 2>&1 " + "&& chmod 0755 " + bootstrap + "\n"
 				+ bootstrap + " " + targetScript + " >> "
