@@ -4,7 +4,7 @@ package com.sixsq.slipstream.connector.stratuslab;
  * +=================================================================+
  * SlipStream Server (WAR)
  * =====
- * Copyright (C) 2013 SixSq Sarl (sixsq.com)
+ * Copyright (C) 2014 SixSq Sarl (sixsq.com)
  * =====
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -464,21 +464,18 @@ public class StratusLabConnector extends CliConnectorBase {
 
 	@Override
 	protected String getCloudConnectorPythonModule() {
-		// TODO Stub de la méthode généré automatiquement
 		return null;
 	}
 
 	@Override
 	protected Map<String, String> getConnectorSpecificUserParams(User user) throws ConfigurationException,
 			ValidationException {
-		// TODO Stub de la méthode généré automatiquement
 		return null;
 	}
 
 	@Override
 	protected Map<String, String> getConnectorSpecificLaunchParams(Run run, User user) throws ConfigurationException,
 			ValidationException {
-		// TODO Stub de la méthode généré automatiquement
 		return null;
 	}
 
