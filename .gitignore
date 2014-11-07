@@ -16,6 +16,7 @@ hs_err_pid*
 
 # intellj files
 *.iml
+.idea
 
 # Eclipse
 *.project
