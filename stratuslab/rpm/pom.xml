@@ -48,7 +48,7 @@
           <classifier>${package.os}</classifier>
           <release>${BUILD_NUMBER}.${package.os}</release>
           <summary>SlipStream Connector for StratusLab</summary>
-          <name>slipstream-connector-stratuslab</name>
+          <name>slipstream-connector-stratuslab${slipstream.edition}</name>
           <group>Applications/Engineering</group>
           <vendor>SixSq</vendor>
           <packager>SixSq</packager>
@@ -59,8 +59,8 @@
 
           <requires>
             <require>java-1.7.0-openjdk</require>
-            <require>slipstream-connector-stratuslab-python</require>
-            <require>stratuslab-cli-user</require>
+            <require>slipstream-connector-stratuslab-python${slipstream.edition}</require>
+            <require>stratuslab-cli-user${slipstream.edition}</require>
           </requires>
 
           <mappings>

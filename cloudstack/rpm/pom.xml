@@ -48,7 +48,7 @@
           <classifier>${package.os}</classifier>
           <release>${BUILD_NUMBER}.${package.os}</release>
           <summary>SlipStream Connector for CloudStack</summary>
-          <name>slipstream-connector-cloudstack</name>
+          <name>slipstream-connector-cloudstack${slipstream.edition}</name>
           <group>Applications/Engineering</group>
           <vendor>SixSq</vendor>
           <packager>SixSq</packager>
@@ -59,7 +59,7 @@
 
           <requires>
             <require>java-1.7.0-openjdk</require>
-            <require>libcloud-slipstream-downloads</require>
+            <require>libcloud-slipstream-downloads${slipstream.edition}</require>
           </requires>
 
           <mappings>
