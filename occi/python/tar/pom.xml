@@ -1,0 +1,100 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>SlipStreamConnector-Occi-python-bundle</artifactId>
+	<name>SlipStream Connector for Occi - Python (ZIP)</name>
+	<packaging>pom</packaging>
+
+	<parent>
+    <groupId>com.sixsq.slipstream</groupId>
+    <artifactId>SlipStreamConnector-Occi-python</artifactId>
+    <version>2.3.8-SNAPSHOT</version>
+	</parent>
+
+	<build>
+		<plugins>
+
+          <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+
+        <executions>
+          <execution>
+            <id>get-slipstream-client</id>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/slipstream-client/</outputDirectory>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.sixsq.slipstream</groupId>
+                  <artifactId>SlipStreamClientAll</artifactId>
+                  <version>${slipstream.version}</version>
+                  <type>tar.gz</type>
+                  <classifier>bundle</classifier>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unittests</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <executable>nosetests</executable>
+              <environmentVariables>
+                <PYTHONPATH>.:${project.build.directory}/slipstream-client/lib/</PYTHONPATH>
+              </environmentVariables>
+              <arguments>
+                <argument>-v</argument>
+                <argument>--where=./test/</argument>
+                <argument>--ignore-files=.*Live.py</argument>
+                <argument>--with-xunit</argument>
+                <argument>--xunit-file=${project.basedir}/nosetests.xml</argument>
+                <argument>--with-coverage</argument>
+                <argument>--cover-xml</argument>
+                <argument>--cover-erase</argument>
+                <argument>--cover-xml-file=${project.basedir}/coverage.xml</argument>
+                <argument>--cover-package=slipstream_occi</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>bundle.xml</descriptor>
+					</descriptors>
+				</configuration>
+
+				<executions>
+
+					<execution>
+						<id>bundle</id>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>

@@ -21,6 +21,7 @@
     <module>openstack</module>
     <module>physicalhost</module>
     <module>stratuslab</module>
+    <module>occi</module>
   </modules>
 
   <scm>
