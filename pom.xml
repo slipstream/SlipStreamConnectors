@@ -25,9 +25,9 @@
   </modules>
 
   <scm>
-    <connection>scm:git:ssh://git@github.com/slipstream/SlipStreamConnectors.git</connection>
-    <url>scm:git:ssh://git@github.com/slipstream/SlipStreamConnectors.git</url>
-    <developerConnection>scm:git:ssh://git@github.com/slipstream/SlipStreamConnectors.git</developerConnection>
+    <connection>${scm.read}/SlipStreamConnectors.git</connection>
+    <developerConnection>${scm.write}/SlipStreamConnectors.git</developerConnection>
+    <url>${scm.public}/SlipStreamConnectors</url>
     <tag>HEAD</tag>
   </scm>
 
