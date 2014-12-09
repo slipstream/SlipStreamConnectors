@@ -24,3 +24,9 @@ hs_err_pid*
 *.pydevproject
 *.classpath
 
+# Release files
+pom.xml.next
+pom.xml.releaseBackup
+pom.xml.tag
+release.properties
+
