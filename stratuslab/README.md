@@ -22,7 +22,7 @@ Where ${os-ver} in our case is 'centos-6'.
 
 Then install the SlipStream connector:
 ```
-$ yum install -y slipstream-connector-stratuslab
+# yum install -y slipstream-connector-stratuslab
 ```
 
 That's it. Re-start SlipStream so that it detects the new connector.
