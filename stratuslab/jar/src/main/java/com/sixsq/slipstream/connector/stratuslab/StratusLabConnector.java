@@ -313,6 +313,8 @@ public class StratusLabConnector extends CliConnectorBase {
 				+ "#";
 		contextualization += "SLIPSTREAM_NODENAME=" + nodename
 				+ "#";
+		contextualization += "SLIPSTREAM_NODE_INSTANCE_NAME=" + nodename
+				+ "#";
 		contextualization += "SLIPSTREAM_CATEGORY="
 				+ run.getCategory().toString() + "#";
 		contextualization += "SLIPSTREAM_USERNAME=" + user.getName() + "#";
