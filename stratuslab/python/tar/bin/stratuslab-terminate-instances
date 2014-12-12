@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+from slipstream.command.CloudClientCommand import main
+from slipstream.command.TerminateInstancesCommand import TerminateInstancesCommand
+from slipstream.cloudconnectors.cloudstack.CloudStackCommand import CloudStackCommand
+from slipstream.cloudconnectors.cloudstack.CloudStackClientCloud import CloudStackClientCloud
+
+
+class CloudStackTerminateInstances(TerminateInstancesCommand, CloudStackCommand):
+
+    def __init__(self):
+        super(CloudStackTerminateInstances, self).__init__()
+
+
+if __name__ == "__main__":
+    main(CloudStackTerminateInstances)

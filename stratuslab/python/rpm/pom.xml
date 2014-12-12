@@ -1,0 +1,136 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>StratusLab-SixSq-tarball-rpm</artifactId>
+	<name>StratusLab tarball packaged by SixSq (RPM)</name>
+
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>com.sixsq.slipstream</groupId>
+		<artifactId>stratuslab-slipstream-packaging</artifactId>
+		<version>2.3.8-SNAPSHOT</version>
+	</parent>
+
+	<build>
+
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+
+				<executions>
+					<execution>
+						<id>unpack-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/stratuslab</outputDirectory>
+							<artifactItems>
+								<artifactItem>
+									<groupId>eu.stratuslab.client</groupId>
+									<artifactId>stratuslab-cli-user-pkg</artifactId>
+										<version>${stratuslab.version.zip}</version>
+									<type>tar.gz</type>
+								</artifactItem>
+							</artifactItems>
+							<stripVersion>true</stripVersion>
+						</configuration>
+					</execution>
+				</executions>
+
+			</plugin>
+			<plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-share-to-stratuslab-mod</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <workingDirectory>${project.build.directory}/stratuslab/</workingDirectory>
+              <executable>cp</executable>
+              <arguments>
+                <argument>-rp</argument>
+                <argument>share</argument>
+                <argument>lib/stratuslab/python/stratuslab/</argument>
+              </arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>bundle-stratuslab</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <workingDirectory>${project.build.directory}/stratuslab/lib/stratuslab/python</workingDirectory>
+              <executable>tar</executable>
+              <arguments>
+                <argument>-zcf</argument>
+                <argument>${project.build.directory}/stratuslabclient.tgz</argument>
+                <argument>--exclude</argument>
+                <argument>unittest2</argument>
+                <argument>.</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>rpm-maven-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<classifier>${package.os}</classifier>
+					<release>${BUILD_NUMBER}.${package.os}</release>
+					<summary>StratusLab ${stratuslab.version.zip} API</summary>
+					<name>slipstream-connector-stratuslab-python${slipstream.edition}</name>
+					<group>Applications/Engineering</group>
+					<vendor>SixSq</vendor>
+					<packager>SixSq</packager>
+					<copyright>Apache License, Version 2.0</copyright>
+					<url>http://sixsq.com</url>
+					<needarch>noarch</needarch>
+					<description />
+					<obsoletes>
+					   <obsolete>stratuslab-slipstream-downloads${slipstream.edition}</obsolete>
+					</obsoletes>
+					<mappings>
+						<mapping>
+							<directory>${slipstream.downloads.dir}</directory>
+							<filemode>644</filemode>
+							<username>root</username>
+							<groupname>root</groupname>
+							<directoryIncluded>false</directoryIncluded>
+							<sources>
+								<source>
+									<location>${project.build.directory}/stratuslabclient.tgz</location>
+								</source>
+							</sources>
+						</mapping>
+					</mappings>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-rpm</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attached-rpm</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+	</build>
+
+</project>
