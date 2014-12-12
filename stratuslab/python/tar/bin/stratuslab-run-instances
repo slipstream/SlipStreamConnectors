@@ -20,7 +20,9 @@
 import os
 import sys
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+sys.path.append('/var/lib/stratuslab/python')
 
 from slipstream.command.CloudClientCommand import main
 from slipstream.command.RunInstancesCommand import RunInstancesCommand

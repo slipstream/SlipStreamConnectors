@@ -17,6 +17,10 @@
  limitations under the License.
 """
 
+import sys
+
+sys.path.append('/var/lib/stratuslab/python')
+
 from slipstream.command.CloudClientCommand import main
 from slipstream.command.DescribeInstancesCommand import DescribeInstancesCommand
 from slipstream_stratuslab.StratulabClientCommand import StratulabClientCommand

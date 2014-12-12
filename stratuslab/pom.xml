@@ -14,7 +14,7 @@
   </parent>
 
   <properties>
-    <stratuslab.version>13.10.0</stratuslab.version>
+    <stratuslab.version>13.12.0</stratuslab.version>
     <stratuslab.version.zip>${stratuslab.version}</stratuslab.version.zip>
     <stratuslab.version.rpm>${stratuslab.version}</stratuslab.version.rpm>
     <stratuslab.version.rpm.api>${stratuslab.version}</stratuslab.version.rpm.api>
