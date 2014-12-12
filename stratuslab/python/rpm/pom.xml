@@ -22,19 +22,41 @@
 
 				<executions>
 					<execution>
+						<id>get-sources</id>
+						<phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.sixsq.slipstream</groupId>
+									<artifactId>SlipStreamConnector-StratusLab-python-bundle</artifactId>
+								    <version>${slipstream.version}</version>
+									<classifier>bundle</classifier>
+									<type>tar.gz</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>stratuslabclient.tgz</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<stripVersion>true</stripVersion>
+						</configuration>
+					</execution>
+					<execution>
 						<id>unpack-sources</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>unpack</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/stratuslab</outputDirectory>
 							<artifactItems>
 								<artifactItem>
-									<groupId>eu.stratuslab.client</groupId>
-									<artifactId>stratuslab-cli-user-pkg</artifactId>
-										<version>${stratuslab.version.zip}</version>
-									<type>tar.gz</type>
+                                    <groupId>com.sixsq.slipstream</groupId>
+                                    <artifactId>SlipStreamConnector-StratusLab-python-bundle</artifactId>
+                                    <version>${slipstream.version}</version>
+                                    <classifier>bundle</classifier>
+                                    <type>tar.gz</type>
+									<outputDirectory>${project.build.directory}/stratuslab-connector</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 							<stripVersion>true</stripVersion>
@@ -42,48 +64,7 @@
 					</execution>
 				</executions>
 
-			</plugin>
-			<plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-share-to-stratuslab-mod</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-              <workingDirectory>${project.build.directory}/stratuslab/</workingDirectory>
-              <executable>cp</executable>
-              <arguments>
-                <argument>-rp</argument>
-                <argument>share</argument>
-                <argument>lib/stratuslab/python/stratuslab/</argument>
-              </arguments>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>bundle-stratuslab</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-              <workingDirectory>${project.build.directory}/stratuslab/lib/stratuslab/python</workingDirectory>
-              <executable>tar</executable>
-              <arguments>
-                <argument>-zcf</argument>
-                <argument>${project.build.directory}/stratuslabclient.tgz</argument>
-                <argument>--exclude</argument>
-                <argument>unittest2</argument>
-                <argument>.</argument>
-              </arguments>
-            </configuration>
-          </execution>
-        </executions>
-			</plugin>
+ 			</plugin>
 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -162,7 +143,7 @@
                           <directoryIncluded>false</directoryIncluded>
                           <sources>
                             <source>
-                              <location>target/dependency</location>
+                              <location>target/stratuslab-connector</location>
                               <includes>
                                 <include>slipstream_stratuslab/**/*</include>
                               </includes>

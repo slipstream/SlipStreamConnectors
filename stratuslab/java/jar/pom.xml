@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-StratusLab-jar</artifactId>
   <packaging>jar</packaging>
-  <name>SlipStream Connector StratusLab (JAR)</name>
+  <name>SlipStream Connector StratusLab - Java (JAR)</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
