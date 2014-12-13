@@ -2,6 +2,7 @@ from stratuslab.Creator import Creator
 
 # pylint: disable=protected-access
 
+
 def createStep1(self):
     self._imageExists()
     self._retrieveManifest()
@@ -9,6 +10,7 @@ def createStep1(self):
     self._Creator__createRunner()
     self._startMachine()
     self._waitMachineNetworkUpOrAbort()
+
 
 def createStep2(self):
     self._checkIfCanConnectToMachine()

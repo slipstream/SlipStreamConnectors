@@ -31,9 +31,14 @@ class StratuslabDescribeInstances(DescribeInstancesCommand, StratulabClientComma
     def __init__(self):
         super(StratuslabDescribeInstances, self).__init__()
 
-    def _vm_get_state(self, cc, vm):
-        return cc._vm_get_state(vm)
+    def _vm_get_state(self, _, vm):
+        return vm.state_summary
 
+    def _vm_get_id(self, _, vm):
+        return vm.id
+
+    def get_initialization_extra_kwargs(self):
+        return {'run_instance': False}
 
 if __name__ == "__main__":
     main(StratuslabDescribeInstances)

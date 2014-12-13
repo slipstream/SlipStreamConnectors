@@ -32,6 +32,7 @@ from stratuslab.vm_manager.Runner import Runner
 from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
 from stratuslab.Exceptions import OneException
 from stratuslab.api import LogUtil
+from stratuslab.Monitor import Monitor
 LogUtil.get_console_logger()
 
 import slipstream.exceptions.Exceptions as Exceptions
@@ -105,7 +106,7 @@ class StratuslabClientCloud(BaseCloudConnector):
         return vm
 
     def list_instances(self):
-        return
+        return Monitor(self.configHolder).listVms()
 
     @override
     def _build_image(self, user_info, node_instance):
@@ -114,7 +115,8 @@ class StratuslabClientCloud(BaseCloudConnector):
 
         return self._poll_storage_for_new_image(self.configHolder)
 
-    def _poll_storage_for_new_image(self, configHolder):
+    @staticmethod
+    def _poll_storage_for_new_image(configHolder):
         new_image_id = ''
 
         msg_endpoint = os.environ.get('SLIPSTREAM_PDISK_ENDPOINT', None)
@@ -153,9 +155,10 @@ class StratuslabClientCloud(BaseCloudConnector):
         return base64.b64encode('{"uri":"%s", "imageid":""}' % image_resource_uri)
 
     @override
-    def _initialization(self, user_info):
+    def _initialization(self, user_info, **kwargs):
         self.configHolder.options.update(Runner.defaultRunOptions())
-        self._set_user_info_on_stratuslab_config_holder(user_info)
+        self._set_user_info_on_stratuslab_config_holder(
+            user_info, run_instance=kwargs.get('run_instance', False))
 
     @override
     def _start_image(self, user_info, node_instance, vm_name):
@@ -341,25 +344,25 @@ class StratuslabClientCloud(BaseCloudConnector):
         self.configHolder.set('newImageGroupVersion', new_version)
         self.configHolder.set('newImageGroupVersionWithManifestId', True)
 
-    def _set_user_info_on_stratuslab_config_holder(self, user_info, build_image=False):
+    def _set_user_info_on_stratuslab_config_holder(self, user_info, build_image=False,
+                                                   run_instance=True):
         try:
-            if build_image:
-                self.configHolder.set('author',
-                                        '%s %s' % (user_info.get_first_name(),
-                                                   user_info.get_last_name()))
-                self.configHolder.set('authorEmail',
-                                        user_info.get_email())
-                self.configHolder.set('saveDisk', True)
-
-            sshPubKeysFile = self.__populate_ssh_pub_keys_file(user_info)
-            self.configHolder.set('userPublicKeyFile', sshPubKeysFile)
-
             self.configHolder.set('endpoint', user_info.get_cloud_endpoint())
             self.configHolder.set('username', user_info.get_cloud_username())
             self.configHolder.set('password', user_info.get_cloud_password())
 
-            self.configHolder.set('marketplaceEndpoint',
-                                    user_info.get_cloud('marketplace.endpoint'))
+            if run_instance or build_image:
+                sshPubKeysFile = self.__populate_ssh_pub_keys_file(user_info)
+                self.configHolder.set('userPublicKeyFile', sshPubKeysFile)
+                self.configHolder.set('marketplaceEndpoint',
+                                      user_info.get_cloud('marketplace.endpoint'))
+
+            if build_image:
+                self.configHolder.set(
+                    'author', '%s %s' % (user_info.get_first_name(),
+                                         user_info.get_last_name()))
+                self.configHolder.set('authorEmail', user_info.get_email())
+                self.configHolder.set('saveDisk', True)
         except KeyError, ex:
             raise Exceptions.ExecutionException('Error bootstrapping from User Parameters. %s' % str(ex))
 
@@ -369,8 +372,7 @@ class StratuslabClientCloud(BaseCloudConnector):
         #        else:
         #            shutdownVm = True
         # To be able to create a new image we need to shutdown the instance.
-        shutdownVm = True
-        self.configHolder.set('shutdownVm', shutdownVm)
+        self.configHolder.set('shutdownVm', True)
 
     def _set_network_type_on_config_holder(self, configHolder, node_instance):
         # SS's 'Private' maps to 'local' in SL. The default is 'public' in SL.

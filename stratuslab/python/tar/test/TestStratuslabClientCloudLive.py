@@ -95,7 +95,8 @@ class TestStratusLabLiveBase(unittest.TestCase):
             })
 
         self.node_instance = NodeInstance({
-            'name': NodeDecorator.MACHINE_NAME,
+            NodeDecorator.NODE_NAME_KEY: NodeDecorator.MACHINE_NAME,
+            NodeDecorator.NODE_INSTANCE_NAME_KEY: NodeDecorator.MACHINE_NAME,
             'cloudservice': 'stratuslab',
             'extra.disk.volatile': extra_disk_volatile,
             'image.resourceUri': '',
