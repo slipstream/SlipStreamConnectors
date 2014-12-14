@@ -20,7 +20,7 @@ import os
 import unittest
 from mock import Mock
 
-from slipstream_stratuslab.StratuslabClientCloud import StratuslabClientCloud
+from slipstream_stratuslab.StratusLabClientCloud import StratusLabClientCloud
 from slipstream.ConfigHolder import ConfigHolder
 from slipstream.SlipStreamHttpClient import UserInfo
 from slipstream.NodeInstance import NodeInstance
@@ -53,7 +53,7 @@ class TestStratusLabLiveBase(unittest.TestCase):
 
         os.environ['SLIPSTREAM_PDISK_ENDPOINT'] = self.ch.config['SLIPSTREAM_PDISK_ENDPOINT']
 
-        self.client = StratuslabClientCloud(self.ch)
+        self.client = StratusLabClientCloud(self.ch)
         self.client._publish_vm_info = Mock()
 
         self.user_info = UserInfo('stratuslab')

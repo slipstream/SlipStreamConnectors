@@ -52,6 +52,7 @@ def getConnectorClass():
     return StratusLabClientCloud
 
 
+# pylint: disable=protected-access
 class StratusLabClientCloud(BaseCloudConnector):
     RUNINSTANCE_RETRY_TIMEOUT = 3
 
@@ -62,8 +63,8 @@ class StratusLabClientCloud(BaseCloudConnector):
 
         super(StratusLabClientCloud, self).__init__(configHolder)
 
-        self.configHolder = StratuslabConfigHolder(configHolder.options,
-                                                   configHolder.config)
+        self.slConfigHolder = StratuslabConfigHolder(configHolder.options,
+                                                     configHolder.config)
         self._set_listener(CreatorBaseListener(verbose=(self.verboseLevel > 1)))
 
         self._set_capabilities(contextualization=True,
@@ -79,26 +80,27 @@ class StratusLabClientCloud(BaseCloudConnector):
 
         self._prepare_machine_for_build_image()
 
-        self.configHolder.set('marketplaceEndpoint',
-                              user_info.get_cloud('marketplace.endpoint'))
+        self.slConfigHolder.set('marketplaceEndpoint',
+                                user_info.get_cloud('marketplace.endpoint'))
 
-        manifest_downloader = ManifestDownloader(self.configHolder)
+        manifest_downloader = ManifestDownloader(self.slConfigHolder)
 
         image_id = node_instance.get_image_id()
-        node_instance.set_image_attributes({'imageVersion': manifest_downloader.getImageVersion(imageId=image_id)})
+        node_instance.set_image_attributes(
+            {'imageVersion': manifest_downloader.getImageVersion(imageId=image_id)})
 
         self._update_stratuslab_config_holder_for_build_image(user_info, node_instance)
 
-        self.creator = Creator(image_id, self.configHolder)
+        self.creator = Creator(image_id, self.slConfigHolder)
         self.creator.setListener(self._get_listener())
 
-        createImageTemplateDict = self.creator._getCreateImageTemplateDict()  # pylint: disable=protected-access
+        createImageTemplateDict = self.creator._getCreateImageTemplateDict()
 
         def our_create_template_dict():
             createImageTemplateDict.update({})
             return createImageTemplateDict
 
-        self.creator._getCreateImageTemplateDict = our_create_template_dict  # pylint: disable=protected-access
+        self.creator._getCreateImageTemplateDict = our_create_template_dict
 
         self.creator.createStep1()
 
@@ -106,47 +108,59 @@ class StratusLabClientCloud(BaseCloudConnector):
         return vm
 
     def list_instances(self):
-        return Monitor(self.configHolder).listVms()
+        return Monitor(self.slConfigHolder).listVms()
 
     @override
     def _build_image(self, user_info, node_instance):
 
         self.creator.createStep2()
 
-        return self._poll_storage_for_new_image(self.configHolder)
+        return self._search_storage_for_new_image(self.slConfigHolder)
+
+    def _search_storage_for_new_image(self, slConfigHolder):
+        warn_msg = "WARNING: Unable to search for new image ID. %s env.var is not set."
+
+        pdisk_endpoint = os.environ.get('SLIPSTREAM_PDISK_ENDPOINT', None)
+        if not pdisk_endpoint:
+            print >> sys.stdout, warn_msg % 'SLIPSTREAM_PDISK_ENDPOINT'
+            sys.stdout.flush()
+            return ''
+
+        diid = os.environ.get('SLIPSTREAM_DIID', None)
+        if not diid:
+            print >> sys.stdout, warn_msg % 'SLIPSTREAM_DIID'
+            sys.stdout.flush()
+            return ''
+
+        return self._poll_storage_for_new_image(pdisk_endpoint, diid,
+                                                slConfigHolder)
 
     @staticmethod
-    def _poll_storage_for_new_image(configHolder):
-        new_image_id = ''
+    def _poll_storage_for_new_image(pdisk_endpoint, diid, slConfigHolder):
 
-        msg_endpoint = os.environ.get('SLIPSTREAM_PDISK_ENDPOINT', None)
+        tag = "SlipStream-%s" % diid
+        filters = {'tag': [tag, ]}
 
-        if msg_endpoint:
-            diid = os.environ.get('SLIPSTREAM_DIID', None)
-            if diid:
-                tag = "SlipStream-%s" % diid
-                filters = {'tag': [tag, ]}
+        slConfigHolder.set('pdiskEndpoint', pdisk_endpoint)
 
-                configHolder.set('pdiskEndpoint', msg_endpoint)
+        pdisk = VolumeManagerFactory.create(slConfigHolder)
 
-                pdisk = VolumeManagerFactory.create(configHolder)
+        print >> sys.stdout, "Searching on %s for disk with tag %s." % \
+            (pdisk_endpoint, tag)
+        sys.stdout.flush()
 
-                print >> sys.stdout, "Searching on %s for disk with tag %s." % (msg_endpoint, tag)
-                sys.stdout.flush()
-
-                # hardcoded polling for 30' at 1' intervals
-                for i in range(30):
-                    print >> sys.stdout, "Search iteration %d" % i
-                    sys.stdout.flush()
-                    volumes = pdisk.describeVolumes(filters)
-                    if len(volumes) > 0:
-                        try:
-                            new_image_id = volumes[0]['identifier']
-                        except Exception as ex:
-                            print "Exception occurred looking for volume: %s" % ex
-                        break
-                    time.sleep(60)
-
+        # hardcoded polling for 30' at 1' intervals
+        for i in range(30):
+            print >> sys.stdout, "Search iteration %d" % i
+            sys.stdout.flush()
+            volumes = pdisk.describeVolumes(filters)
+            if len(volumes) > 0:
+                try:
+                    new_image_id = volumes[0]['identifier']
+                except Exception as ex:
+                    print "Exception occurred looking for volume: %s" % ex
+                break
+            time.sleep(60)
         print "Returning new image ID value: %s" % new_image_id
         return new_image_id
 
@@ -156,7 +170,7 @@ class StratusLabClientCloud(BaseCloudConnector):
 
     @override
     def _initialization(self, user_info, **kwargs):
-        self.configHolder.options.update(Runner.defaultRunOptions())
+        self.slConfigHolder.options.update(Runner.defaultRunOptions())
         self._set_user_info_on_stratuslab_config_holder(
             user_info, run_instance=kwargs.get('run_instance', False))
 
@@ -168,16 +182,16 @@ class StratusLabClientCloud(BaseCloudConnector):
             return self._start_image_for_deployment(node_instance, vm_name)
 
     def _start_image_for_deployment(self, node_instance, vm_name):
-        configHolder = self.configHolder.deepcopy()
+        slConfigHolder = self.slConfigHolder.deepcopy()
 
-        self._set_instance_params_on_config_holder(configHolder, node_instance)
+        self._set_instance_params_on_config_holder(slConfigHolder, node_instance)
 
         image_id = node_instance.get_image_id()
 
-        self._set_extra_context_data_on_config_holder(configHolder, node_instance)
-        self._set_vm_name_on_config_holder(configHolder, vm_name)
+        self._set_extra_context_data_on_config_holder(slConfigHolder, node_instance)
+        self._set_vm_name_on_config_holder(slConfigHolder, vm_name)
 
-        runner = self._run_instance(image_id, configHolder)
+        runner = self._run_instance(image_id, slConfigHolder)
         return runner
 
     @override
@@ -191,51 +205,51 @@ class StratusLabClientCloud(BaseCloudConnector):
     def _vm_get_state(self, runner):
         return runner.instancesDetail[0]['state']
 
-    def _set_instance_params_on_config_holder(self, configHolder, node_instance):
-        self._set_instance_size_on_config_holder(configHolder, node_instance)
-        self._set_extra_disks_on_config_holder(configHolder, node_instance)
-        self._set_network_type_on_config_holder(configHolder, node_instance)
+    def _set_instance_params_on_config_holder(self, slConfigHolder, node_instance):
+        self._set_instance_size_on_config_holder(slConfigHolder, node_instance)
+        self._set_extra_disks_on_config_holder(slConfigHolder, node_instance)
+        self._set_network_type_on_config_holder(slConfigHolder, node_instance)
 
-    def _set_instance_size_on_config_holder(self, configHolder, node_instance):
-        self._set_instance_type_on_configholder(configHolder, node_instance)
-        self._set_cpu_ram_on_config_holder(configHolder, node_instance)
+    def _set_instance_size_on_config_holder(self, slConfigHolder, node_instance):
+        self._set_instance_type_on_configholder(slConfigHolder, node_instance)
+        self._set_cpu_ram_on_config_holder(slConfigHolder, node_instance)
 
-    def _set_instance_type_on_configholder(self, configHolder, node_instance):
-        configHolder.instanceType = node_instance.get_instance_type()
+    def _set_instance_type_on_configholder(self, slConfigHolder, node_instance):
+        slConfigHolder.instanceType = node_instance.get_instance_type()
 
-    def _set_cpu_ram_on_config_holder(self, configHolder, node_instance):
-        configHolder.vmCpu = node_instance.get_cpu() or None
+    def _set_cpu_ram_on_config_holder(self, slConfigHolder, node_instance):
+        slConfigHolder.vmCpu = node_instance.get_cpu() or None
         vm_ram_gb = node_instance.get_ram() or None
         if vm_ram_gb:
             try:
                 # StratusLab needs value in MB
-                configHolder.vmRam = str(int(vm_ram_gb.strip()) * 1024)
+                slConfigHolder.vmRam = str(int(vm_ram_gb.strip()) * 1024)
             except:
                 pass
 
-    def _set_extra_disks_on_config_holder(self, configHolder, node_instance):
+    def _set_extra_disks_on_config_holder(self, slConfigHolder, node_instance):
         # 'extra_disk_volatile' is given in GB - 'extraDiskSize' needs to be in MB
-        configHolder.extraDiskSize = int(node_instance.get_volatile_extra_disk_size() or 0) * 1024
-        configHolder.persistentDiskUUID = node_instance.get_cloud_parameter('extra_disk_persistent', '')
-        configHolder.readonlyDiskId = node_instance.get_cloud_parameter('extra_disk_readonly', '')
+        slConfigHolder.extraDiskSize = int(node_instance.get_volatile_extra_disk_size() or 0) * 1024
+        slConfigHolder.persistentDiskUUID = node_instance.get_cloud_parameter('extra_disk_persistent', '')
+        slConfigHolder.readonlyDiskId = node_instance.get_cloud_parameter('extra_disk_readonly', '')
 
-    def _set_extra_context_data_on_config_holder(self, configHolder, node_instance):
+    def _set_extra_context_data_on_config_holder(self, slConfigHolder, node_instance):
         node_instance_name = node_instance.get_name()
-        configHolder.extraContextData = '#'.join(
+        slConfigHolder.extraContextData = '#'.join(
             ['%s=%s' % (k, v) for (k, v) in os.environ.items() if k.startswith('SLIPSTREAM_')])
-        configHolder.extraContextData += '#%s=%s' % (util.ENV_NODE_INSTANCE_NAME, node_instance_name)
-        configHolder.extraContextData += '#SCRIPT_EXEC=%s' % self._build_slipstream_bootstrap_command(node_instance)
+        slConfigHolder.extraContextData += '#%s=%s' % (util.ENV_NODE_INSTANCE_NAME, node_instance_name)
+        slConfigHolder.extraContextData += '#SCRIPT_EXEC=%s' % self._build_slipstream_bootstrap_command(node_instance)
 
-    def _set_vm_name_on_config_holder(self, configHolder, vm_name):
-        configHolder.vmName = vm_name
+    def _set_vm_name_on_config_holder(self, slConfigHolder, vm_name):
+        slConfigHolder.vmName = vm_name
 
-    def _run_instance(self, image_id, configHolder, max_attempts=3):
+    def _run_instance(self, image_id, slConfigHolder, max_attempts=3):
         if max_attempts <= 0:
             max_attempts = 1
         attempt = 1
         while True:
             try:
-                runner = self._do_run_instance(image_id, configHolder)
+                runner = self._do_run_instance(image_id, slConfigHolder)
             except socket.error, ex:
                 if attempt >= max_attempts:
                     # TODO: Need to print full stacktrace of the actual exception.
@@ -249,8 +263,8 @@ class StratusLabClientCloud(BaseCloudConnector):
             else:
                 return runner
 
-    def _do_run_instance(self, image_id, configHolder):
-        runner = self._get_stratuslab_runner(image_id, configHolder)
+    def _do_run_instance(self, image_id, slConfigHolder):
+        runner = self._get_stratuslab_runner(image_id, slConfigHolder)
         try:
             runner.runInstance()
         except OneException as ex:
@@ -263,15 +277,15 @@ class StratusLabClientCloud(BaseCloudConnector):
                 raise
         return runner
 
-    def _get_stratuslab_runner(self, image_id, configHolder):
-        return Runner(image_id, configHolder)
+    def _get_stratuslab_runner(self, image_id, slConfigHolder):
+        return Runner(image_id, slConfigHolder)
 
     def _prepare_machine_for_build_image(self):
         generate_ssh_keypair(self.sshPrivKeyFile)
-        self._installPackagesLocal(['curl'])
+        self._install_packages_local(['curl'])
 
     @staticmethod
-    def _installPackagesLocal(packages):
+    def _install_packages_local(packages):
         cmd = 'apt-get -y install %s' % ' '.join(packages)
         rc, output = commands.getstatusoutput(cmd)
         if rc != 0:
@@ -279,10 +293,6 @@ class StratusLabClientCloud(BaseCloudConnector):
             # FIXME: ConfigHolder needs more info for a proper bootstrap. Substitute later.
         #            machine = SystemFactory.getSystem('ubuntu', self.configHolder)
         #            machine.installPackages(packages)
-
-    def _build_slipstream_bootstrap_command(self, node_instance, user=None):
-        return "sleep 15; " + super(StratusLabClientCloud, self)._build_slipstream_bootstrap_command(node_instance,
-                                                                                                     user)
 
     @override
     def _stop_deployment(self):
@@ -298,27 +308,27 @@ class StratusLabClientCloud(BaseCloudConnector):
                 except Exception as ex:
                     errors.append('Error killing node %s\n%s' % (nodename, str(ex)))
         if errors:
-            raise Exceptions.CloudError('Failed stopping following instances. Details: %s' % '\n   -> '.join(errors))
+            raise Exceptions.CloudError('Failed stopping following instances. '
+                                        'Details: %s' % '\n   -> '.join(errors))
 
     @override
     def _stop_vms_by_ids(self, ids):
-        configHolder = self.configHolder.copy()
-        runner = Runner(None, configHolder)
+        runner = Runner(None, self.slConfigHolder.copy())
         runner.killInstances(map(int, ids))
 
     def _update_stratuslab_config_holder_for_build_image(self, user_info, node_instance):
 
-        self.configHolder.set('verboseLevel', self.verboseLevel)
+        self.slConfigHolder.set('verboseLevel', self.verboseLevel)
 
-        self.configHolder.set('comment', '')
+        self.slConfigHolder.set('comment', '')
 
         title = "SlipStream-%s" % os.environ.get('SLIPSTREAM_DIID', 'undefined diid')
-        self.configHolder.set('title', title)
+        self.slConfigHolder.set('title', title)
 
         self._set_user_info_on_stratuslab_config_holder(user_info, build_image=True)
         self._set_image_info_on_stratuslab_config_holder(node_instance)
 
-        self._set_instance_size_on_config_holder(self.configHolder, node_instance)
+        self._set_instance_size_on_config_holder(self.slConfigHolder, node_instance)
 
     def _set_image_info_on_stratuslab_config_holder(self, node_instance):
         self._set_build_targets_on_stratuslab_config_holder(node_instance)
@@ -326,11 +336,11 @@ class StratusLabClientCloud(BaseCloudConnector):
 
     def _set_build_targets_on_stratuslab_config_holder(self, node_instance):
 
-        self.configHolder.set('prerecipe', node_instance.get_prerecipe())
-        self.configHolder.set('recipe', node_instance.get_recipe())
+        self.slConfigHolder.set('prerecipe', node_instance.get_prerecipe())
+        self.slConfigHolder.set('recipe', node_instance.get_recipe())
 
         packages = ','.join(node_instance.get_packages())
-        self.configHolder.set('packages', packages)
+        self.slConfigHolder.set('packages', packages)
 
     def _set_new_image_group_version_on_stratuslab_config_holder(self, node_instance):
         def _increment_minor_version_number(version):
@@ -341,28 +351,28 @@ class StratusLabClientCloud(BaseCloudConnector):
                 return version
 
         new_version = _increment_minor_version_number(node_instance.get_image_attribute('imageVersion'))
-        self.configHolder.set('newImageGroupVersion', new_version)
-        self.configHolder.set('newImageGroupVersionWithManifestId', True)
+        self.slConfigHolder.set('newImageGroupVersion', new_version)
+        self.slConfigHolder.set('newImageGroupVersionWithManifestId', True)
 
     def _set_user_info_on_stratuslab_config_holder(self, user_info, build_image=False,
                                                    run_instance=True):
         try:
-            self.configHolder.set('endpoint', user_info.get_cloud_endpoint())
-            self.configHolder.set('username', user_info.get_cloud_username())
-            self.configHolder.set('password', user_info.get_cloud_password())
+            self.slConfigHolder.set('endpoint', user_info.get_cloud_endpoint())
+            self.slConfigHolder.set('username', user_info.get_cloud_username())
+            self.slConfigHolder.set('password', user_info.get_cloud_password())
 
             if run_instance or build_image:
                 sshPubKeysFile = self.__populate_ssh_pub_keys_file(user_info)
-                self.configHolder.set('userPublicKeyFile', sshPubKeysFile)
-                self.configHolder.set('marketplaceEndpoint',
+                self.slConfigHolder.set('userPublicKeyFile', sshPubKeysFile)
+                self.slConfigHolder.set('marketplaceEndpoint',
                                       user_info.get_cloud('marketplace.endpoint'))
 
             if build_image:
-                self.configHolder.set(
+                self.slConfigHolder.set(
                     'author', '%s %s' % (user_info.get_first_name(),
                                          user_info.get_last_name()))
-                self.configHolder.set('authorEmail', user_info.get_email())
-                self.configHolder.set('saveDisk', True)
+                self.slConfigHolder.set('authorEmail', user_info.get_email())
+                self.slConfigHolder.set('saveDisk', True)
         except KeyError, ex:
             raise Exceptions.ExecutionException('Error bootstrapping from User Parameters. %s' % str(ex))
 
@@ -372,13 +382,13 @@ class StratusLabClientCloud(BaseCloudConnector):
         #        else:
         #            shutdownVm = True
         # To be able to create a new image we need to shutdown the instance.
-        self.configHolder.set('shutdownVm', True)
+        self.slConfigHolder.set('shutdownVm', True)
 
-    def _set_network_type_on_config_holder(self, configHolder, node_instance):
+    def _set_network_type_on_config_holder(self, slConfigHolder, node_instance):
         # SS's 'Private' maps to 'local' in SL. The default is 'public' in SL.
         # We don't use SL's 'private' IPs.
         if 'Private' == node_instance.get_network_type():
-            configHolder.set('isLocalIp', True)
+            slConfigHolder.set('isLocalIp', True)
 
     def __populate_ssh_pub_keys_file(self, user_info):
         sshPubKeyFileTemp = self.sshPubKeyFile + '.temp'

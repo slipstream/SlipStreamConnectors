@@ -23,15 +23,14 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from slipstream.command.CloudClientCommand import main
 from slipstream.command.TerminateInstancesCommand import TerminateInstancesCommand
-from slipstream.cloudconnectors.cloudstack.CloudStackCommand import CloudStackCommand
-from slipstream.cloudconnectors.cloudstack.CloudStackClientCloud import CloudStackClientCloud
+from slipstream_stratuslab.StratusLabCommand import StratusLabCommand
 
 
-class CloudStackTerminateInstances(TerminateInstancesCommand, CloudStackCommand):
+class StratusLabTerminateInstances(TerminateInstancesCommand, StratusLabCommand):
 
     def __init__(self):
-        super(CloudStackTerminateInstances, self).__init__()
+        super(StratusLabTerminateInstances, self).__init__()
 
 
 if __name__ == "__main__":
-    main(CloudStackTerminateInstances)
+    main(StratusLabTerminateInstances)

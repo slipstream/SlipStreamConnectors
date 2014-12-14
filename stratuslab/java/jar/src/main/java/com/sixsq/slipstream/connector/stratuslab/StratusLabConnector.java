@@ -20,27 +20,18 @@ package com.sixsq.slipstream.connector.stratuslab;
  * -=================================================================-
  */
 
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.logging.Logger;
 
 import com.sixsq.slipstream.configuration.Configuration;
 import com.sixsq.slipstream.connector.CliConnectorBase;
 import com.sixsq.slipstream.connector.Connector;
-import com.sixsq.slipstream.connector.ExecutionControlUserParametersFactory;
-import com.sixsq.slipstream.connector.UserParametersFactoryBase;
 import com.sixsq.slipstream.credentials.Credentials;
 import com.sixsq.slipstream.exceptions.AbortException;
 import com.sixsq.slipstream.exceptions.ConfigurationException;
-import com.sixsq.slipstream.exceptions.InvalidElementException;
 import com.sixsq.slipstream.exceptions.NotFoundException;
-import com.sixsq.slipstream.exceptions.ServerExecutionEnginePluginException;
-import com.sixsq.slipstream.exceptions.SlipStreamClientException;
-import com.sixsq.slipstream.exceptions.SlipStreamException;
-import com.sixsq.slipstream.exceptions.SlipStreamInternalException;
 import com.sixsq.slipstream.exceptions.ValidationException;
 import com.sixsq.slipstream.persistence.DeploymentModule;
 import com.sixsq.slipstream.persistence.ImageModule;
@@ -48,25 +39,16 @@ import com.sixsq.slipstream.persistence.ModuleCategory;
 import com.sixsq.slipstream.persistence.ModuleParameter;
 import com.sixsq.slipstream.persistence.Node;
 import com.sixsq.slipstream.persistence.Run;
+import com.sixsq.slipstream.persistence.RunType;
 import com.sixsq.slipstream.persistence.RuntimeParameter;
 import com.sixsq.slipstream.persistence.ServiceConfigurationParameter;
 import com.sixsq.slipstream.persistence.User;
 import com.sixsq.slipstream.persistence.UserParameter;
-import com.sixsq.slipstream.persistence.NetworkType;
-import com.sixsq.slipstream.util.ProcessUtils;
 
 public class StratusLabConnector extends CliConnectorBase {
 
-	private static final String SLIPSTREAM_REPORT_DIR = "/tmp/slipstream/reports";
-
-	private static final String EXTRADISK_NAME_VOLATILE = "volatile";
-	private static final String EXTRADISK_NAME_READONLY = "readonly";
-	private static final String EXTRADISK_NAME_PERSISTENT = "persistent";
-
 	protected static final List<String> EXTRADISK_NAMES = Arrays.asList(
-			EXTRADISK_NAME_VOLATILE, EXTRADISK_NAME_READONLY,
-			EXTRADISK_NAME_PERSISTENT);
-
+			 "volatile", "persistent");
 	public static final String CLOUD_SERVICE_NAME = "stratuslab";
 	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream_stratuslab.StratusLabClientCloud";
 
@@ -86,102 +68,60 @@ public class StratusLabConnector extends CliConnectorBase {
 		return CLOUD_SERVICE_NAME;
 	}
 
-	public String getCloudConnectorPythonModuleName() {
-		return CLOUDCONNECTOR_PYTHON_MODULENAME;
+	@Override
+    protected String getCloudConnectorPythonModule() {
+	    return CLOUDCONNECTOR_PYTHON_MODULENAME;
+    }
+
+	@Override
+	protected Map<String, String> getConnectorSpecificUserParams(User user) throws ConfigurationException,
+	        ValidationException {
+		Map<String, String> userParams = new HashMap<String, String>();
+		userParams.put("endpoint", getEndpoint(user));
+		return userParams;
+	}
+
+	protected Map<String, String> getConnectorSpecificEnvironment(Run run, User user)
+			throws ConfigurationException, ValidationException {
+		HashMap<String, String> env = new HashMap<String, String>();
+		env.put("SLIPSTREAM_PDISK_ENDPOINT", getPdiskEndpoint());
+		return env;
 	}
 
 	@Override
-	public Map<String, ServiceConfigurationParameter> getServiceConfigurationParametersTemplate()
-			throws ValidationException {
-		return new StratusLabSystemConfigurationParametersFactory(
-				getConnectorInstanceName()).getParameters();
+	protected Map<String, String> getConnectorSpecificLaunchParams(Run run, User user) throws ConfigurationException,
+	        ValidationException {
+		Map<String, String> launchParams = new HashMap<String, String>();
+		launchParams.putAll(getInstanceSizeParams(run));
+		launchParams.put("markeptlace-endpoint", getMarketplaceEndpoint(user));
+		return launchParams;
 	}
 
-	@Override
-	public Run launch(Run run, User user) throws SlipStreamException {
-
-		validate(run, user);
-
-		String command;
-		try {
-			command = getRunInstanceCommand(run, user);
-		} catch (IOException e) {
-			throw (new SlipStreamException(
-					"Failed getting run instance command", e));
-		}
-
-		String result;
-		String[] commands = { "sh", "-c", command };
-		try {
-			result = ProcessUtils.execGetOutput(commands);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw (new SlipStreamInternalException(e));
-		} finally {
-			deleteTempSshKeyFile();
-		}
-
-		String[] instanceData = parseRunInstanceResult(result);
-		String instanceId = instanceData[0];
-		String ipAddress = instanceData[1];
-
-		updateInstanceIdAndIpOnRun(run, instanceId, ipAddress);
-
-		return run;
-	}
-
-	private String getRunInstanceCommand(Run run, User user)
-			throws InvalidElementException, ValidationException,
-			SlipStreamClientException, IOException, ConfigurationException,
-			ServerExecutionEnginePluginException {
-
-		String context = createContextualizationData(run, user);
-		String publicSshKey = getPublicSshKeyFileName(run, user);
-		String imageId = getImageId(run, user);
-		String vmName = getVmName(run);
-		String extraDisksCommand = getExtraDisksCommand(run);
-		String instanceSizeCommand = getInstanceSizeCommand(run);
-		String networkCommand = getNetworkCommand(run);
-
-		return "/usr/bin/stratus-run-instance " + imageId + " --quiet --key "
-				+ publicSshKey + " -u " + getKey(user) + " -p " + getSecret(user)
-				+ " --endpoint " + getEndpoint(user)
-				+ " --marketplace-endpoint " + getMarketplaceEndpoint(user)
-				+ " --context " + context
-				+ " --vm-name " + vmName + ":" + run.getName()
-				+ extraDisksCommand + instanceSizeCommand + networkCommand;
-	}
-
-	protected String getNetworkCommand(Run run) throws ValidationException{
-		if (!isInOrchestrationContext(run)) {
-			ImageModule machine = ImageModule.load(run.getModuleResourceUrl());
-			String networkType = machine.getParameterValue(ImageModule.NETWORK_KEY, null);
-			if (networkType.equals(NetworkType.Private.name())){
-				return " --local-ip";
-			}
-		}
-		return ""; // empty = public
-	}
-
-	protected String getInstanceSizeCommand(Run run) throws ValidationException {
+	private Map<String, String> getInstanceSizeParams(Run run) throws ValidationException {
+		Map<String, String> instanceSize = new HashMap<String, String>();
 		if (isInOrchestrationContext(run)) {
 			String instanceType = Configuration
 					.getInstance()
 					.getRequiredProperty(
 							constructKey(StratusLabUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME));
-			return " --type " + instanceType;
+			instanceSize.put("instance-type", instanceType);
+			return instanceSize;
 		} else {
 			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
 			try {
 				String cpu = getCpu(image);
 				String ram = getRamMb(image);
 				if (cpu == null || cpu.isEmpty() || ram == null || ram.isEmpty()) {
-					return " --type " + getInstanceType(image);
+					instanceSize.put("instance-type", getInstanceType(image));
+					return instanceSize;
 				} else {
-					return " --cpu " + cpu + " --ram " + ram;
+					instanceSize.put("cpu", cpu);
+					instanceSize.put("ram", ram);
+					return instanceSize;
 				}
 			} catch (ValidationException e) {
-				return " --type " + getInstanceType(image);
+				instanceSize.put("instance-type", getInstanceType(image));
+				return instanceSize;
 			}
 		}
 	}
@@ -200,7 +140,7 @@ public class StratusLabConnector extends CliConnectorBase {
 		return ramMb.toString();
 	}
 
-	protected String getMarketplaceEndpoint(User user)
+	private String getMarketplaceEndpoint(User user)
 			throws ConfigurationException, ValidationException {
 		return user
 				.getParameter(
@@ -208,16 +148,22 @@ public class StratusLabConnector extends CliConnectorBase {
 				.getValue();
 	}
 
-	private String getVmName(Run run) {
-		return isInOrchestrationContext(run) ? getOrchestratorName(run)
-				: "machine";
-	}
+	@Override
+	protected void validateLaunch(Run run, User user) throws ValidationException {
+		super.validateLaunch(run, user);
 
-	private void validate(Run run, User user) throws ValidationException {
-		validateCredentials(user);
-		validateUserSshPublicKey(user);
+		if (run.getCategory() == ModuleCategory.Image) {
+			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
+			validateImageModule(image, user);
+		}
+		if (run.getCategory() == ModuleCategory.Deployment) {
+			for (Node node : DeploymentModule.load(run.getModuleResourceUrl()).getNodes().values()) {
+				validateImageModule(node.getImage(), user);
+			}
+		}
+
 		validateMarketplaceEndpoint(user);
-		validateLaunch(run, user);
+		validatePDiskEndpoint();
 	}
 
 	private void validateMarketplaceEndpoint(User user) throws ValidationException {
@@ -229,24 +175,14 @@ public class StratusLabConnector extends CliConnectorBase {
 		}
 	}
 
-	protected void validateLaunch(Run run, User user) throws ValidationException {
-		if (run.getCategory() == ModuleCategory.Image) {
-			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
-			validateImageModule(image, user);
-
-			String pdiskEndpoint =
-					Configuration.getInstance().getRequiredProperty(
-							constructKey(StratusLabUserParametersFactory.PDISK_ENDPOINT_PARAMETER_NAME));
-			if (pdiskEndpoint == null || "".equals(pdiskEndpoint) || pdiskEndpoint.isEmpty()){
-				throw new ValidationException("Missing PDisk endpoint. Please contact you SlipStream administrator");
-			}
-		}
-		if (run.getCategory() == ModuleCategory.Deployment) {
-			for (Node node : DeploymentModule.load(run.getModuleResourceUrl()).getNodes().values()) {
-				validateImageModule(node.getImage(), user);
-			}
-		}
-	}
+	private void validatePDiskEndpoint() throws ValidationException {
+	    String pdiskEndpoint =
+	    		Configuration.getInstance().getRequiredProperty(
+	    				constructKey(StratusLabUserParametersFactory.PDISK_ENDPOINT_PARAMETER_NAME));
+	    if (pdiskEndpoint == null || pdiskEndpoint.isEmpty()){
+	    	throw new ValidationException("Missing PDisk endpoint. Please contact you SlipStream administrator");
+	    }
+    }
 
 	private void validateImageModule(ImageModule image, User user)
 			throws ValidationException {
@@ -276,126 +212,11 @@ public class StratusLabConnector extends CliConnectorBase {
 		}
 	}
 
-	private void validateUserSshPublicKey(User user) throws ValidationException {
-		String sshParameterName = ExecutionControlUserParametersFactory.CATEGORY
-				+ "." + UserParametersFactoryBase.SSHKEY_PARAMETER_NAME;
-		if (!isParameterDefined(user, sshParameterName)) {
-			String errorMessageLastPart = getErrorMessageLastPart(user);
-			throw (new ValidationException(
-					"StratusLab SSH public key must be provided"
-							+ errorMessageLastPart));
-		}
-	}
-
-	protected boolean isParameterDefined(User user, String sshParameterName) {
-		return user.parametersContainKey(sshParameterName)
-				&& !("".equals(user.getParameter(sshParameterName).getValue()) || user
-						.getParameter(sshParameterName).getValue() == null);
-	}
-
-	private String createContextualizationData(Run run, User user)
-			throws ConfigurationException, InvalidElementException,
-			ValidationException {
-
-		String targetScript = "";
-		String nodename = Run.MACHINE_NAME;
-        if(isInOrchestrationContext(run)){
-			targetScript = "slipstream-orchestrator";
-			nodename = getOrchestratorName(run);
-		}
-
+	private String getPdiskEndpoint() throws ConfigurationException, ValidationException {
 		Configuration configuration = Configuration.getInstance();
-
-		String verbosityLevel = getVerboseParameterValue(user);
-
-		String contextualization = "SLIPSTREAM_DIID=" + run.getName() + "#";
-		contextualization += "SLIPSTREAM_SERVICEURL=" + configuration.baseUrl
-				+ "#";
-		contextualization += "SLIPSTREAM_NODE_INSTANCE_NAME=" + nodename
-				+ "#";
-		contextualization += "SLIPSTREAM_CATEGORY="
-				+ run.getCategory().toString() + "#";
-		contextualization += "SLIPSTREAM_USERNAME=" + user.getName() + "#";
-		contextualization += "SLIPSTREAM_COOKIE="
-				+ getCookieForEnvironmentVariable(user.getName(), run.getUuid()) + "#";
-		contextualization += "SLIPSTREAM_VERBOSITY_LEVEL=" + verbosityLevel
-				+ "#";
-		contextualization += "SLIPSTREAM_CLOUD=" + getCloudServiceName() + "#";
-		contextualization += "SLIPSTREAM_CONNECTOR_INSTANCE="
-				+ getConnectorInstanceName() + "#";
-
-		contextualization += "SLIPSTREAM_BUNDLE_URL="
-				+ configuration
-						.getRequiredProperty("slipstream.update.clienturl")
-				+ "#";
-
-		contextualization += "CLOUDCONNECTOR_BUNDLE_URL="
-				+ configuration
-						.getRequiredProperty(constructKey("update.clienturl"))
-				+ "#";
-
-		contextualization += "CLOUDCONNECTOR_PYTHON_MODULENAME="
-				+ getCloudConnectorPythonModuleName() + "#";
-
-		contextualization += "SLIPSTREAM_BOOTSTRAP_BIN="
-				+ configuration
-						.getRequiredProperty("slipstream.update.clientbootstrapurl")
-				+ "#";
-
-		contextualization += "SLIPSTREAM_PDISK_ENDPOINT="
-				+ configuration
-						.getRequiredProperty(constructKey(StratusLabUserParametersFactory.PDISK_ENDPOINT_PARAMETER_NAME))
-				+ "#";
-
-		contextualization += "SLIPSTREAM_REPORT_DIR=" + SLIPSTREAM_REPORT_DIR;
-
-		contextualization += "#" + constructScriptExecCommand(targetScript);
-
-		return contextualization;
-	}
-
-	private String constructScriptExecCommand(String targetScript) throws ConfigurationException,
-			ValidationException {
-
-		Configuration configuration = Configuration.getInstance();
-
-		String bootstrap = "/tmp/slipstream.bootstrap";
-		String bootstrapUrl = configuration
-				.getRequiredProperty("slipstream.update.clientbootstrapurl");
-
-		return "SCRIPT_EXEC=\"sleep 15; mkdir -p " + SLIPSTREAM_REPORT_DIR
-				+ "; wget --no-check-certificate -O " + bootstrap + " "
-				+ bootstrapUrl + " > " + SLIPSTREAM_REPORT_DIR
-				+ "/orchestrator.slipstream.log 2>&1 && chmod 0755 "
-				+ bootstrap + "; " + bootstrap + " " + targetScript + " >> "
-				+ SLIPSTREAM_REPORT_DIR + "/orchestrator.slipstream.log 2>&1\"";
-
-	}
-
-	private String getExtraDisksCommand(Run run) {
-        if (isInOrchestrationContext(run)) {
-        	return "";
-        } else {
-            StringBuilder disksParams = new StringBuilder();
-			for (String diskName : EXTRADISK_NAMES) {
-				String extraDiskName = Run.MACHINE_NAME_PREFIX + ImageModule.EXTRADISK_PARAM_PREFIX
-						+ RuntimeParameter.PARAM_WORD_SEPARATOR + diskName;
-				String extraDiskValue = "";
-				try {
-					extraDiskValue = run.getRuntimeParameterValue(extraDiskName);
-
-					if (extraDiskValue != null && !extraDiskValue.trim().isEmpty()) {
-						disksParams.append(" --").append(diskName).append("-disk ").append(extraDiskValue.trim());
-					}
-
-				} catch (NotFoundException consumed) {
-					// ignore
-				} catch (AbortException consumed) {
-					// ignore
-				}
-			}
-            return disksParams.toString();
-        }
+		return configuration
+				.getRequiredProperty(constructKey(
+		        		StratusLabUserParametersFactory.PDISK_ENDPOINT_PARAMETER_NAME));
 	}
 
 	@Override
@@ -404,42 +225,10 @@ public class StratusLabConnector extends CliConnectorBase {
 	}
 
 	@Override
-	public void terminate(Run run, User user) throws SlipStreamException {
-
-		Logger.getLogger(this.getClass().getName()).info(
-				"Terminating all instances.");
-
-		String command = "/usr/bin/stratus-kill-instance -u " + getKey(user)
-				+ " -p " + getSecret(user) + " --endpoint " + getEndpoint(user);
-
-		for (String id : getCloudNodeInstanceIds(run)) {
-			String[] commands = { "sh", "-c", command + " " + id };
-			try {
-				ProcessUtils.execGetOutput(commands);
-			} catch (IOException e) {
-			}
-		}
-	}
-
-	@Override
-	public Properties describeInstances(User user) throws SlipStreamException {
-		validateCredentials(user);
-
-		String command = "/usr/bin/stratus-describe-instance -u "
-				+ getKey(user) + " -p " + getSecret(user) + " --endpoint "
-				+ getEndpoint(user);
-
-		String result;
-		String[] commands = { "sh", "-c", command };
-
-		try {
-			result = ProcessUtils.execGetOutput(commands);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw (new SlipStreamInternalException(e));
-		}
-
-		return parseDescribeInstanceResult(result);
+	public Map<String, ServiceConfigurationParameter> getServiceConfigurationParametersTemplate()
+			throws ValidationException {
+		return new StratusLabSystemConfigurationParametersFactory(
+				getConnectorInstanceName()).getParameters();
 	}
 
 	@Override
@@ -461,22 +250,4 @@ public class StratusLabConnector extends CliConnectorBase {
 		return new StratusLabUserParametersFactory(getConnectorInstanceName())
 				.constructKey(key);
 	}
-
-	@Override
-	protected String getCloudConnectorPythonModule() {
-		return null;
-	}
-
-	@Override
-	protected Map<String, String> getConnectorSpecificUserParams(User user) throws ConfigurationException,
-			ValidationException {
-		return null;
-	}
-
-	@Override
-	protected Map<String, String> getConnectorSpecificLaunchParams(Run run, User user) throws ConfigurationException,
-			ValidationException {
-		return null;
-	}
-
 }

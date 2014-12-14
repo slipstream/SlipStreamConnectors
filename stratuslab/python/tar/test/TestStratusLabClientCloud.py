@@ -24,7 +24,7 @@ import unittest
 import socket
 from mock import Mock
 
-from slipstream_stratuslab.StratuslabClientCloud import StratuslabClientCloud
+from slipstream_stratuslab.StratusLabClientCloud import StratusLabClientCloud
 from slipstream.ConfigHolder import ConfigHolder as SlipstreamConfigHolder
 from slipstream.exceptions import Exceptions
 
@@ -45,7 +45,7 @@ class TestStratusLabClientCloud(unittest.TestCase):
 
     def test__getCreateImageMessagingMessage(self):
 
-        msg = StratuslabClientCloud._get_create_image_messaging_message('/foo/bar')
+        msg = StratusLabClientCloud._get_create_image_messaging_message('/foo/bar')
 
         assert {'uri': '/foo/bar', 'imageid': ''} == json.loads(
             base64.b64decode(msg))
@@ -53,7 +53,7 @@ class TestStratusLabClientCloud(unittest.TestCase):
     def test_runInstanceMaxAttempts(self):
         # pylint: disable=star-args
 
-        stratuslabClient = StratuslabClientCloud(
+        stratuslabClient = StratusLabClientCloud(
             SlipstreamConfigHolder(context={'foo': 'bar'},
                                    config={'foo': 'bar'}))
         stratuslabClient.RUNINSTANCE_RETRY_TIMEOUT = 0
@@ -72,7 +72,7 @@ class TestStratusLabClientCloud(unittest.TestCase):
         assert stratuslabClient._do_run_instance.call_count == 1
 
     def test_extraDisksOnStratusLabRunner(self):
-        stratuslabClient = StratuslabClientCloud(
+        stratuslabClient = StratusLabClientCloud(
             SlipstreamConfigHolder(context={'foo': 'bar'},
                                    config={'foo': 'bar'}))
         slch = StratusLabConfigHolder()
