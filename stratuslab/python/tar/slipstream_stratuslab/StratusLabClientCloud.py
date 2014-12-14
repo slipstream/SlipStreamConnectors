@@ -49,10 +49,10 @@ def getConnector(configHolder):
 
 
 def getConnectorClass():
-    return StratuslabClientCloud
+    return StratusLabClientCloud
 
 
-class StratuslabClientCloud(BaseCloudConnector):
+class StratusLabClientCloud(BaseCloudConnector):
     RUNINSTANCE_RETRY_TIMEOUT = 3
 
     cloudName = 'stratuslab'
@@ -60,7 +60,7 @@ class StratuslabClientCloud(BaseCloudConnector):
     def __init__(self, configHolder):
         self.creator = None
 
-        super(StratuslabClientCloud, self).__init__(configHolder)
+        super(StratusLabClientCloud, self).__init__(configHolder)
 
         self.configHolder = StratuslabConfigHolder(configHolder.options,
                                                    configHolder.config)
@@ -281,7 +281,7 @@ class StratuslabClientCloud(BaseCloudConnector):
         #            machine.installPackages(packages)
 
     def _build_slipstream_bootstrap_command(self, node_instance, user=None):
-        return "sleep 15; " + super(StratuslabClientCloud, self)._build_slipstream_bootstrap_command(node_instance,
+        return "sleep 15; " + super(StratusLabClientCloud, self)._build_slipstream_bootstrap_command(node_instance,
                                                                                                      user)
 
     @override

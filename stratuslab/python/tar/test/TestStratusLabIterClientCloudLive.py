@@ -17,29 +17,18 @@
  limitations under the License.
 """
 
-import os
 import unittest
 from mock import Mock
 
 from slipstream import util
-from slipstream_stratuslab.StratuslabIterClientCloud import StratuslabIterClientCloud
-from TestStratuslabClientCloudLive import TestStratusLabLiveBase
-
-CONFIG_FILE = os.path.join(os.path.dirname(__file__),
-                           'pyunit.credentials.properties')
-# Example configuration file.
-"""
-[Test]
-stratuslab.username = konstan@sixsq.com
-stratuslab.password = xxx
-stratuslab.imageid =  HZTKYZgX7XzSokCHMB60lS0wsiv
-"""  # pylint: disable=pointless-string-statement
+from slipstream_stratuslab.StratusLabIterClientCloud import StratusLabIterClientCloud
+from TestStratusLabLiveBase import TestStratusLabLiveBase
 
 
 class TestStratusLabIterClientCloudLive(TestStratusLabLiveBase):
 
     def xtest_1_create_delete_volume(self):
-        self.client = StratuslabIterClientCloud(self.ch)
+        self.client = StratusLabIterClientCloud(self.ch)
         self.client._set_user_info_on_stratuslab_config_holder(self.user_info)
 
         size = int(self.node_instance.get_volatile_extra_disk_size())
@@ -49,7 +38,7 @@ class TestStratusLabIterClientCloudLive(TestStratusLabLiveBase):
 
     def xtest_2_start_stop_images(self):
 
-        self.client = StratuslabIterClientCloud(self.ch)
+        self.client = StratusLabIterClientCloud(self.ch)
         self.client._publish_vm_info = Mock()
 
         self.client._get_max_workers = Mock(return_value=self.max_iaas_workers)
@@ -73,7 +62,7 @@ class TestStratusLabIterClientCloudLive(TestStratusLabLiveBase):
 
     def xtest_3_start_stop_images_by_ids(self):
 
-        self.client = StratuslabIterClientCloud(self.ch)
+        self.client = StratusLabIterClientCloud(self.ch)
         self.client._publish_vm_info = Mock()
 
         self.client._get_max_workers = Mock(return_value=self.max_iaas_workers)

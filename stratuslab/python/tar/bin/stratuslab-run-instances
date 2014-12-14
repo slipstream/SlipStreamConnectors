@@ -26,38 +26,33 @@ sys.path.append('/var/lib/stratuslab/python')
 
 from slipstream.command.CloudClientCommand import main
 from slipstream.command.RunInstancesCommand import RunInstancesCommand
-from slipstream_stratuslab.StratuslabCommand import StratuslabCommand
-from slipstream_stratuslab.StratuslabClientCloud import StratuslabClientCloud
-from slipstream_stratuslab.StratuslabIterClientCloud import StratuslabIterClientCloud
+from slipstream_stratuslab.StratusLabCommand import StratusLabCommand
+from slipstream_stratuslab.StratusLabClientCloud import StratusLabClientCloud
+from slipstream_stratuslab.StratusLabIterClientCloud import StratusLabIterClientCloud
 
 
-class CloudStackRunInstances(RunInstancesCommand, StratuslabCommand):
+class StratusLabRunInstances(RunInstancesCommand, StratusLabCommand):
 
     FLAVOUR_KEY = 'flavour'
 
     def get_connector_class(self):
         if self.get_option(self.FLAVOUR_KEY).lower() == 'iter':
-            return StratuslabIterClientCloud
+            return StratusLabIterClientCloud
         else:
-            return StratuslabClientCloud
+            return StratusLabClientCloud
 
     def __init__(self):
-        super(CloudStackRunInstances, self).__init__()
+        super(StratusLabRunInstances, self).__init__()
 
     def set_cloud_specific_options(self, parser):
-        StratuslabCommand.set_cloud_specific_options(self, parser)
-
-        self.parser.add_option('--' + self.FLAVOUR_KEY, dest=self.FLAVOUR_KEY,
-                               help='Type of the zone (Basic [default], Advanced)',
-                               default='basic', metavar='FLAVOUR')
+        StratusLabCommand.set_cloud_specific_options(self, parser)
 
     def get_cloud_specific_node_inst_cloud_params(self):
         return {'instance.type': self.get_option(self.INSTANCE_TYPE_KEY)}
 
     def get_cloud_specific_mandatory_options(self):
-        return StratuslabCommand.get_cloud_specific_mandatory_options(self) + \
-               [self.INSTANCE_TYPE_KEY]
+        return StratusLabCommand.get_cloud_specific_mandatory_options(self)
 
 
 if __name__ == "__main__":
-    main(CloudStackRunInstances)
+    main(StratusLabRunInstances)

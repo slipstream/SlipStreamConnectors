@@ -25,7 +25,7 @@ from stratuslab.volume_manager.PersistentDisk import PersistentDisk
 import slipstream.exceptions.Exceptions as Exceptions
 
 from slipstream.util import override, importETree
-from slipstream_stratuslab.StratuslabClientCloud import StratuslabClientCloud
+from slipstream_stratuslab.StratusLabClientCloud import StratusLabClientCloud
 
 import traceback
 etree = importETree()
@@ -36,10 +36,10 @@ def getConnector(configHolder):
 
 
 def getConnectorClass():
-    return StratuslabIterClientCloud
+    return StratusLabIterClientCloud
 
 
-class StratuslabIterClientCloud(StratuslabClientCloud):
+class StratusLabIterClientCloud(StratusLabClientCloud):
     """Implements extra disk functionality of SlipStream over the persistent disk
     of StratusLab.
     """
@@ -49,7 +49,10 @@ class StratuslabIterClientCloud(StratuslabClientCloud):
     VOLATILE_DISK_PREFIX = 'volatile-'
 
     def __init__(self, slipstreamConfigHolder):
-        super(StratuslabIterClientCloud, self).__init__(slipstreamConfigHolder)
+        super(StratusLabIterClientCloud, self).__init__(slipstreamConfigHolder)
+
+        PersistentDisk._setPDiskUserCredentials = lambda x: x
+        self.pdisk = PersistentDisk(self.slConfigHolder)
 
     @staticmethod
     def _get_create_image_messaging_message(image_resource_uri):
@@ -81,21 +84,18 @@ class StratuslabIterClientCloud(StratuslabClientCloud):
         return runner
 
     def _volume_create(self, size, tag):
-        pd = PersistentDisk(self.slConfigHolder)
         public = False
-        return pd.createVolume(str(size), tag, public)
+        return self.pdisk.createVolume(str(size), tag, public)
 
     def _volume_delete(self, uuid):
-        PersistentDisk._setPDiskUserCredentials = lambda x: x
-        pd = PersistentDisk(self.slConfigHolder)
         wait_time = 30
         time_stop = time.time() + wait_time
-        while 0 != int(pd.getValue('count', uuid)):
+        while 0 != int(self.pdisk.getValue('count', uuid)):
             if time.time() <= time_stop:
                 self._print_detail('Disk %s is still in use after waiting for %s sec.' %
                                    (uuid, wait_time))
             time.sleep(3)
-        return pd.deleteVolume(uuid)
+        return self.pdisk.deleteVolume(uuid)
 
     def _volume_exists(self, uuid):
         pd = PersistentDisk(self.slConfigHolder)
@@ -151,13 +151,11 @@ class StratuslabIterClientCloud(StratuslabClientCloud):
         xml = etree.fromstring(vm_info)
         sources = [x.find('SOURCE').text for x in xml.findall('TEMPLATE/DISK')
                    if x.find('SOURCE') != None]
-        PersistentDisk._setPDiskUserCredentials = lambda x: x
-        pd = PersistentDisk(self.slConfigHolder)
         uuids = []
         for source in sources:
             if source.startswith('pdisk'):
                 uuid = source.split(':')[-1]
-                tag = pd.getValue('tag', uuid)
+                tag = self.pdisk.getValue('tag', uuid)
                 if tag.startswith(self.VOLATILE_DISK_PREFIX):
                     uuids.append(uuid)
         return uuids

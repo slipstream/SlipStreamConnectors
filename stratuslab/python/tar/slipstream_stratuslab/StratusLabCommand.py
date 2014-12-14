@@ -17,18 +17,18 @@
 """
 
 from slipstream.command.CloudClientCommand import CloudClientCommand
-from slipstream_stratuslab.StratuslabClientCloud import StratuslabClientCloud
+from slipstream_stratuslab.StratusLabClientCloud import StratusLabClientCloud
 
 
-class StratulabClientCommand(CloudClientCommand):
+class StratusLabCommand(CloudClientCommand):
 
     ENDPOINT_KEY = 'endpoint'
 
     def __init__(self, timeout=None):
-        super(StratulabClientCommand, self).__init__(timeout)
+        super(StratusLabCommand, self).__init__(timeout)
 
     def get_connector_class(self):
-        return StratuslabClientCloud
+        return StratusLabClientCloud
 
     def set_cloud_specific_options(self, parser):
         parser.add_option('--' + self.ENDPOINT_KEY, dest=self.ENDPOINT_KEY,

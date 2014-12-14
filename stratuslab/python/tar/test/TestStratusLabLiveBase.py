@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
  SlipStream Client
  =====
@@ -24,9 +23,8 @@ from mock import Mock
 from slipstream_stratuslab.StratuslabClientCloud import StratuslabClientCloud
 from slipstream.ConfigHolder import ConfigHolder
 from slipstream.SlipStreamHttpClient import UserInfo
-from slipstream import util
 from slipstream.NodeInstance import NodeInstance
-from slipstream.NodeDecorator import NodeDecorator, RUN_CATEGORY_IMAGE
+from slipstream.NodeDecorator import NodeDecorator
 
 CONFIG_FILE = os.path.join(os.path.dirname(__file__),
                            'pyunit.credentials.properties')
@@ -133,38 +131,3 @@ lvs
         self.client = None
         self.ch = None
 
-
-class TestStratusLabClientCloudLive(TestStratusLabLiveBase):
-
-    def xtest_1_start_stop_images(self):
-
-        self.client._get_max_workers = Mock(return_value=self.max_iaas_workers)
-
-        try:
-            self.client.start_nodes_and_clients(self.user_info, self.node_instances)
-
-            util.printAndFlush('Instances started\n')
-
-            vms = self.client.get_vms()
-            assert len(vms) == int(self.multiplicity)
-        finally:
-            self.client.stop_deployment()
-
-    def xtest_2_build_image(self):
-
-        self.client.run_category = RUN_CATEGORY_IMAGE
-        self.client._prepare_machine_for_build_image = Mock()
-
-        self.client.start_nodes_and_clients(
-            self.user_info, {NodeDecorator.MACHINE_NAME: self.node_instance})
-        instances_details = self.client.get_vms_details()
-
-        assert instances_details
-        assert instances_details[0][NodeDecorator.MACHINE_NAME]
-
-        new_id = self.client.build_image(self.user_info, self.node_instance)
-        # StratusLab doesn't provide us with image ID
-        assert new_id == ''
-
-if __name__ == '__main__':
-    unittest.main()
