@@ -25,7 +25,7 @@ import com.sixsq.slipstream.connector.Connector;
 public class StratusLabIterConnector extends StratusLabConnector {
 
 	public static final String CLOUD_SERVICE_NAME = "stratuslabiter";
-	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream.cloudconnectors.stratuslab.StratuslabIterClientCloud";
+	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream_stratuslab.StratusLabIterClientCloud";
 
 	public StratusLabIterConnector() {
 		this(CLOUD_SERVICE_NAME);

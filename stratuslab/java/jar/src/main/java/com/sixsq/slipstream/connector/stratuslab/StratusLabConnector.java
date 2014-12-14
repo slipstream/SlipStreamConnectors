@@ -68,7 +68,7 @@ public class StratusLabConnector extends CliConnectorBase {
 			EXTRADISK_NAME_PERSISTENT);
 
 	public static final String CLOUD_SERVICE_NAME = "stratuslab";
-	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream.cloudconnectors.stratuslab.StratuslabClientCloud";
+	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream_stratuslab.StratusLabClientCloud";
 
 	public StratusLabConnector() {
 		this(CLOUD_SERVICE_NAME);
