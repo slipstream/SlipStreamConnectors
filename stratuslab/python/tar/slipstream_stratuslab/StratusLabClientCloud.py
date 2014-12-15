@@ -215,7 +215,9 @@ class StratusLabClientCloud(BaseCloudConnector):
         self._set_cpu_ram_on_config_holder(slConfigHolder, node_instance)
 
     def _set_instance_type_on_configholder(self, slConfigHolder, node_instance):
-        slConfigHolder.instanceType = node_instance.get_instance_type()
+        instance_type = node_instance.get_instance_type()
+        if instance_type:
+            slConfigHolder.instanceType = instance_type
 
     def _set_cpu_ram_on_config_holder(self, slConfigHolder, node_instance):
         slConfigHolder.vmCpu = node_instance.get_cpu() or None
@@ -365,7 +367,7 @@ class StratusLabClientCloud(BaseCloudConnector):
                 sshPubKeysFile = self.__populate_ssh_pub_keys_file(user_info)
                 self.slConfigHolder.set('userPublicKeyFile', sshPubKeysFile)
                 self.slConfigHolder.set('marketplaceEndpoint',
-                                      user_info.get_cloud('marketplace.endpoint'))
+                                        user_info.get_cloud('marketplace.endpoint'))
 
             if build_image:
                 self.slConfigHolder.set(

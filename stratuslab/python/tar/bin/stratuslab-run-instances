@@ -73,7 +73,9 @@ class StratusLabRunInstances(RunInstancesCommand, StratusLabCommand):
                                default='', metavar='MARKETPLACE_ENDPOINT')
 
     def get_cloud_specific_node_inst_cloud_params(self):
-        return {'instance.type': self.get_option(self.INSTANCE_TYPE_KEY)}
+        return {'instance.type': self.get_option(self.INSTANCE_TYPE_KEY),
+                'cpu': self.get_option(self.CPU_KEY),
+                'ram': self.get_option(self.RAM_KEY)}
 
     def get_cloud_specific_mandatory_options(self):
         return StratusLabCommand.get_cloud_specific_mandatory_options(self) + \
