@@ -60,7 +60,6 @@
           <requires>
             <require>java-1.7.0-openjdk</require>
             <require>slipstream-connector-stratuslab-python${slipstream.edition}</require>
-            <require>stratuslab-cli-user${slipstream.edition}</require>
           </requires>
 
           <mappings>
