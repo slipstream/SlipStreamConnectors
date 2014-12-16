@@ -173,11 +173,11 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         runner = Runner(None, configHolder)
         vm_infos = []
         for vm_id in ids:
-            vm_info = runner.cloud._vmInfo(vm_id)
+            vm_info = runner.cloud._vmInfo(int(vm_id))
             vm_infos.append(vm_info)
         runner.killInstances(map(int, ids))
         for vm_id in ids:
-            self._wait_vm_in_state(['Done', 'Failed'], runner, vm_id)
+            self._wait_vm_in_state(['Done', 'Failed'], runner, int(vm_id))
             time.sleep(2)
         for vm_info in vm_infos:
             self._delete_volatile_disks(vm_info)
