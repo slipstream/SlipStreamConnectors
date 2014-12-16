@@ -52,7 +52,6 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         super(StratusLabIterClientCloud, self).__init__(slipstreamConfigHolder)
 
         PersistentDisk._setPDiskUserCredentials = lambda x: x
-        self.pdisk = PersistentDisk(self.slConfigHolder)
 
     @staticmethod
     def _get_create_image_messaging_message(image_resource_uri):
@@ -84,18 +83,20 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         return runner
 
     def _volume_create(self, size, tag):
+        pdisk = PersistentDisk(self.slConfigHolder)
         public = False
-        return self.pdisk.createVolume(str(size), tag, public)
+        return pdisk.createVolume(str(size), tag, public)
 
     def _volume_delete(self, uuid):
+        pdisk = PersistentDisk(self.slConfigHolder)
         wait_time = 30
         time_stop = time.time() + wait_time
-        while 0 != int(self.pdisk.getValue('count', uuid)):
+        while 0 != int(pdisk.getValue('count', uuid)):
             if time.time() <= time_stop:
                 self._print_detail('Disk %s is still in use after waiting for %s sec.' %
                                    (uuid, wait_time))
             time.sleep(3)
-        return self.pdisk.deleteVolume(uuid)
+        return pdisk.deleteVolume(uuid)
 
     def _volume_exists(self, uuid):
         pd = PersistentDisk(self.slConfigHolder)
@@ -151,11 +152,12 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         xml = etree.fromstring(vm_info)
         sources = [x.find('SOURCE').text for x in xml.findall('TEMPLATE/DISK')
                    if x.find('SOURCE') != None]
+        pdisk = PersistentDisk(self.slConfigHolder)
         uuids = []
         for source in sources:
             if source.startswith('pdisk'):
                 uuid = source.split(':')[-1]
-                tag = self.pdisk.getValue('tag', uuid)
+                tag = pdisk.getValue('tag', uuid)
                 if tag.startswith(self.VOLATILE_DISK_PREFIX):
                     uuids.append(uuid)
         return uuids
