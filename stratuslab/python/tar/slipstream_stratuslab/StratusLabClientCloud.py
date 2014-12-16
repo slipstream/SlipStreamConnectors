@@ -23,6 +23,7 @@ import socket
 import sys
 import time
 import logging
+import re
 
 from stratuslab.ConfigHolder import ConfigHolder as StratuslabConfigHolder
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
@@ -237,8 +238,14 @@ class StratusLabClientCloud(BaseCloudConnector):
 
     def _set_extra_context_data_on_config_holder(self, slConfigHolder, node_instance):
         node_instance_name = node_instance.get_name()
+
+        regex = 'SLIPSTREAM_'
+        if self.is_start_orchestrator():
+            regex += '|CLOUDCONNECTOR_'
+        env_matcher = re.compile(regex)
         slConfigHolder.extraContextData = '#'.join(
-            ['%s=%s' % (k, v) for (k, v) in os.environ.items() if k.startswith('SLIPSTREAM_')])
+            ['%s=%s' % (k, v) for (k, v) in os.environ.items() if env_matcher.match(k)])
+
         slConfigHolder.extraContextData += '#%s=%s' % (util.ENV_NODE_INSTANCE_NAME, node_instance_name)
         slConfigHolder.extraContextData += '#SCRIPT_EXEC=%s' % self._build_slipstream_bootstrap_command(node_instance)
 
