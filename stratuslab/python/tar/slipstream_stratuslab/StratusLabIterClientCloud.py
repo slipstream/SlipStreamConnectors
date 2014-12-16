@@ -17,6 +17,7 @@
 """
 
 import base64
+import os
 import time
 
 from stratuslab.vm_manager.Runner import Runner
@@ -58,6 +59,9 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         return base64.b64encode('{"uri":"%s", "imageid":""}' % image_resource_uri)
 
     def _start_image_for_deployment(self, node_instance, vm_name):
+        self.slConfigHolder.set('pdiskEndpoint',
+                                os.environ.get(['SLIPSTREAM_PDISK_ENDPOINT']))
+
         configHolder = self.slConfigHolder.deepcopy()
 
         image_id = node_instance.get_image_id()
