@@ -60,6 +60,7 @@ public class StratusLabConnector extends CliConnectorBase {
 		return new StratusLabConnector(getConnectorInstanceName());
 	}
 
+	@Override
 	public String getCloudServiceName() {
 		return CLOUD_SERVICE_NAME;
 	}
@@ -90,6 +91,7 @@ public class StratusLabConnector extends CliConnectorBase {
 		Map<String, String> launchParams = new HashMap<String, String>();
 		launchParams.putAll(getInstanceSizeParams(run));
 		launchParams.put("markeptlace-endpoint", getMarketplaceEndpoint(user));
+		launchParams.put("flavour", getCloudServiceName());
 		return launchParams;
 	}
 

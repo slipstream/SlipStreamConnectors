@@ -40,7 +40,7 @@ class StratusLabRunInstances(RunInstancesCommand, StratusLabCommand):
     MARKETPLACE_ENDPOINT_KEY = 'markeptlace-endpoint'
 
     def get_connector_class(self):
-        if self.get_option(self.FLAVOUR_KEY).lower() == 'iter':
+        if self.get_option(self.FLAVOUR_KEY).lower() == 'stratuslabiter':
             return StratusLabIterClientCloud
         else:
             return StratusLabClientCloud

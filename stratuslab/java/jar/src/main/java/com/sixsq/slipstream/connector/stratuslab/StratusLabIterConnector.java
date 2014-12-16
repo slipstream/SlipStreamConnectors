@@ -39,11 +39,13 @@ public class StratusLabIterConnector extends StratusLabConnector {
 		return new StratusLabIterConnector(getConnectorInstanceName());
 	}
 
+	@Override
 	public String getCloudServiceName() {
 		return CLOUD_SERVICE_NAME;
 	}
 
-	public String getCloudConnectorPythonModuleName() {
+	@Override
+	public String getCloudConnectorPythonModule() {
 		return CLOUDCONNECTOR_PYTHON_MODULENAME;
 	}
 
