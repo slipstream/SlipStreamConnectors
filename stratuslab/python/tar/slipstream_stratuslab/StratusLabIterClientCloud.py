@@ -160,6 +160,7 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         uuids = []
         for source in sources:
             if source.startswith('pdisk'):
+                source = source.replace('/', ':')
                 uuid = source.split(':')[-1]
                 tag = pdisk.getValue('tag', uuid)
                 if tag.startswith(self.VOLATILE_DISK_PREFIX):
