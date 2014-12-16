@@ -60,7 +60,7 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
 
     def _start_image_for_deployment(self, node_instance, vm_name):
         self.slConfigHolder.set('pdiskEndpoint',
-                                os.environ.get(['SLIPSTREAM_PDISK_ENDPOINT']))
+                                os.environ.get('SLIPSTREAM_PDISK_ENDPOINT'))
 
         configHolder = self.slConfigHolder.deepcopy()
 
