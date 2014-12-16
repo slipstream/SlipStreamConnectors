@@ -81,9 +81,6 @@ class StratusLabClientCloud(BaseCloudConnector):
 
         self._prepare_machine_for_build_image()
 
-        self.slConfigHolder.set('marketplaceEndpoint',
-                                user_info.get_cloud('marketplace.endpoint'))
-
         manifest_downloader = ManifestDownloader(self.slConfigHolder)
 
         image_id = node_instance.get_image_id()
@@ -371,17 +368,17 @@ class StratusLabClientCloud(BaseCloudConnector):
             self.slConfigHolder.set('password', user_info.get_cloud_password())
 
             if run_instance or build_image:
-                sshPubKeysFile = self.__populate_ssh_pub_keys_file(user_info)
-                self.slConfigHolder.set('userPublicKeyFile', sshPubKeysFile)
                 self.slConfigHolder.set('marketplaceEndpoint',
                                         user_info.get_cloud('marketplace.endpoint'))
-
             if build_image:
                 self.slConfigHolder.set(
                     'author', '%s %s' % (user_info.get_first_name(),
                                          user_info.get_last_name()))
                 self.slConfigHolder.set('authorEmail', user_info.get_email())
                 self.slConfigHolder.set('saveDisk', True)
+            else:
+                sshPubKeysFile = self.__populate_ssh_pub_keys_file(user_info)
+                self.slConfigHolder.set('userPublicKeyFile', sshPubKeysFile)
         except KeyError, ex:
             raise Exceptions.ExecutionException('Error bootstrapping from User Parameters. %s' % str(ex))
 
