@@ -85,7 +85,7 @@ class TestStratusLabClientCloud(unittest.TestCase):
                                       'stratuslab.extra_disk_persistent': '1-2-3',
                                       'stratuslab.extra_disk_readonly': 'ABC'})
         stratuslabClient._set_extra_disks_on_config_holder(slch, node_instance)
-        Runner._checkPersistentDiskAvailable = Mock()
+        Runner._setPersistentDiskOptional = Mock()
         runner = stratuslabClient._get_stratuslab_runner('abc', slch)
         assert runner.extraDiskSize == int('123') * 1024  # MB
         assert runner.persistentDiskUUID == '1-2-3'
