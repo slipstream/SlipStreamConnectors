@@ -3,8 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>SlipStreamConnector-StratusLab</artifactId>
-  <packaging>pom</packaging>
+  <version>2.3.8-SNAPSHOT</version>
   <name>SlipStream Connector StratusLab (POM)</name>
+  <packaging>pom</packaging>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
@@ -12,22 +13,17 @@
     <version>2.3.8-SNAPSHOT</version>
   </parent>
 
+  <properties>
+    <stratuslab.version>13.12.0</stratuslab.version>
+    <stratuslab.version.zip>${stratuslab.version}</stratuslab.version.zip>
+    <stratuslab.version.rpm>${stratuslab.version}</stratuslab.version.rpm>
+    <stratuslab.version.rpm.api>${stratuslab.version}</stratuslab.version.rpm.api>
+    <stratuslab.version.rpm.api.externals>${stratuslab.version}</stratuslab.version.rpm.api.externals>
+  </properties>
+
   <modules>
-    <module>jar</module>
+    <module>python</module>
+    <module>java</module>
   </modules>
 
-  <profiles>
-    <profile>
-      <id>build-connector-rpm</id>
-      <activation>
-        <file>
-          <exists>/usr/bin/rpmbuild</exists>
-        </file>
-      </activation>
-      <modules>
-        <module>rpm</module>
-      </modules>
-    </profile>
-  </profiles>
-  
 </project>

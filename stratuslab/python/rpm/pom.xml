@@ -1,0 +1,174 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>StratusLab-SixSq-tarball-rpm</artifactId>
+	<name>SlipStream Connector StratusLab - Python (RPM)</name>
+
+	<packaging>pom</packaging>
+
+    <parent>
+      <groupId>com.sixsq.slipstream</groupId>
+      <artifactId>SlipStreamConnector-StratusLab-python</artifactId>
+      <version>2.3.8-SNAPSHOT</version>
+    </parent>
+
+	<build>
+
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+
+				<executions>
+					<execution>
+						<id>get-sources</id>
+						<phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.sixsq.slipstream</groupId>
+									<artifactId>SlipStreamConnector-StratusLab-python-bundle</artifactId>
+								    <version>${slipstream.version}</version>
+									<classifier>bundle</classifier>
+									<type>tar.gz</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>stratuslabclient.tgz</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<stripVersion>true</stripVersion>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+                                    <groupId>com.sixsq.slipstream</groupId>
+                                    <artifactId>SlipStreamConnector-StratusLab-python-bundle</artifactId>
+                                    <version>${slipstream.version}</version>
+                                    <classifier>bundle</classifier>
+                                    <type>tar.gz</type>
+									<outputDirectory>${project.build.directory}/stratuslab-connector</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+							<stripVersion>true</stripVersion>
+						</configuration>
+					</execution>
+				</executions>
+
+ 			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>rpm-maven-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<classifier>${package.os}</classifier>
+					<release>${BUILD_NUMBER}.${package.os}</release>
+					<summary>StratusLab ${stratuslab.version.zip} API</summary>
+					<name>slipstream-connector-stratuslab-python${slipstream.edition}</name>
+					<group>Applications/Engineering</group>
+					<vendor>SixSq</vendor>
+					<packager>SixSq</packager>
+					<copyright>Apache License, Version 2.0</copyright>
+					<url>http://sixsq.com</url>
+					<needarch>noarch</needarch>
+					<description />
+                    <requires>
+                      <require>slipstream-useradd${slipstream.edition}</require>
+                      <require>stratuslab-api = ${stratuslab.version.rpm}</require>
+                    </requires>
+					<obsoletes>
+					   <obsolete>stratuslab-slipstream-downloads${slipstream.edition}</obsolete>
+					</obsoletes>
+                    <mappings>
+
+                        <mapping>
+                            <directory>${slipstream.downloads.dir}</directory>
+                            <filemode>664</filemode>
+                            <username>slipstream</username>
+                            <groupname>slipstream</groupname>
+                            <directoryIncluded>false</directoryIncluded>
+                            <sources>
+                                <source>
+                                    <location>${project.build.directory}/stratuslabclient.tgz</location>
+                                </source>
+                            </sources>
+                        </mapping>
+
+                        <mapping>
+                          <directory>${slipstream.base.dir}/connectors/bin</directory>
+                          <filemode>775</filemode>
+                          <username>slipstream</username>
+                          <groupname>slipstream</groupname>
+                          <directoryIncluded>false</directoryIncluded>
+                          <sources>
+                            <source>
+                              <location>../tar/bin</location>
+                              <includes>
+                                <include>stratuslab-*</include>
+                              </includes>
+                            </source>
+                          </sources>
+                        </mapping>
+
+                        <mapping>
+                            <directory>/usr/bin</directory>
+                            <sources>
+                                <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/stratuslab-describe-instances</location>
+                                </softlinkSource>
+                                <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/stratuslab-run-instances</location>
+                                </softlinkSource>
+                                <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/stratuslab-terminate-instances</location>
+                                </softlinkSource>
+                            </sources>
+                        </mapping>
+
+                        <mapping>
+                          <directory>/usr/lib/python2.6/site-packages</directory>
+                          <filemode>664</filemode>
+                          <username>slipstream</username>
+                          <groupname>slipstream</groupname>
+                          <directoryIncluded>false</directoryIncluded>
+                          <sources>
+                            <source>
+                              <location>target/stratuslab-connector</location>
+                              <includes>
+                                <include>slipstream_stratuslab/**/*</include>
+                              </includes>
+                              <excludes>
+                                <exclude>slipstream_stratuslab/**/*.pyc</exclude>
+                              </excludes>
+                            </source>
+                          </sources>
+                        </mapping>
+
+                    </mappings>
+
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-rpm</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attached-rpm</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+	</build>
+
+</project>
