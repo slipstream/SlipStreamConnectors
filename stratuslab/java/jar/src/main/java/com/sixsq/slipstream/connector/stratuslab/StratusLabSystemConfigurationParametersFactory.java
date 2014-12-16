@@ -37,6 +37,9 @@ public class StratusLabSystemConfigurationParametersFactory extends
 
 		putMandatoryEndpoint();
 
+		putMandatoryParameter(constructKey("update.clienturl"),
+				"URL with the cloud client specific connector");
+
 		putMandatoryParameter(constructKey(StratusLabUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME),
 				"Orchestrator instance type");
 
