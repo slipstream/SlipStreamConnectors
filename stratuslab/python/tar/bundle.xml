@@ -27,5 +27,12 @@
         <exclude>**/*.pyc</exclude>
       </excludes>
     </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/stratuslab</directory>
+      <outputDirectory>.</outputDirectory>
+      <includes>
+        <include>share/**/*</include>
+      </includes>
+    </fileSet>
   </fileSets>
 </assembly>
