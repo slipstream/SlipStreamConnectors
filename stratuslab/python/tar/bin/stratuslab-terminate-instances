@@ -24,7 +24,6 @@ sys.path.append('/var/lib/stratuslab/python')
 from slipstream.command.CloudClientCommand import main
 from slipstream.command.TerminateInstancesCommand import TerminateInstancesCommand
 from slipstream_stratuslab.StratusLabCommand import StratusLabCommand
-from slipstream_stratuslab.StratusLabIterClientCloud import StratusLabIterClientCloud
 
 class StratusLabTerminateInstances(TerminateInstancesCommand, StratusLabCommand):
 
@@ -32,7 +31,7 @@ class StratusLabTerminateInstances(TerminateInstancesCommand, StratusLabCommand)
         super(StratusLabTerminateInstances, self).__init__()
 
     def get_connector_class(self):
-        return StratusLabIterClientCloud
+        return StratusLabClientCloud
 
 if __name__ == "__main__":
     main(StratusLabTerminateInstances)
