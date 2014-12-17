@@ -115,6 +115,7 @@
                               <location>../tar/bin</location>
                               <includes>
                                 <include>stratuslab-*</include>
+                                <include>stratuslabiter-*</include>
                               </includes>
                             </source>
                           </sources>
@@ -123,7 +124,7 @@
                         <mapping>
                             <directory>/usr/bin</directory>
                             <sources>
-                                <softlinkSource>
+                                 <softlinkSource>
                                     <location>${slipstream.base.dir}/connectors/bin/stratuslab-describe-instances</location>
                                 </softlinkSource>
                                 <softlinkSource>
@@ -131,6 +132,15 @@
                                 </softlinkSource>
                                 <softlinkSource>
                                     <location>${slipstream.base.dir}/connectors/bin/stratuslab-terminate-instances</location>
+                                </softlinkSource>
+                                 <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/stratuslabiter-describe-instances</location>
+                                </softlinkSource>
+                                <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/stratuslabiter-run-instances</location>
+                                </softlinkSource>
+                                <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/stratuslabiter-terminate-instances</location>
                                 </softlinkSource>
                             </sources>
                         </mapping>
