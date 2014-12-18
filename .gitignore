@@ -30,3 +30,8 @@ pom.xml.releaseBackup
 pom.xml.tag
 release.properties
 
+# Python coverage and tests reports
+.coverage
+coverage.xml
+nosetests.xml
+
