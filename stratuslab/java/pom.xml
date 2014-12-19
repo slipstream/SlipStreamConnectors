@@ -2,14 +2,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>SlipStreamConnector-StratusLab-java</artifactId>
-  <version>2.3.9-SNAPSHOT</version>
+  <version>2.3.9</version>
   <packaging>pom</packaging>
   <name>SlipStream Connector StratusLab - Java (POM)</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
     <artifactId>SlipStreamConnector-StratusLab</artifactId>
-    <version>2.3.9-SNAPSHOT</version>
+    <version>2.3.9</version>
   </parent>
 
   <modules>
