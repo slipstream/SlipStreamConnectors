@@ -17,6 +17,7 @@
 """
 
 import os
+import time
 import unittest
 from mock import Mock
 
@@ -43,7 +44,7 @@ class TestStratusLabLiveBase(unittest.TestCase):
 
         os.environ['SLIPSTREAM_CONNECTOR_INSTANCE'] = 'stratuslab'
         os.environ['SLIPSTREAM_BOOTSTRAP_BIN'] = 'http://example.com/bootstrap'
-        os.environ['SLIPSTREAM_DIID'] = '00000000-0000-0000-0000-000000000000'
+        os.environ['SLIPSTREAM_DIID'] = '00000000-0000-0000-0000-00%s' % int(time.time())
 
         if not os.path.exists(CONFIG_FILE):
             raise Exception('Configuration file %s not found.' % CONFIG_FILE)

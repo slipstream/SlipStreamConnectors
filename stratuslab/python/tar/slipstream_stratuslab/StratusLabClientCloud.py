@@ -342,8 +342,8 @@ class StratusLabClientCloud(BaseCloudConnector):
 
     def _set_build_targets_on_stratuslab_config_holder(self, node_instance):
 
-        self.slConfigHolder.set('prerecipe', node_instance.get_prerecipe())
-        self.slConfigHolder.set('recipe', node_instance.get_recipe())
+        self.slConfigHolder.set('prerecipe', node_instance.get_prerecipe() or '')
+        self.slConfigHolder.set('recipe', node_instance.get_recipe() or '')
 
         packages = ','.join(node_instance.get_packages())
         self.slConfigHolder.set('packages', packages)
@@ -367,6 +367,9 @@ class StratusLabClientCloud(BaseCloudConnector):
             self.slConfigHolder.set('username', user_info.get_cloud_username())
             self.slConfigHolder.set('password', user_info.get_cloud_password())
 
+            sshPubKeysFile = self.__populate_ssh_pub_keys_file(user_info)
+            self.slConfigHolder.set('userPublicKeyFile', sshPubKeysFile)
+
             if run_instance or build_image:
                 self.slConfigHolder.set('marketplaceEndpoint',
                                         user_info.get_cloud('marketplace.endpoint'))
@@ -376,9 +379,7 @@ class StratusLabClientCloud(BaseCloudConnector):
                                          user_info.get_last_name()))
                 self.slConfigHolder.set('authorEmail', user_info.get_email())
                 self.slConfigHolder.set('saveDisk', True)
-            else:
-                sshPubKeysFile = self.__populate_ssh_pub_keys_file(user_info)
-                self.slConfigHolder.set('userPublicKeyFile', sshPubKeysFile)
+
         except KeyError, ex:
             raise Exceptions.ExecutionException('Error bootstrapping from User Parameters. %s' % str(ex))
 

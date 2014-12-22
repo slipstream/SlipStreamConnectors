@@ -55,8 +55,16 @@ class TestStratusLabClientCloudLive(TestStratusLabLiveBase):
         assert instances_details[0][NodeDecorator.MACHINE_NAME]
 
         new_id = self.client.build_image(self.user_info, self.node_instance)
-        # StratusLab doesn't provide us with image ID
-        assert new_id == ''
+        assert len(new_id) == len(self.node_instance.get_image_id())
+        # TODO:
+        # + assert that disk is in Markeptlace
+        # ? start VM from this new disk
+        #   - assert that VM starts
+        #   - assert that can connect to the VM
+        #   - stop the VM
+        # + delete manifest from Marketplace
+        # + delete volume from PDisk
+
 
 if __name__ == '__main__':
     unittest.main()

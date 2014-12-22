@@ -14,13 +14,11 @@ def createStep1(self):
 
 def createStep2(self):
     self._checkIfCanConnectToMachine()
-    try:
-        self.buildNodeIncrement()
-        self._printAction('Finished building image increment.')
-        self._printAction('Please check %s for new image ID and instruction.' % \
-                          self.authorEmail)
-    finally:
-        self._shutdownNode()
+    self.buildNodeIncrement()
+    self._shutdownNode()
+    self._printAction('Finished building image increment.')
+    self._printAction('Please check %s for new image ID and instruction.' % \
+                      self.authorEmail)
     self._localCleanUp()
 
 
