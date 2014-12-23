@@ -106,36 +106,48 @@ public class StratusLabConnector extends CliConnectorBase {
 			return instanceSize;
 		} else {
 			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
-			try {
-				String cpu = getCpu(image);
-				String ram = getRamMb(image);
-				if (cpu == null || cpu.isEmpty() || ram == null || ram.isEmpty()) {
-					instanceSize.put("instance-type", getInstanceType(image));
-					return instanceSize;
-				} else {
-					instanceSize.put("cpu", cpu);
-					instanceSize.put("ram", ram);
-					return instanceSize;
-				}
-			} catch (ValidationException e) {
+			String cpu = getCpu(image);
+			String ram = getRam(image);
+			if (cpu == null || cpu.isEmpty() || ram == null || ram.isEmpty()) {
 				instanceSize.put("instance-type", getInstanceType(image));
+				return instanceSize;
+			} else {
+				instanceSize.put("cpu", cpu);
+				instanceSize.put("ram", ram);
 				return instanceSize;
 			}
 		}
 	}
 
-	private String getRamMb(ImageModule image) throws ValidationException {
-		String ramGb = getRam(image);
+	@Override
+	protected String getCpu(ImageModule image) throws ValidationException {
+		String cpu = super.getCpu(image);
+		if (cpu == null || cpu.isEmpty()) {
+			return "";
+		} else {
+			checkConvertsToInt(cpu, "CPU");
+			return cpu;
+		}
+	}
+
+	@Override
+	protected String getRam(ImageModule image) throws ValidationException {
+		String ramGb = super.getRam(image);
 		if (ramGb == null || ramGb.isEmpty()) {
 			return "";
+		} else {
+			checkConvertsToInt(ramGb, "RAM");
+			return ramGb;
 		}
-		Integer ramMb;
+	}
+
+	private void checkConvertsToInt(String value, String name) throws ValidationException {
 		try {
-			ramMb = Integer.parseInt(ramGb) * 1024;
+			Integer.parseInt(value);
 		} catch (NumberFormatException ex) {
-			throw new ValidationException("Failed to parse RAM value.");
+			throw new ValidationException(name + " should be integer.");
 		}
-		return ramMb.toString();
+
 	}
 
 	private String getMarketplaceEndpoint(User user)
