@@ -25,6 +25,9 @@ import time
 import logging
 import re
 
+from .stratuslabPatch import patch_stratuslab
+patch_stratuslab()
+
 from stratuslab.ConfigHolder import ConfigHolder as StratuslabConfigHolder
 from stratuslab.marketplace.ManifestDownloader import ManifestDownloader
 from stratuslab.Creator import Creator
@@ -39,7 +42,6 @@ LogUtil.get_console_logger()
 import slipstream.exceptions.Exceptions as Exceptions
 import slipstream.util as util
 
-from .stratuslabPatch import patch_stratuslab
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 from slipstream.utils.ssh import generate_ssh_keypair
 from slipstream.util import override
@@ -74,8 +76,6 @@ class StratusLabClientCloud(BaseCloudConnector):
 
         if self.verboseLevel > 2:
             LogUtil.set_logger_level(level=logging.DEBUG)
-
-        patch_stratuslab()
 
     def _start_image_for_build(self, user_info, node_instance):
 
