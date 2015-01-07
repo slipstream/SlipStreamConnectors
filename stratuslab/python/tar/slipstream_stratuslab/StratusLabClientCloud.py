@@ -283,7 +283,8 @@ class StratusLabClientCloud(BaseCloudConnector):
                 raise
         return runner
 
-    def _get_stratuslab_runner(self, image_id, slConfigHolder):
+    @staticmethod
+    def _get_stratuslab_runner(image_id, slConfigHolder):
         return Runner(image_id, slConfigHolder)
 
     def _prepare_machine_for_build_image(self):
@@ -319,7 +320,7 @@ class StratusLabClientCloud(BaseCloudConnector):
 
     @override
     def _stop_vms_by_ids(self, ids):
-        runner = Runner(None, self.slConfigHolder.copy())
+        runner = self._get_stratuslab_runner(None, self.slConfigHolder.copy())
         runner.killInstances(map(int, ids))
 
     def _update_stratuslab_config_holder_for_build_image(self, user_info, node_instance):

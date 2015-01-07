@@ -21,6 +21,12 @@ import os
 import time
 
 from stratuslab.vm_manager.Runner import Runner
+Runner.PERSISTENT_DISK = '''DISK=[
+  SOURCE=pdisk:%(pdiskEndpoint)s/%(persistentDiskUUID)s,
+  TARGET=%(vm_disks_prefix)sc,
+  SIZE=%(persistentDiskSize)s,
+  TYPE=block ]'''
+
 from stratuslab.volume_manager.PersistentDisk import PersistentDisk
 
 import slipstream.exceptions.Exceptions as Exceptions
@@ -76,6 +82,7 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         if disk_size > 0:
             disk_uuid = self._volume_create(disk_size, '%s%s' % (self.VOLATILE_DISK_PREFIX, vm_name))
             node_instance.set_cloud_parameters({'extra_disk_persistent': disk_uuid})
+            node_instance.set_cloud_parameters({'extra_disk_persistent_size': str(disk_size)})
 
         try:
             self._set_instance_params_on_config_holder(configHolder, node_instance)
@@ -108,6 +115,8 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
 
     def _set_extra_disks_on_config_holder(self, configHolder, node_instance):
         configHolder.persistentDiskUUID = node_instance.get_cloud_parameter('extra_disk_persistent', '')
+        if configHolder.persistentDiskUUID:
+            configHolder.persistentDiskSize = node_instance.get_cloud_parameter('extra_disk_persistent_size')
         configHolder.readonlyDiskId = node_instance.get_cloud_parameter('extra_disk_readonly', '')
 
     @override
@@ -175,7 +184,7 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         if not ids:
             return
         configHolder = self.slConfigHolder.copy()
-        runner = Runner(None, configHolder)
+        runner = self._get_stratuslab_runner(None, configHolder)
         vm_infos = []
         for vm_id in ids:
             vm_info = runner.cloud._vmInfo(int(vm_id))
