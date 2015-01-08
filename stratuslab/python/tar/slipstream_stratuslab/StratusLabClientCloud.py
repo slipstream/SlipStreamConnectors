@@ -321,7 +321,11 @@ class StratusLabClientCloud(BaseCloudConnector):
     @override
     def _stop_vms_by_ids(self, ids):
         runner = self._get_stratuslab_runner(None, self.slConfigHolder.copy())
-        runner.killInstances(map(int, ids))
+        for _id in map(int, ids):
+            try:
+                runner.killInstances([_id])
+            except Exception as ex:
+                self._print_detail("Failed to terminate VM %s: %s" % (_id, str(ex)))
 
     def _update_stratuslab_config_holder_for_build_image(self, user_info, node_instance):
 

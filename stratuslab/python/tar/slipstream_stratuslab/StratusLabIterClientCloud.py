@@ -189,7 +189,13 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         for vm_id in ids:
             vm_info = runner.cloud._vmInfo(int(vm_id))
             vm_infos.append(vm_info)
-        runner.killInstances(map(int, ids))
+        ids = map(int, ids)
+        for _id in ids[:]:
+            try:
+                runner.killInstances([_id])
+            except Exception as ex:
+                self._print_detail("Failed to terminate VM %s: %s" % (_id, str(ex)))
+                ids.remove(_id)
         for vm_id in ids:
             self._wait_vm_in_state(['Done', 'Failed'], runner, int(vm_id))
             time.sleep(2)
