@@ -69,7 +69,8 @@ class TestStratusLabIterClientCloud(TestStratusLabLiveBase):
         found = False
         for disk in disks:
             if re.search('source\s*=\s*.*%s' % disk_uuid, disk, re.M | re.I):
-                assert None != re.search('size\s*=\s*%s' % disk_size, disk, re.M | re.I)
+                assert None != re.search('size\s*=\s*%s' % (int(disk_size) * 1024),
+                                         disk, re.M | re.I)
                 found = True
         assert found
 

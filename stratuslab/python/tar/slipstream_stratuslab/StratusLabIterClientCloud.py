@@ -116,7 +116,8 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
     def _set_extra_disks_on_config_holder(self, configHolder, node_instance):
         configHolder.persistentDiskUUID = node_instance.get_cloud_parameter('extra_disk_persistent', '')
         if configHolder.persistentDiskUUID:
-            configHolder.persistentDiskSize = node_instance.get_cloud_parameter('extra_disk_persistent_size')
+            _size_MB = int(node_instance.get_cloud_parameter('extra_disk_persistent_size')) * 1024
+            configHolder.persistentDiskSize = str(_size_MB)
         configHolder.readonlyDiskId = node_instance.get_cloud_parameter('extra_disk_readonly', '')
 
     @override
