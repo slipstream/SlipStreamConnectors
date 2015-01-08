@@ -38,10 +38,13 @@ from stratuslab.vm_manager.Runner import Runner
 
 class TestStratusLabIterClientCloud(TestStratusLabLiveBase):
 
-    def xtest_1_Runner_patched_for_persistent_disk_size(self):
+    def _get_config_file(self):
+        return TestStratusLabLiveBase._get_config_file(self) + '.example'
+
+    def test_1_Runner_patched_for_persistent_disk_size(self):
         assert re.search('persistentDiskSize', Runner.PERSISTENT_DISK, re.MULTILINE)
 
-    def xtest_2_Runner_has_extra_disk_definition_with_size(self):
+    def test_2_Runner_has_extra_disk_definition_with_size(self):
         self.client = StratusLabIterClientCloud(self.ch)
         self.client._initialization(self.user_info)
 

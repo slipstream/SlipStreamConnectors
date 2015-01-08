@@ -46,10 +46,11 @@ class TestStratusLabLiveBase(unittest.TestCase):
         os.environ['SLIPSTREAM_BOOTSTRAP_BIN'] = 'http://example.com/bootstrap'
         os.environ['SLIPSTREAM_DIID'] = '00000000-0000-0000-0000-00%s' % int(time.time())
 
-        if not os.path.exists(CONFIG_FILE):
-            raise Exception('Configuration file %s not found.' % CONFIG_FILE)
+        config_file = self._get_config_file()
+        if not os.path.exists(config_file):
+            raise Exception('Configuration file %s not found.' % config_file)
 
-        self.ch = ConfigHolder(configFile=CONFIG_FILE, context={'foo': 'bar'})
+        self.ch = ConfigHolder(configFile=config_file, context={'foo': 'bar'})
         self.ch.set('verboseLevel', int(self.ch.config['General.verbosity']))
 
         os.environ['SLIPSTREAM_PDISK_ENDPOINT'] = self.ch.config['SLIPSTREAM_PDISK_ENDPOINT']
@@ -132,3 +133,5 @@ lvs
         self.client = None
         self.ch = None
 
+    def _get_config_file(self):
+        return CONFIG_FILE
