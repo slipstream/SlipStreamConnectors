@@ -34,6 +34,8 @@ from slipstream.NodeInstance import NodeInstance
 
 # pylint: disable=protected-access
 
+_setPersistentDiskOptional = Runner._setPersistentDiskOptional
+
 
 class TestStratusLabClientCloud(unittest.TestCase):
 
@@ -42,6 +44,7 @@ class TestStratusLabClientCloud(unittest.TestCase):
 
     def tearDown(self):
         os.environ.pop('SLIPSTREAM_CONNECTOR_INSTANCE')
+        Runner._setPersistentDiskOptional = _setPersistentDiskOptional
 
     def test__getCreateImageMessagingMessage(self):
 

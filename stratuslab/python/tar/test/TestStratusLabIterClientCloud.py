@@ -35,8 +35,14 @@ stratuslab.marketplace.ManifestDownloader.ManifestDownloader._download = Mock(re
 
 from stratuslab.vm_manager.Runner import Runner
 
+_checkPersistentDiskAvailable = Runner._checkPersistentDiskAvailable
+
 
 class TestStratusLabIterClientCloud(TestStratusLabLiveBase):
+
+    def tearDown(self):
+        TestStratusLabLiveBase.tearDown(self)
+        Runner._checkPersistentDiskAvailable = _checkPersistentDiskAvailable
 
     def _get_config_file(self):
         return TestStratusLabLiveBase._get_config_file(self) + '.example'
@@ -44,7 +50,7 @@ class TestStratusLabIterClientCloud(TestStratusLabLiveBase):
     def test_1_Runner_patched_for_persistent_disk_size(self):
         assert re.search('persistentDiskSize', Runner.PERSISTENT_DISK, re.MULTILINE)
 
-    def xtest_2_Runner_has_extra_disk_definition_with_size(self):
+    def test_2_Runner_has_extra_disk_definition_with_size(self):
         self.client = StratusLabIterClientCloud(self.ch)
         self.client._initialization(self.user_info)
 
