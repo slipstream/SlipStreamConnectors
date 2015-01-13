@@ -29,8 +29,6 @@ from slipstream_occi.OcciClientCommand import OcciClientCommand
 class OcciRunInstances(RunInstancesCommand, OcciClientCommand):
 
     INSTANCE_TYPE_KEY = 'instance-type'
-    VOLATILE_DISK_KEY = 'volatile-disk'
-#     PERSISTENT_DISK_KEY = 'persistent-disk'
     NETWORK_ID_KEY = 'network-id'
 
     def __init__(self):
@@ -42,14 +40,6 @@ class OcciRunInstances(RunInstancesCommand, OcciClientCommand):
         parser.add_option('--' + self.INSTANCE_TYPE_KEY, dest=self.INSTANCE_TYPE_KEY,
                           help='Instance type (resource template).',
                           default='', metavar='RESTPL')
-
-        parser.add_option('--' + self.VOLATILE_DISK_KEY, dest=self.VOLATILE_DISK_KEY,
-                          help='Volatile disk size in GB.',
-                          default='', metavar='VOLATILEDISK')
-
-#         parser.add_option('--' + self.PERSISTENT_DISK_KEY, dest=self.PERSISTENT_DISK_KEY,
-#                           help='Persistent disk UUID.',
-#                           default='', metavar='PERSISTENTDISK')
 
         parser.add_option('--' + self.NETWORK_ID_KEY, dest=self.NETWORK_ID_KEY,
                           help='Network ID.',
@@ -63,10 +53,6 @@ class OcciRunInstances(RunInstancesCommand, OcciClientCommand):
         return OcciClientCommand.get_cloud_specific_mandatory_options(self) + \
                [self.INSTANCE_TYPE_KEY]
 
-    def get_cloud_specific_node_inst_attributes(self):
-        return {'extra.disk.volatile': self.get_option(self.VOLATILE_DISK_KEY)
-#                 'extra.disk.persistent': self.get_option(self.PERSISTENT_DISK_KEY),
-                }
 
 if __name__ == "__main__":
     main(OcciRunInstances)

@@ -224,48 +224,15 @@ public class OcciConnector extends CliConnectorBase {
             ValidationException {
 		Map<String, String> launchParams = new HashMap<String, String>();
 		launchParams.put("instance-type", getResourceTemplate(run));
-		putExtraDiskParameters(launchParams, run);
 		putNetworkIdParameter(launchParams, run);
 		return launchParams;
     }
-
-	private void putExtraDiskParameters(Map<String, String> launchParams, Run run) {
-		Map<String, String> extraDisksCommand = getExtraDisksParameters(run);
-		launchParams.putAll(extraDisksCommand);
-	}
 
 	private void putNetworkIdParameter(Map<String, String> launchParams, Run run) throws ValidationException {
 		String networkId = getNetworkId(run);
 		if (networkId != null && !networkId.isEmpty()) {
 			launchParams.put("network-id", networkId);
 		}
-	}
-
-	private Map<String, String> getExtraDisksParameters(Run run) {
-		Map<String, String> extraDisks = new HashMap<String, String>();
-
-		if (run.getType() == RunType.Machine) {
-			return extraDisks;
-		}
-
-		for (String diskName : EXTRADISK_NAMES) {
-			String extraDiskName = Run.MACHINE_NAME_PREFIX
-					+ ImageModule.EXTRADISK_PARAM_PREFIX + diskName;
-
-			String extraDiskValue = "";
-			try {
-				extraDiskValue = run.getRuntimeParameterValue(extraDiskName);
-			} catch (NotFoundException e) {
-				continue;
-			} catch (AbortException e) {
-				continue;
-			}
-
-			if (!extraDiskValue.isEmpty()) {
-				extraDisks.put(diskName + "-disk", extraDiskValue);
-			}
-		}
-		return extraDisks;
 	}
 
 	private String getNetworkId(Run run) throws ValidationException {
