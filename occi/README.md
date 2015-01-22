@@ -20,13 +20,16 @@ echo "Installing dependencies..."
 yum install -y yum-priorities libxslt libxml2 libyaml dos2unix
 
 # Install EGI UMD release
-# IGNORE: MyProxy and VOMS in UMD are too far out of date and do not work!!!
-#echo "Installing EGI UMD 3 release (check for other updates) ..."
-#rpm -ivH http://repository.egi.eu/sw/production/umd/3/sl6/x86_64/updates/umd-release-3.0.1-1.el6.noarch.rpm
+echo "Installing EGI UMD 3 release (check for other updates) ..."
+rpm -ivH http://repository.egi.eu/sw/production/umd/3/sl6/x86_64/updates/umd-release-3.0.1-1.el6.noarch.rpm
 
 # Install FedCloud CA Certificates
 echo "Installing FedCloud CA Certificates release..."
 yum install -y lcg-CA &>/dev/null
+
+# NB! Disable UMD 3 repositories.
+# MyProxy and VOMS in UMD are too far out of date and do not work!!!
+sed -i -e 's/^enabled.*/enabled=0/g' /etc/yum.repos.d/UMD-3-*
 
 # Install CRL renewal
 yum install -y fetch-crl
