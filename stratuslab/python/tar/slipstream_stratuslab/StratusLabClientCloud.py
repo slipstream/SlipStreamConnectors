@@ -135,6 +135,7 @@ class StratusLabClientCloud(BaseCloudConnector):
 
     @staticmethod
     def _poll_storage_for_new_image(pdisk_endpoint, diid, slConfigHolder):
+        # TODO: Introduce checking for the state of the VM.  Bail out on Failed or Unknown.
 
         tag = "SlipStream-%s" % diid
         filters = {'tag': [tag, ]}
@@ -147,6 +148,7 @@ class StratusLabClientCloud(BaseCloudConnector):
             (pdisk_endpoint, tag)
         sys.stdout.flush()
 
+        new_image_id = ''
         # hardcoded polling for 30' at 1' intervals
         for i in range(30):
             print >> sys.stdout, "Search iteration %d" % i
