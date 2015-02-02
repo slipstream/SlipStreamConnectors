@@ -52,7 +52,7 @@ public class OpenStackSystemConfigurationParametersFactory extends
         putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_REGION_PARAMETER_NAME),
                 "Region used by this cloud connector", "RegionOne");
 
-        putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PUBIC_NAME),
+        putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PUBLIC_NAME),
                 "Mapping for Public network", "");
 
         putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PRIVATE_NAME),
