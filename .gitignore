@@ -35,3 +35,5 @@ release.properties
 coverage.xml
 nosetests.xml
 
+*.pyc
+
