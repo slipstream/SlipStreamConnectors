@@ -72,8 +72,6 @@ public class OpenStackConnector extends CliConnectorBase {
 		userParams.put("region", getRegion());
         userParams.put("service-type", getServiceType());
         userParams.put("service-name", getServiceName());
-        userParams.put("network-public", getNetworkPublic());
-        userParams.put("network-private", getNetworkPrivate());
 		return userParams;
 	}
 
@@ -83,6 +81,8 @@ public class OpenStackConnector extends CliConnectorBase {
 		Map<String, String> launchParams = new HashMap<String, String>();
 		launchParams.put("instance-type", getInstanceType(run));
 		launchParams.put("security-groups", getSecurityGroups(run));
+        launchParams.put("network-public", getNetworkPublic());
+        launchParams.put("network-private", getNetworkPrivate());
 		return launchParams;
 	}
 
