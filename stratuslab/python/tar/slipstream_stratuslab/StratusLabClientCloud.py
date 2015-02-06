@@ -106,6 +106,7 @@ class StratusLabClientCloud(BaseCloudConnector):
         return vm
 
     def list_instances(self):
+        self.slConfigHolder.set('ipToHostname', False)
         return Monitor(self.slConfigHolder).listVms()
 
     @override
