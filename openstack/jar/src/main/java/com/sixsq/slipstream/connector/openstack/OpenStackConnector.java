@@ -70,8 +70,8 @@ public class OpenStackConnector extends CliConnectorBase {
 		userParams.put("project", getProject(user));
 		userParams.put("endpoint", getEndpoint(user));
 		userParams.put("region", getRegion());
-		userParams.put("service-type", getServiceType());
-		userParams.put("service-name", getServiceName());
+        userParams.put("service-type", getServiceType());
+        userParams.put("service-name", getServiceName());
 		return userParams;
 	}
 
@@ -81,6 +81,8 @@ public class OpenStackConnector extends CliConnectorBase {
 		Map<String, String> launchParams = new HashMap<String, String>();
 		launchParams.put("instance-type", getInstanceType(run));
 		launchParams.put("security-groups", getSecurityGroups(run));
+        launchParams.put("network-public", getNetworkPublic());
+        launchParams.put("network-private", getNetworkPrivate());
 		return launchParams;
 	}
 
@@ -88,11 +90,19 @@ public class OpenStackConnector extends CliConnectorBase {
 		return Configuration.getInstance().getRequiredProperty(constructKey(OpenStackUserParametersFactory.SERVICE_TYPE_PARAMETER_NAME));
 	}
 
-	protected String getServiceName() throws ConfigurationException, ValidationException {
-		return Configuration.getInstance().getRequiredProperty(constructKey(OpenStackUserParametersFactory.SERVICE_NAME_PARAMETER_NAME));
-	}
+    protected String getServiceName() throws ConfigurationException, ValidationException {
+        return Configuration.getInstance().getRequiredProperty(constructKey(OpenStackUserParametersFactory.SERVICE_NAME_PARAMETER_NAME));
+    }
 
-	protected String getRegion() throws ConfigurationException, ValidationException {
+    protected String getNetworkPublic() throws ConfigurationException, ValidationException {
+        return Configuration.getInstance().getRequiredProperty(constructKey(OpenStackUserParametersFactory.NETWORK_PUBLIC_NAME));
+    }
+
+    protected String getNetworkPrivate() throws ConfigurationException, ValidationException {
+        return Configuration.getInstance().getRequiredProperty(constructKey(OpenStackUserParametersFactory.NETWORK_PRIVATE_NAME));
+    }
+
+    protected String getRegion() throws ConfigurationException, ValidationException {
 		return Configuration.getInstance().getRequiredProperty(constructKey(OpenStackUserParametersFactory.SERVICE_REGION_PARAMETER_NAME));
 	}
 

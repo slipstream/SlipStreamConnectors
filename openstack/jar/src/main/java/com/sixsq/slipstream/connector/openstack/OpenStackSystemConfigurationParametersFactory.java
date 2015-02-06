@@ -9,9 +9,9 @@ package com.sixsq.slipstream.connector.openstack;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,28 +30,34 @@ public class OpenStackSystemConfigurationParametersFactory extends
 			throws ValidationException {
 		super(connectorInstanceName);
 	}
-	
+
 	@Override
 	protected void initReferenceParameters() throws ValidationException {
 		super.initReferenceParameters();
 		super.putMandatoryEndpoint();
-		
+
 		putMandatoryParameter(constructKey(OpenStackUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME),
 				"OpenStack Flavor for the orchestrator. " +
 				"The actual image should support the desired Flavor");
 
-		putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_TYPE_PARAMETER_NAME), 
+		putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_TYPE_PARAMETER_NAME),
 				"Type-name of the service which provides the instances functionality",
 				"compute");
-		
-		putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_NAME_PARAMETER_NAME), 
+
+		putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_NAME_PARAMETER_NAME),
 				"Name of the service which provides the instances functionality",
 				"nova");
 				//"('nova' for OpenStack essex&folsom and 'Compute' for HP Cloud)"
-		
-		putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_REGION_PARAMETER_NAME), 
-				"Region used by this cloud connector", "RegionOne");
 
-	}
+        putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_REGION_PARAMETER_NAME),
+                "Region used by this cloud connector", "RegionOne");
+
+        putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PUBLIC_NAME),
+                "Mapping for Public network", "");
+
+        putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PRIVATE_NAME),
+                "Mapping for Private network", "");
+
+    }
 
 }
