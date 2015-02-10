@@ -58,6 +58,8 @@ def getConnectorClass():
 # pylint: disable=protected-access
 class StratusLabClientCloud(BaseCloudConnector):
     RUNINSTANCE_RETRY_TIMEOUT = 3
+    POLL_STORAGE_FOR_IMAGE_ID_TIMEOUT_MIN = 30
+    POLL_STORAGE_FOR_IMAGE_ID_SLEEP_MIN = 1
 
     cloudName = 'stratuslab'
 
@@ -114,7 +116,12 @@ class StratusLabClientCloud(BaseCloudConnector):
 
         self.creator.createStep2()
 
-        return self._search_storage_for_new_image(self.slConfigHolder)
+        image_id = self._search_storage_for_new_image(self.slConfigHolder)
+        if not image_id:
+            util.printDetail('WARNING: Failed to get image ID from StratusLab storage!', verboseThreshold=0)
+        else:
+            util.printDetail('New built image ID %s' % image_id, verboseThreshold=0)
+        return image_id
 
     def _search_storage_for_new_image(self, slConfigHolder):
         warn_msg = "WARNING: Unable to search for new image ID. %s env.var is not set."
@@ -134,8 +141,7 @@ class StratusLabClientCloud(BaseCloudConnector):
         return self._poll_storage_for_new_image(pdisk_endpoint, diid,
                                                 slConfigHolder)
 
-    @staticmethod
-    def _poll_storage_for_new_image(pdisk_endpoint, diid, slConfigHolder):
+    def _poll_storage_for_new_image(self, pdisk_endpoint, diid, slConfigHolder):
         # TODO: Introduce checking for the state of the VM.  Bail out on Failed or Unknown.
 
         tag = "SlipStream-%s" % diid
@@ -150,10 +156,12 @@ class StratusLabClientCloud(BaseCloudConnector):
         sys.stdout.flush()
 
         new_image_id = ''
-        # hardcoded polling for 30' at 1' intervals
-        for i in range(30):
-            print >> sys.stdout, "Search iteration %d" % i
-            sys.stdout.flush()
+        poll_duration = self._get_poll_storage_for_image_id_timeout()
+        time_stop = time.time() + poll_duration
+        time_sleep = self._get_poll_storage_for_image_id_sleep()
+        print >> sys.stdout, "Sleeping for %s min with %s min intervals." % \
+            (poll_duration / 60, time_sleep / 60)
+        while time.time() <= time_stop:
             volumes = pdisk.describeVolumes(filters)
             if len(volumes) > 0:
                 try:
@@ -161,9 +169,18 @@ class StratusLabClientCloud(BaseCloudConnector):
                 except Exception as ex:
                     print "Exception occurred looking for volume: %s" % ex
                 break
-            time.sleep(60)
-        print "Returning new image ID value: %s" % new_image_id
+            time.sleep(time_sleep)
+            print >> sys.stdout, "Time left for search %d min." % ((time_stop - time.time()) / 60)
+            sys.stdout.flush()
         return new_image_id
+
+    def _get_poll_storage_for_image_id_timeout(self):
+        "Returns the timeout in seconds."
+        return self.POLL_STORAGE_FOR_IMAGE_ID_TIMEOUT_MIN * 60
+
+    def _get_poll_storage_for_image_id_sleep(self):
+        "Returns the sleep time in seconds."
+        return self.POLL_STORAGE_FOR_IMAGE_ID_SLEEP_MIN * 60
 
     @staticmethod
     def _get_create_image_messaging_message(image_resource_uri):
