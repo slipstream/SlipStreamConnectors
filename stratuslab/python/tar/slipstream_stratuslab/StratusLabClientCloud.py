@@ -37,6 +37,8 @@ from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactor
 from stratuslab.Exceptions import OneException
 from stratuslab.api import LogUtil
 from stratuslab.Monitor import Monitor
+from stratuslab.CloudInfo import CloudInfo
+
 LogUtil.get_console_logger()
 
 import slipstream.exceptions.Exceptions as Exceptions
@@ -213,15 +215,33 @@ class StratusLabClientCloud(BaseCloudConnector):
         return runner
 
     @override
-    def _vm_get_ip(self, runner):
-        return runner.instancesDetail[0]['ip']
+    def _vm_get_ip(self, vm):
+        if isinstance(vm, CloudInfo):
+            return getattr(vm, Monitor.TEMPLATE_NIC_IP)
+        else:
+            # Runner
+            return vm.instancesDetail[0]['ip']
 
     @override
-    def _vm_get_id(self, runner):
-        return runner.instancesDetail[0]['id']
+    def _vm_get_id(self, vm):
+        if isinstance(vm, CloudInfo):
+            return vm.id
+        else:
+            # Runner
+            return vm.instancesDetail[0]['id']
 
-    def _vm_get_state(self, runner):
-        return runner.instancesDetail[0]['state']
+    @override
+    def _vm_get_state(self, vm):
+        if isinstance(vm, CloudInfo):
+            return vm.state_summary
+        else:
+            # Runner
+            return vm.instancesDetail[0]['state']
+
+    @override
+    def _has_vm_failed(self, vm):
+        vm_state = self._vm_get_state(vm)
+        return vm_state in self.VM_FAILED_STATES
 
     def _set_instance_params_on_config_holder(self, slConfigHolder, node_instance):
         self._set_instance_size_on_config_holder(slConfigHolder, node_instance)
