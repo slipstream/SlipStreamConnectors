@@ -19,6 +19,7 @@
           <artifactId>maven-dependency-plugin</artifactId>
 
           <executions>
+
             <execution>
               <id>get-slipstream-client</id>
               <goals>
@@ -37,35 +38,27 @@
                 </artifactItems>
               </configuration>
             </execution>
+
+            <execution>
+              <id>unpack-sources</id>
+              <phase>generate-sources</phase>
+              <goals>
+                <goal>unpack</goal>
+              </goals>
+              <configuration>
+                <outputDirectory>${project.build.directory}/stratuslab</outputDirectory>
+                <artifactItems>
+                  <artifactItem>
+                    <groupId>eu.stratuslab.client</groupId>
+                    <artifactId>stratuslab-cli-user-pkg</artifactId>
+                    <version>${stratuslab.version.zip}</version>
+                    <type>tar.gz</type>
+                  </artifactItem>
+                </artifactItems>
+                <stripVersion>true</stripVersion>
+              </configuration>
+            </execution>
           </executions>
-        </plugin>
-
-        <plugin>
-             <groupId>org.apache.maven.plugins</groupId>
-             <artifactId>maven-dependency-plugin</artifactId>
-
-             <executions>
-                 <execution>
-                     <id>unpack-sources</id>
-                     <phase>generate-sources</phase>
-                     <goals>
-                         <goal>unpack</goal>
-                     </goals>
-                     <configuration>
-                         <outputDirectory>${project.build.directory}/stratuslab</outputDirectory>
-                         <artifactItems>
-                             <artifactItem>
-                                 <groupId>eu.stratuslab.client</groupId>
-                                 <artifactId>stratuslab-cli-user-pkg</artifactId>
-                                     <version>${stratuslab.version.zip}</version>
-                                 <type>tar.gz</type>
-                             </artifactItem>
-                         </artifactItems>
-                         <stripVersion>true</stripVersion>
-                     </configuration>
-                 </execution>
-             </executions>
-
         </plugin>
 
         <plugin>
