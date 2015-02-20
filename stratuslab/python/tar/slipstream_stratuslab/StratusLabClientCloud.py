@@ -238,11 +238,6 @@ class StratusLabClientCloud(BaseCloudConnector):
             # Runner
             return vm.instancesDetail[0]['state']
 
-    @override
-    def _has_vm_failed(self, vm):
-        vm_state = self._vm_get_state(vm)
-        return vm_state in self.VM_FAILED_STATES
-
     def _set_instance_params_on_config_holder(self, slConfigHolder, node_instance):
         self._set_instance_size_on_config_holder(slConfigHolder, node_instance)
         self._set_extra_disks_on_config_holder(slConfigHolder, node_instance)
