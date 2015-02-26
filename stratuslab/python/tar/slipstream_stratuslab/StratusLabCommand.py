@@ -24,8 +24,8 @@ class StratusLabCommand(CloudClientCommand):
 
     ENDPOINT_KEY = 'endpoint'
 
-    def __init__(self, timeout=None):
-        super(StratusLabCommand, self).__init__(timeout)
+    def __init__(self):
+        super(StratusLabCommand, self).__init__()
 
     def get_connector_class(self):
         return StratusLabClientCloud
