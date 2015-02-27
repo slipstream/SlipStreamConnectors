@@ -25,8 +25,8 @@ class OcciClientCommand(CloudClientCommand):
     ENDPOINT_KEY = 'endpoint'
     PROXY_FILE_KEY = 'proxy-file'
 
-    def __init__(self, timeout=None):
-        super(OcciClientCommand, self).__init__(timeout)
+    def __init__(self):
+        super(OcciClientCommand, self).__init__()
 
     def get_connector_class(self):
         return OcciClientCloud
