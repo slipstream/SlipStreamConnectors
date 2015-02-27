@@ -31,7 +31,7 @@
                   <artifactItem>
                     <groupId>com.sixsq.slipstream</groupId>
                     <artifactId>SlipStreamClientAll</artifactId>
-                    <version>${slipstream.version}</version>
+                    <version>${project.version}</version>
                     <type>tar.gz</type>
                     <classifier>bundle</classifier>
                   </artifactItem>

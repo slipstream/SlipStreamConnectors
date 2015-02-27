@@ -32,7 +32,7 @@
 								<artifactItem>
 									<groupId>com.sixsq.slipstream</groupId>
 									<artifactId>SlipStreamConnector-StratusLab-python-bundle</artifactId>
-								    <version>${slipstream.version}</version>
+								    <version>${project.version}</version>
 									<classifier>bundle</classifier>
 									<type>tar.gz</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
@@ -53,7 +53,7 @@
 								<artifactItem>
                                     <groupId>com.sixsq.slipstream</groupId>
                                     <artifactId>SlipStreamConnector-StratusLab-python-bundle</artifactId>
-                                    <version>${slipstream.version}</version>
+                                    <version>${project.version}</version>
                                     <classifier>bundle</classifier>
                                     <type>tar.gz</type>
 									<outputDirectory>${project.build.directory}/stratuslab-connector</outputDirectory>
