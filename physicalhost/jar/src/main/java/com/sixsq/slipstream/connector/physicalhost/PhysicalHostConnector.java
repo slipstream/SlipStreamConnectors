@@ -136,7 +136,7 @@ public class PhysicalHostConnector extends ConnectorBase {
 
 	// Work only for Orchestrator host
 	@Override
-	public Properties describeInstances(User user) throws SlipStreamException {
+	public Properties describeInstances(User user, int timeout) throws SlipStreamException {
 		String host = getOrchestratorImageId(user);
 		Properties statuses = new Properties();
 
