@@ -81,6 +81,16 @@ class StratusLabClientCloud(BaseCloudConnector):
         if self.verboseLevel > 2:
             LogUtil.set_logger_level(level=logging.DEBUG)
 
+        # Temporary workaround: Try to increase to the maximum the limit of the number of open file descriptors.
+        # This is a workaround to a bug where some connections to the StratusLab frontend stays in CLOSE_WAIT.
+        # The standard limit is hit when the Run contains a huge amount of VMs (> 1000).
+        try:
+            import resource
+            l = resource.getrlimit(resource.RLIMIT_NOFILE)
+            resource.setrlimit(resource.RLIMIT_NOFILE, (l[1], l[1]))
+        except:
+            pass
+
     def _start_image_for_build(self, user_info, node_instance):
 
         self._prepare_machine_for_build_image()
