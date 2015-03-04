@@ -22,23 +22,7 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from slipstream.command.CloudClientCommand import main
-from slipstream.command.DescribeInstancesCommand import DescribeInstancesCommand
-from slipstream_stratuslab.StratusLabCommand import StratusLabCommand
-
-
-class StratusLabDescribeInstances(DescribeInstancesCommand, StratusLabCommand):
-
-    def __init__(self):
-        super(StratusLabDescribeInstances, self).__init__()
-
-    def _vm_get_state(self, _, vm):
-        return vm.state_summary
-
-    def _vm_get_id(self, _, vm):
-        return vm.id
-
-    def get_initialization_extra_kwargs(self):
-        return {'run_instance': False}
+from slipstream_stratuslab.StratusLabDescribeInstancesCommand import StratusLabDescribeInstances
 
 
 if __name__ == "__main__":

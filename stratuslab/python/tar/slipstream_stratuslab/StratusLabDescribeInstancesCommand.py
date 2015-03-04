@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
  SlipStream Client
  =====
@@ -17,22 +16,22 @@
  limitations under the License.
 """
 
-import sys
-
-sys.path.append('/var/lib/stratuslab/python')
-
-from slipstream.command.CloudClientCommand import main
-from slipstream_stratuslab.StratusLabTerminateInstancesCommand import StratusLabTerminateInstances
+from slipstream.command.DescribeInstancesCommand import DescribeInstancesCommand
+from slipstream_stratuslab.StratusLabCommand import StratusLabCommand
 
 
-class StratusLabIterTerminateInstances(StratusLabTerminateInstances):
+# pylint: disable=abstract-method
+class StratusLabDescribeInstances(DescribeInstancesCommand, StratusLabCommand):
 
     def __init__(self):
-        super(StratusLabIterTerminateInstances, self).__init__()
+        super(StratusLabDescribeInstances, self).__init__()
 
-    def get_connector_class(self):
-        return StratusLabIterClientCloud
+    def _vm_get_state(self, _, vm):
+        return vm.state_summary
 
+    def _vm_get_id(self, _, vm):
+        return vm.id
 
-if __name__ == "__main__":
-    main(StratusLabIterTerminateInstances)
+    def get_initialization_extra_kwargs(self):
+        return {'run_instance': False}
+
