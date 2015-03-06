@@ -202,7 +202,7 @@ class StratusLabClientCloud(BaseCloudConnector):
     def _initialization(self, user_info, **kwargs):
         self.slConfigHolder.options.update(Runner.defaultRunOptions())
         self._set_user_info_on_stratuslab_config_holder(
-            user_info, run_instance=kwargs.get('run_instance', False))
+            user_info, run_instance=kwargs.get('run_instance', True))
 
     @override
     def _start_image(self, user_info, node_instance, vm_name):
