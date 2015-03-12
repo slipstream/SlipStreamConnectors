@@ -65,8 +65,7 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         return base64.b64encode('{"uri":"%s", "imageid":""}' % image_resource_uri)
 
     def _start_image_for_deployment(self, node_instance, vm_name):
-        self.slConfigHolder.set('pdiskEndpoint',
-                                os.environ.get('SLIPSTREAM_PDISK_ENDPOINT'))
+        self._ensure_pdisk_endpoint_is_set()
 
         configHolder = self.slConfigHolder.deepcopy()
 
@@ -93,6 +92,13 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
             raise
         return runner
 
+    def _ensure_pdisk_endpoint_is_set(self):
+        slipstream_pdisk_endpoint = os.environ.get('SLIPSTREAM_PDISK_ENDPOINT')
+        if slipstream_pdisk_endpoint:
+            self.slConfigHolder.set('pdiskEndpoint', slipstream_pdisk_endpoint)
+        if not self.slConfigHolder.pdiskEndpoint:
+            raise Exceptions.ExecutionException('PDisk endpoint should be set on StratusLab ConfigHolder')
+
     def _volume_create(self, size, tag):
         pdisk = PersistentDisk(self.slConfigHolder)
         public = False
@@ -103,7 +109,7 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         wait_time = 30
         time_stop = time.time() + wait_time
         while 0 != int(pdisk.getValue('count', uuid)):
-            if time.time() <= time_stop:
+            if time.time() >= time_stop:
                 self._print_detail('Disk %s is still in use after waiting for %s sec.' %
                                    (uuid, wait_time))
             time.sleep(3)
@@ -156,26 +162,60 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         if throw:
             raise Exception('Timed out while waiting for states: %s' % states)
 
-    def _delete_volatile_disks(self, vm_info):
-        uuids = self._get_volatile_disk_ids_to_delete(vm_info)
+    def _delete_volatile_disks(self, uuids):
+        # TOOD: This can be parallelized.
         for uuid in uuids:
             self._print_detail('Deleting volatile disk: %s' % uuid)
             self._volume_delete(uuid)
 
     def _get_volatile_disk_ids_to_delete(self, vm_info):
-        xml = etree.fromstring(vm_info)
-        sources = [x.find('SOURCE').text for x in xml.findall('TEMPLATE/DISK')
-                   if x.find('SOURCE') != None]
-        pdisk = PersistentDisk(self.slConfigHolder)
+        """Return list of volatile disks uuids for the provided VM.
+        vm_info : <ElementTree> object
+        """
+        # Collect disk sources starting with 'pdisk'.
+        sources = []
+        for disk in vm_info.findall('TEMPLATE/DISK'):
+            if disk.find('SOURCE') is not None:
+                disk_source = disk.find('SOURCE').text
+                if disk_source.startswith('pdisk'):
+                    sources.append(disk_source)
+        if not sources:
+            return []
+        pdisk = PersistentDisk(self.slConfigHolder.copy())
+        # Collect uuids of the disks sources only if they have special (volatile) tag in PDisk.
+        # TOOD: This can be parallelized.
         uuids = []
         for source in sources:
-            if source.startswith('pdisk'):
-                source = source.replace('/', ':')
-                uuid = source.split(':')[-1]
-                tag = pdisk.getValue('tag', uuid)
-                if tag.startswith(self.VOLATILE_DISK_PREFIX):
-                    uuids.append(uuid)
+            source = source.replace('/', ':')
+            uuid = source.split(':')[-1]
+            tag = pdisk.getValue('tag', uuid)
+            if tag.startswith(self.VOLATILE_DISK_PREFIX):
+                uuids.append(uuid)
         return uuids
+
+    def _get_volatile_disks_to_delete(self, vm_ids):
+        """Return dict of {vm_id: [<volatile disk uuid>, ], } for the provided VMs.
+        vm_ids : list of VM ids
+        """
+        vm_infos = self._get_vms_infos(vm_ids)
+        vmid_diskuuids = {}
+        for vm_id, vm_info in vm_infos.iteritems():
+            disk_uuids = self._get_volatile_disk_ids_to_delete(vm_info)
+            if disk_uuids:
+                vmid_diskuuids[vm_id] = disk_uuids
+        return vmid_diskuuids
+
+    def _get_vms_infos(self, vm_ids):
+        """Return dict of {vm_id: ElementTree, }, with ElementTree being an object representing VMs.
+        vm_ids : list of VM ids
+        """
+        # TOOD: This can be parallelized.
+        vm_infos = {}
+        runner = self._get_stratuslab_runner(None, self.slConfigHolder.copy())
+        for vm_id in vm_ids:
+            vm_info = runner.cloud._vmInfo(int(vm_id))
+            vm_infos[vm_id] = etree.fromstring(vm_info)
+        return vm_infos
 
     @override
     def _stop_vms_by_ids(self, ids):
@@ -184,21 +224,18 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         """
         if not ids:
             return
-        configHolder = self.slConfigHolder.copy()
-        runner = self._get_stratuslab_runner(None, configHolder)
-        vm_infos = []
-        for vm_id in ids:
-            vm_info = runner.cloud._vmInfo(int(vm_id))
-            vm_infos.append(vm_info)
-        ids = map(int, ids)
-        for _id in ids[:]:
-            try:
-                runner.killInstances([_id])
-            except Exception as ex:
-                self._print_detail("Failed to terminate VM %s: %s" % (_id, str(ex)))
-                ids.remove(_id)
-        for vm_id in ids:
-            self._wait_vm_in_state(['Done', 'Failed'], runner, int(vm_id))
-            time.sleep(2)
-        for vm_info in vm_infos:
-            self._delete_volatile_disks(vm_info)
+        terminated_ids = super(StratusLabIterClientCloud, self)._stop_vms_by_ids(ids)
+        self._print_detail("Terminated VMs: %s" % terminated_ids)
+        vmids_diskuuids_to_delete = self._get_volatile_disks_to_delete(terminated_ids)
+        if vmids_diskuuids_to_delete:
+            # Need to wait until VMs are stopped.
+            runner = self._get_stratuslab_runner(None, self.slConfigHolder.copy())
+            for vm_id in vmids_diskuuids_to_delete:
+                self._wait_vm_in_state(['Done', 'Failed'], runner, int(vm_id))
+            volatile_disks_to_delete = \
+                [item for sublist in vmids_diskuuids_to_delete.values() for item in sublist]
+            self._print_detail("Volatile disks to delete: %s" % volatile_disks_to_delete)
+            self._delete_volatile_disks(volatile_disks_to_delete)
+        else:
+            self._print_detail("No volatile disks to delete.")
+        return terminated_ids
