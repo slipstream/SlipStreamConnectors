@@ -93,17 +93,11 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         return runner
 
     def _ensure_pdisk_endpoint_is_set(self):
-        try:
-            if not self.slConfigHolder.pdiskEndpoint:
-                raise AttributeError()
-        except AttributeError:
-            self.slConfigHolder.set('pdiskEndpoint',
-                                    os.environ.get('SLIPSTREAM_PDISK_ENDPOINT'))
-            try:
-                if not self.slConfigHolder.pdiskEndpoint:
-                    raise AttributeError()
-            except AttributeError:
-                raise Exceptions.ExecutionException('PDisk endpoint should be set on StratusLab ConfigHolder')
+        slipstream_pdisk_endpoint = os.environ.get('SLIPSTREAM_PDISK_ENDPOINT')
+        if slipstream_pdisk_endpoint:
+            self.slConfigHolder.set('pdiskEndpoint', slipstream_pdisk_endpoint)
+        if not self.slConfigHolder.pdiskEndpoint:
+            raise Exceptions.ExecutionException('PDisk endpoint should be set on StratusLab ConfigHolder')
 
     def _volume_create(self, size, tag):
         pdisk = PersistentDisk(self.slConfigHolder)
