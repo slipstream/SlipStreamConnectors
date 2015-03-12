@@ -22,6 +22,7 @@ import sys
 sys.path.append('/var/lib/stratuslab/python')
 
 from slipstream.command.CloudClientCommand import main
+from slipstream_stratuslab.StratusLabIterClientCloud import StratusLabIterClientCloud
 from slipstream_stratuslab.StratusLabTerminateInstancesCommand import StratusLabTerminateInstances
 
 
