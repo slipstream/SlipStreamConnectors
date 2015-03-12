@@ -365,12 +365,17 @@ class StratusLabClientCloud(BaseCloudConnector):
 
     @override
     def _stop_vms_by_ids(self, ids):
+        """ids : list of IaaS instance IDs to stop.
+        Returns list of the instance IDs for which the termination call succeeded.
+        """
         runner = self._get_stratuslab_runner(None, self.slConfigHolder.copy())
         for _id in map(int, ids):
             try:
                 runner.killInstances([_id])
             except Exception as ex:
                 self._print_detail("Failed to terminate VM %s: %s" % (_id, str(ex)))
+                ids.remove(_id)
+        return ids
 
     def _update_stratuslab_config_holder_for_build_image(self, user_info, node_instance):
 
