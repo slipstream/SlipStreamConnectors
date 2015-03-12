@@ -194,25 +194,27 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
         return uuids
 
     def _get_volatile_disks_to_delete(self, vm_ids):
-        """Return list of volatile disks uuids for the provided VMs.
+        """Return dict of {vm_id: [<volatile disk uuid>, ], } for the provided VMs.
         vm_ids : list of VM ids
         """
         vm_infos = self._get_vms_infos(vm_ids)
-        uuids = []
-        for vm_info in vm_infos:
-            uuids.extend(self._get_volatile_disk_ids_to_delete(vm_info))
-        return uuids
+        vmid_diskuuids = {}
+        for vm_id, vm_info in vm_infos.iteritems():
+            disk_uuids = self._get_volatile_disk_ids_to_delete(vm_info)
+            if disk_uuids:
+                vmid_diskuuids[vm_id] = disk_uuids
+        return vmid_diskuuids
 
     def _get_vms_infos(self, vm_ids):
-        """Return list of ElementTree objects representing VMs.
+        """Return dict of {vm_id: ElementTree, }, with ElementTree being an object representing VMs.
         vm_ids : list of VM ids
         """
         # TOOD: This can be parallelized.
-        vm_infos = []
+        vm_infos = {}
         runner = self._get_stratuslab_runner(None, self.slConfigHolder.copy())
         for vm_id in vm_ids:
             vm_info = runner.cloud._vmInfo(int(vm_id))
-            vm_infos.append(etree.fromstring(vm_info))
+            vm_infos[vm_id] = etree.fromstring(vm_info)
         return vm_infos
 
     @override
@@ -224,12 +226,14 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
             return
         terminated_ids = super(StratusLabIterClientCloud, self)._stop_vms_by_ids(ids)
         self._print_detail("Terminated VMs: %s" % terminated_ids)
-        volatile_disks_to_delete = self._get_volatile_disks_to_delete(terminated_ids)
-        if volatile_disks_to_delete:
+        vmids_diskuuids_to_delete = self._get_volatile_disks_to_delete(terminated_ids)
+        if vmids_diskuuids_to_delete:
             # Need to wait until VMs are stopped.
             runner = self._get_stratuslab_runner(None, self.slConfigHolder.copy())
-            for vm_id in terminated_ids:
+            for vm_id in vmids_diskuuids_to_delete:
                 self._wait_vm_in_state(['Done', 'Failed'], runner, int(vm_id))
+            volatile_disks_to_delete = \
+                [item for sublist in vmids_diskuuids_to_delete.values() for item in sublist]
             self._print_detail("Volatile disks to delete: %s" % volatile_disks_to_delete)
             self._delete_volatile_disks(volatile_disks_to_delete)
         else:
