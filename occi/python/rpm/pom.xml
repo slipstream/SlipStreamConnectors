@@ -92,6 +92,11 @@
 					<description>
 						SlipStream Connector for Occi - Python.
 					</description>
+
+					<obsoletes>
+                                          <obsolete>slipstream-connector-occi-python</obsolete>
+                                        </obsoletes>
+
 					<requires>
 					  <require>python &gt;= 2.6</require>
 					  <require>slipstream-client${slipstream.edition}</require>

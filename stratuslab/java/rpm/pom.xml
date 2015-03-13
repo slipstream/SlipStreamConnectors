@@ -57,6 +57,10 @@
           <needarch>noarch</needarch>
           <description>SlipStream connector for StratusLab clouds</description>
 
+          <obsoletes>
+            <obsolete>slipstream-connector-stratuslab</obsolete>
+          </obsoletes>
+
           <requires>
             <require>java-1.7.0-openjdk</require>
             <require>slipstream-connector-stratuslab-python${slipstream.edition}</require>

@@ -82,14 +82,18 @@
 					<url>http://sixsq.com</url>
 					<needarch>noarch</needarch>
 					<description />
+                    <obsoletes>
+                      <obsolete>stratuslab-slipstream-downloads${slipstream.edition}</obsolete>
+                      <obsolete>stratuslab-slipstream-downloads</obsolete>
+                      <obsolete>slipstream-connector-stratuslab-python</obsolete>
+                    </obsoletes>
+
                     <requires>
                       <require>slipstream-useradd${slipstream.edition}</require>
                       <require>stratuslab-api = ${stratuslab.version.rpm}</require>
                       <require>stratuslab-cli-user = ${stratuslab.version.rpm}</require>
                     </requires>
-					<obsoletes>
-					   <obsolete>stratuslab-slipstream-downloads${slipstream.edition}</obsolete>
-					</obsoletes>
+
                     <mappings>
 
                         <mapping>

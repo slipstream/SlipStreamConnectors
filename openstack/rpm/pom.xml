@@ -57,6 +57,10 @@
           <needarch>noarch</needarch>
           <description>SlipStream connector for OpenStack clouds</description>
 
+          <obsoletes>
+            <obsolete>slipstream-connector-openstack</obsolete>
+          </obsoletes>
+
           <requires>
             <require>java-1.7.0-openjdk</require>
 	    <require>libcloud-slipstream-downloads${slipstream.edition}</require>

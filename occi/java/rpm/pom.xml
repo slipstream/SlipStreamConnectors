@@ -87,6 +87,11 @@
           <description>
             SlipStream Connector Occi.
           </description>
+
+          <obsoletes>
+            <obsolete>slipstream-connector-occi</obsolete>
+          </obsoletes>
+
           <requires>
             <require>java-1.7.0-openjdk</require>
             <require>slipstream-connector-occi-python${slipstream.edition}</require>
