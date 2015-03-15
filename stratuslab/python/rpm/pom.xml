@@ -83,7 +83,6 @@
 					<needarch>noarch</needarch>
 					<description />
                     <obsoletes>
-                      <obsolete>stratuslab-slipstream-downloads${slipstream.edition}</obsolete>
                       <obsolete>stratuslab-slipstream-downloads</obsolete>
                       <obsolete>slipstream-connector-stratuslab-python</obsolete>
                     </obsoletes>
