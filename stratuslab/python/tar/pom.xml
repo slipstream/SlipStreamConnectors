@@ -11,7 +11,54 @@
       <version>2.6-SNAPSHOT</version>
 	</parent>
 
-	<build>
+        <profiles>
+          <profile>
+            <id>run-unit-tests</id>
+            <activation>
+              <property>
+                <name>!skipTests</name>
+              </property>
+            </activation>
+
+            <build>
+              <plugins>
+                <plugin>
+                  <groupId>org.codehaus.mojo</groupId>
+                  <artifactId>exec-maven-plugin</artifactId>
+                  <executions>
+                    <execution>
+                      <id>unittests</id>
+                      <goals>
+                        <goal>exec</goal>
+                      </goals>
+                      <phase>test</phase>
+                      <configuration>
+                        <executable>nosetests</executable>
+                        <environmentVariables>
+                          <PYTHONPATH>.:${project.build.directory}/slipstream-client/lib/:${project.build.directory}/stratuslab/lib/stratuslab/python/</PYTHONPATH>
+                        </environmentVariables>
+                        <arguments>
+                          <argument>-v</argument>
+                          <argument>--where=./test/</argument>
+                          <argument>--ignore-files=.*Live.py</argument>
+                          <argument>--with-xunit</argument>
+                          <argument>--xunit-file=${project.basedir}/nosetests.xml</argument>
+                          <argument>--with-coverage</argument>
+                          <argument>--cover-xml</argument>
+                          <argument>--cover-erase</argument>
+                          <argument>--cover-xml-file=${project.basedir}/coverage.xml</argument>
+                          <argument>--cover-package=slipstream_stratuslab</argument>
+                        </arguments>
+                      </configuration>
+                    </execution>
+                  </executions>
+                </plugin>
+              </plugins>
+            </build>
+          </profile>
+        </profiles>
+        
+        <build>
       <plugins>
 
         <plugin>
@@ -56,38 +103,6 @@
                   </artifactItem>
                 </artifactItems>
                 <stripVersion>true</stripVersion>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>exec-maven-plugin</artifactId>
-          <executions>
-            <execution>
-              <id>unittests</id>
-              <goals>
-                <goal>exec</goal>
-              </goals>
-              <phase>test</phase>
-              <configuration>
-                <executable>nosetests</executable>
-                <environmentVariables>
-                  <PYTHONPATH>.:${project.build.directory}/slipstream-client/lib/:${project.build.directory}/stratuslab/lib/stratuslab/python/</PYTHONPATH>
-                </environmentVariables>
-                <arguments>
-                  <argument>-v</argument>
-                  <argument>--where=./test/</argument>
-                  <argument>--ignore-files=.*Live.py</argument>
-                  <argument>--with-xunit</argument>
-                  <argument>--xunit-file=${project.basedir}/nosetests.xml</argument>
-                  <argument>--with-coverage</argument>
-                  <argument>--cover-xml</argument>
-                  <argument>--cover-erase</argument>
-                  <argument>--cover-xml-file=${project.basedir}/coverage.xml</argument>
-                  <argument>--cover-package=slipstream_stratuslab</argument>
-                </arguments>
               </configuration>
             </execution>
           </executions>
