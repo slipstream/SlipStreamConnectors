@@ -20,7 +20,6 @@
 import unittest
 from mock import Mock
 
-from slipstream import util
 from slipstream.NodeDecorator import NodeDecorator, RUN_CATEGORY_IMAGE
 
 from TestStratusLabLiveBase import TestStratusLabLiveBase
@@ -29,20 +28,12 @@ from TestStratusLabLiveBase import TestStratusLabLiveBase
 class TestStratusLabClientCloudLive(TestStratusLabLiveBase):
 
     def xtest_1_start_stop_images(self):
+        self._start_stop_instances()
 
-        self.client._get_max_workers = Mock(return_value=self.max_iaas_workers)
+    def xtest_2_start_stop_instances_by_ids(self):
+        self._start_stop_instances_by_ids()
 
-        try:
-            self.client.start_nodes_and_clients(self.user_info, self.node_instances)
-
-            util.printAndFlush('Instances started\n')
-
-            vms = self.client.get_vms()
-            assert len(vms) == int(self.multiplicity)
-        finally:
-            self.client.stop_deployment()
-
-    def xtest_2_build_image(self):
+    def xtest_3_build_image(self):
 
         self.client.run_category = RUN_CATEGORY_IMAGE
         self.client._prepare_machine_for_build_image = Mock()

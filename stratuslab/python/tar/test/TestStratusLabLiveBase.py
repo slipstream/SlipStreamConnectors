@@ -26,6 +26,7 @@ from slipstream.ConfigHolder import ConfigHolder
 from slipstream.SlipStreamHttpClient import UserInfo
 from slipstream.NodeInstance import NodeInstance
 from slipstream.NodeDecorator import NodeDecorator
+from slipstream import util
 
 CONFIG_FILE = os.path.join(os.path.dirname(__file__),
                            'pyunit.credentials.properties')
@@ -55,7 +56,7 @@ class TestStratusLabLiveBase(unittest.TestCase):
 
         os.environ['SLIPSTREAM_PDISK_ENDPOINT'] = self.ch.config['SLIPSTREAM_PDISK_ENDPOINT']
 
-        self.client = StratusLabClientCloud(self.ch)
+        self.client = self._get_connector_class()(self.ch)
         self.client._publish_vm_info = Mock()
 
         self.user_info = UserInfo('stratuslab')
@@ -135,3 +136,45 @@ lvs
 
     def _get_config_file(self):
         return CONFIG_FILE
+
+    def _get_connector_class(self):
+        return StratusLabClientCloud
+
+    def _start_instances(self):
+
+        self.client._get_max_workers = Mock(return_value=self.max_iaas_workers)
+
+        util.printAndFlush('Starting instances\n')
+        self.client.start_nodes_and_clients(self.user_info, self.node_instances)
+        util.printAndFlush('Instances started\n')
+
+        vms = self.client.get_vms()
+        assert len(vms) == int(self.multiplicity)
+
+        vm_ids = []
+        runners = vms.values()
+        util.printAndFlush('Waiting VMs to go into Running state\n')
+        for runner in runners:
+            vm_id = runner.vmIds[0]
+            state = self.client._wait_vm_in_state(['Running', ], runner, vm_id,
+                                                  counts=50, sleep=6, throw=True)
+            assert 'Running' == state
+            util.printAndFlush('VM %s is Running\n' % vm_id)
+            vm_ids.append(vm_id)
+
+        return vm_ids
+
+    def _start_stop_instances(self):
+        try:
+            self._start_instances()
+        finally:
+            util.printAndFlush('Stopping deployment\n')
+            self.client.stop_deployment()
+
+    def _start_stop_instances_by_ids(self):
+        vm_ids = []
+        try:
+            vm_ids = self._start_instances()
+        finally:
+            util.printAndFlush('Stopping VMs by ids\n')
+            self.client.stop_vms_by_ids(vm_ids)

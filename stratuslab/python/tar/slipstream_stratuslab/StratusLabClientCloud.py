@@ -65,6 +65,18 @@ class StratusLabClientCloud(BaseCloudConnector):
 
     cloudName = 'stratuslab'
 
+    @staticmethod
+    def _wait_vm_in_state(states, runner, vm_id, counts=3, sleep=2, throw=False):
+        counter = 1
+        while counter <= counts:
+            state = runner.getVmState(vm_id)
+            if state in states:
+                return state
+            time.sleep(sleep)
+            counter += 1
+        if throw:
+            raise Exception('Timed out while waiting for states: %s' % states)
+
     def __init__(self, configHolder):
         self.creator = None
 

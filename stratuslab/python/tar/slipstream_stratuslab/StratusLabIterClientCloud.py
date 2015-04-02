@@ -133,34 +133,23 @@ class StratusLabIterClientCloud(StratusLabClientCloud):
             vm_id = runner.vmIds[0]
             try:
                 vm_info = runner.cloud._vmInfo(vm_id)
+                uuids_list = self._get_volatile_disk_ids_to_delete(etree.fromstring(vm_info))
                 runner.killInstances()
                 self._wait_vm_in_state(['Done', 'Failed'], runner, vm_id)
                 time.sleep(2)
-                self._delete_volatile_disks(vm_info)
+                self._delete_volatile_disks(uuids_list)
             except Exception as ex:
                 traceback.print_exc()
                 try:
                     time.sleep(2)
                     runner.killInstances()
-                    self._delete_volatile_disks(vm_info)
+                    self._delete_volatile_disks(uuids_list)
                 except Exception as ex:
                     traceback.print_exc()
                     errors.append('Error killing node %s\n%s' % (nodename, str(ex)))
         if errors:
             raise Exceptions.CloudError('Failed stopping following instances. '
                                         'Details: %s' % '\n   -> '.join(errors))
-
-    @staticmethod
-    def _wait_vm_in_state(states, runner, vm_id, counts=3, sleep=2, throw=False):
-        counter = 1
-        while counter <= counts:
-            state = runner.getVmState(vm_id)
-            if state in states:
-                return state
-            time.sleep(sleep)
-            counter += 1
-        if throw:
-            raise Exception('Timed out while waiting for states: %s' % states)
 
     def _delete_volatile_disks(self, uuids):
         # TOOD: This can be parallelized.
