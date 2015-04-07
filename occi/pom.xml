@@ -22,7 +22,6 @@
     <connection>scm:git:ssh://git@github.com/slipstream/SlipStreamConnector-Occi.git</connection>
     <url>scm:git:ssh://git@github.com/slipstream/SlipStreamConnector-Occi.git</url>
     <developerConnection>scm:git:ssh://git@github.com/slipstream/SlipStreamConnector-Occi.git</developerConnection>
-    <tag>v2.6-community</tag>
   </scm>
 
 </project>

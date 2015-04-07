@@ -28,7 +28,6 @@
     <connection>${scm.read}/SlipStreamConnectors.git</connection>
     <developerConnection>${scm.write}/SlipStreamConnectors.git</developerConnection>
     <url>${scm.public}/SlipStreamConnectors</url>
-    <tag>v2.6-community</tag>
   </scm>
 
 </project>
