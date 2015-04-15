@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>SlipStreamConnector-Occi</artifactId>
-  <version>2.7-SNAPSHOT</version>
+  <version>2.7</version>
   <packaging>pom</packaging>
   <name>SlipStream Connector for Occi (POM)</name>
   <url>http://sixsq.com/</url>
@@ -10,7 +10,7 @@
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
     <artifactId>SlipStreamConnectors</artifactId>
-    <version>2.7-SNAPSHOT</version>
+    <version>2.7</version>
   </parent>
 
   <modules>
@@ -22,7 +22,7 @@
     <connection>scm:git:ssh://git@github.com/slipstream/SlipStreamConnector-Occi.git</connection>
     <url>scm:git:ssh://git@github.com/slipstream/SlipStreamConnector-Occi.git</url>
     <developerConnection>scm:git:ssh://git@github.com/slipstream/SlipStreamConnector-Occi.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v2.7-community</tag>
   </scm>
 
 </project>
