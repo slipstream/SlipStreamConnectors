@@ -177,12 +177,13 @@ public class PhysicalHostConnector extends ConnectorBase {
 
 		String command = createContextualizationData(run, user, configuration);
 
-		String logInfos = "\nConnecting to physical host " + host + "\n";
+		int port = 22;
+		String logInfos = "\nConnecting to physical host '" + host + ":" + port + "'\n";
 		logInfos += "Username: " + username + "\n";
 		//logInfos += "Password: " + password + "\n";
 		logInfos += "Command: " + command + "\n";
 		log.info(logInfos);
-		log.info("Return code: " + executeViaSsh(username, privateKey, password, host, command, 22) );
+		log.info("Return code: '" + executeViaSsh(username, privateKey, password, host, command, port) + "'" );
 
 		updateInstanceIdAndIpOnRun(run, host, host);
 

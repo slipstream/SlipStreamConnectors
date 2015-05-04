@@ -52,7 +52,7 @@ public class PhysicalHostUserParametersFactory extends
 				"You need to provide at least a password or a private key. If you provide a password and a private key, the password will be used as password for private key.",
 				ParameterType.Text, false);
 
-		putMandatoryParameter(constructKey(ORCHESTRATOR_HOST),
+		putMandatoryParameter(ORCHESTRATOR_HOST,
 				"Hostname or IP address of the machine where the orchestrator will be install.");
 	}
 
