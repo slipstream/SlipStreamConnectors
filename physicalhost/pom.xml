@@ -16,6 +16,7 @@
     <module>jar</module>
   </modules>
 
+  <!-- See https://github.com/slipstream/SlipStreamConnectors/issues/27
   <profiles>
     <profile>
       <id>build-connector-rpm</id>
@@ -29,5 +30,6 @@
       </modules>
     </profile>
   </profiles>
-  
+  -->
+
 </project>
