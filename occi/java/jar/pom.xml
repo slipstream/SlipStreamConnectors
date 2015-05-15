@@ -93,13 +93,17 @@
     <dependency>
       <groupId>prismatic</groupId>
       <artifactId>schema</artifactId>
+<!--
       <version>0.2.1</version>
+-->
     </dependency>
 
     <dependency>
       <groupId>clj-time</groupId>
       <artifactId>clj-time</artifactId>
+<!--
       <version>0.7.0</version>
+-->
     </dependency>
 
     <dependency>
@@ -147,7 +151,9 @@
     <dependency>
       <groupId>expectations</groupId>
       <artifactId>expectations</artifactId>
+<!--
       <version>2.0.7</version>
+-->
       <scope>test</scope>
     </dependency>
 
@@ -155,13 +161,17 @@
       <groupId>reply</groupId>
       <artifactId>reply</artifactId>
       <version>0.3.0</version>
+<!--
       <scope>provided</scope>
+-->
     </dependency>
 
     <dependency>
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
+<!--
       <version>2.11</version>
+-->
       <scope>provided</scope>
     </dependency>
 
