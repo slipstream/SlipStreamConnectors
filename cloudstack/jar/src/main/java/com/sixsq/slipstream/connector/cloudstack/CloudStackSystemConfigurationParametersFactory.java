@@ -15,6 +15,7 @@ public class CloudStackSystemConfigurationParametersFactory extends
 	protected void initReferenceParameters() throws ValidationException {
 
 		super.initReferenceParameters();
+		super.putMandatoryContextualizationType();
 
 		putMandatoryEndpoint();
 
