@@ -89,7 +89,10 @@ public class CloudStackConnector extends CliConnectorBase {
 			throws ConfigurationException, ValidationException {
 		Map<String, String> launchParams = new HashMap<String, String>();
 		launchParams.put("instance-type", getInstanceType(run, user));
-		launchParams.put("security-groups", getSecurityGroups(run));
+		String securityGroups = getSecurityGroups(run);
+		if (securityGroups != null && !securityGroups.isEmpty()) {
+			launchParams.put("security-groups", securityGroups);
+		}
 		launchParams.put("zone-type", getZoneType());
 		launchParams.put("networks", getNetworks(run, user));
 		return launchParams;
