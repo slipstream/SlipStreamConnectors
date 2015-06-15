@@ -77,7 +77,7 @@ public class CloudStackAdvancedZoneConnector extends CloudStackConnector {
 			networks = user.getParameter(constructKey(CloudStackAdvancedZoneSystemConfigurationParametersFactory.ORCHESTRATOR_NETWORKS)).getValue();
 		} else {
 			ImageModule machine = ImageModule.load(run.getModuleResourceUrl());
-			networks = machine.getParameterValue(CloudStackAdvancedZoneImageParametersFactory.NETWORKS, null);
+			networks = machine.getParameterValue(constructKey(CloudStackAdvancedZoneImageParametersFactory.NETWORKS), null);
 		}
 
 		return networks;
