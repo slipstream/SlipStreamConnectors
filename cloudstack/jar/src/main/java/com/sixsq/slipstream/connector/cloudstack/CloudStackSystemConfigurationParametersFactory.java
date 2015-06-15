@@ -16,6 +16,7 @@ public class CloudStackSystemConfigurationParametersFactory extends
 
 		super.initReferenceParameters();
 		super.putMandatoryContextualizationType();
+		super.putMandatoryOrchestratorUsernameAndPassword();
 
 		putMandatoryEndpoint();
 
