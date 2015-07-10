@@ -93,7 +93,7 @@
           </obsoletes>
 
           <requires>
-            <require>java-1.8.0-openjdk</require>
+            <require>jre-headless &gt;= 1.8.0</require>
             <require>slipstream-connector-occi-python${slipstream.edition}</require>
           </requires>
           <mappings>
