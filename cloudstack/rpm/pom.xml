@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
     <artifactId>SlipStreamConnector-CloudStack</artifactId>
-    <version>2.12-SNAPSHOT</version>
+    <version>2.13-SNAPSHOT</version>
   </parent>
 
   <dependencies>
@@ -85,13 +85,6 @@
             </mapping>
 
           </mappings>
-
-<prepareScriptlet>
-<script>
-# Turn off the brp-python-bytecompile script                                                        
-%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
-</script>
- </prepareScriptlet>
 
         </configuration>
 

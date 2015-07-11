@@ -9,13 +9,55 @@
     <parent>
       <groupId>com.sixsq.slipstream</groupId>
       <artifactId>SlipStreamConnector-StratusLab-python</artifactId>
-      <version>2.12-SNAPSHOT</version>
+      <version>2.13-SNAPSHOT</version>
     </parent>
 
 	<build>
 
 		<plugins>
 
+
+		  <plugin>
+		    <groupId>org.codehaus.mojo</groupId>
+		    <artifactId>exec-maven-plugin</artifactId>
+
+		    <executions>
+		      <execution>
+			<id>pyc</id>
+			<goals>
+			  <goal>exec</goal>
+			</goals>
+			<phase>compile</phase>
+			<configuration>
+			  <executable>python</executable>
+			  <arguments>
+			    <argument>-m</argument>
+			    <argument>compileall</argument>
+			    <argument>${project.build.directory}/stratuslab-connector/slipstream_stratuslab</argument>
+			  </arguments>
+			</configuration>
+		      </execution>
+		      
+		      <execution>
+			<id>pyo</id>
+			<goals>
+			  <goal>exec</goal>
+			</goals>
+			<phase>compile</phase>
+			<configuration>
+			  <executable>python</executable>
+			  <arguments>
+			    <argument>-O</argument>
+			    <argument>-m</argument>
+			    <argument>compileall</argument>
+			    <argument>${project.build.directory}/stratuslab-connector/slipstream_stratuslab</argument>
+			  </arguments>
+			</configuration>
+		      </execution>
+		      
+		    </executions>
+		  </plugin>
+		  
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -73,7 +115,9 @@
 				<configuration>
 					<classifier>${package.os}</classifier>
 					<release>${BUILD_NUMBER}.${package.os}</release>
-					<summary>StratusLab ${stratuslab.version.zip} API</summary>
+					<summary>StratusLab ${stratuslab.version.zip} API
+%include %{_rpmconfigdir}/macros.python
+</summary>
 					<name>slipstream-connector-stratuslab-python${slipstream.edition}</name>
 					<group>Applications/Engineering</group>
 					<vendor>SixSq</vendor>
@@ -150,7 +194,7 @@
                         </mapping>
 
                         <mapping>
-                          <directory>/usr/lib/python2.6/site-packages</directory>
+                          <directory>%{py_sitedir}</directory>
                           <filemode>664</filemode>
                           <username>slipstream</username>
                           <groupname>slipstream</groupname>
@@ -161,21 +205,18 @@
                               <includes>
                                 <include>slipstream_stratuslab/**/*</include>
                               </includes>
-                              <excludes>
-                                <exclude>slipstream_stratuslab/**/*.pyc</exclude>
-                              </excludes>
                             </source>
                           </sources>
                         </mapping>
 
                     </mappings>
 
-<prepareScriptlet>
-<script>
-# Turn off the brp-python-bytecompile script                                                        
-%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
-</script>
- </prepareScriptlet>
+      <installScriptlet>
+        <script>
+mkdir -p $RPM_BUILD_ROOT/%{py_sitedir}
+mv $RPM_BUILD_ROOT/%%py_sitedir/* $RPM_BUILD_ROOT/%{py_sitedir}
+        </script>
+      </installScriptlet>
 
 				</configuration>
 				<executions>
