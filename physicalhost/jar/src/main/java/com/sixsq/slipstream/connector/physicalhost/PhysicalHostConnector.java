@@ -212,7 +212,6 @@ public class PhysicalHostConnector extends ConnectorBase {
 		userData += "export SLIPSTREAM_CONNECTOR_INSTANCE=\"" + getConnectorInstanceName() + "\"; ";
 		userData += "export SLIPSTREAM_NODENAME=\"" + nodename + "\"; ";
 		userData += "export SLIPSTREAM_DIID=\"" + run.getName() + "\"; ";
-		userData += "export SLIPSTREAM_REPORT_DIR=\"" + SLIPSTREAM_REPORT_DIR + "\"; ";
 		userData += "export SLIPSTREAM_SERVICEURL=\"" + configuration.baseUrl + "\"; ";
 		userData += "export SLIPSTREAM_BUNDLE_URL=\"" + configuration.getRequiredProperty("slipstream.update.clienturl") + "\"; ";
 		userData += "export SLIPSTREAM_BOOTSTRAP_BIN=\"" + configuration.getRequiredProperty("slipstream.update.clientbootstrapurl") + "\"; ";
@@ -223,10 +222,10 @@ public class PhysicalHostConnector extends ConnectorBase {
 		userData += "export SLIPSTREAM_VERBOSITY_LEVEL=\"" + getVerboseParameterValue(user) + "\"; ";
 		userData += "export CLOUDCONNECTOR_PYTHON_MODULENAME=\"" + CLOUDCONNECTOR_PYTHON_MODULENAME + "\"; ";
 
-		userData += "mkdir -p " + SLIPSTREAM_REPORT_DIR + ";";
-		userData += "wget --no-check-certificate -O " + bootstrap + " $SLIPSTREAM_BOOTSTRAP_BIN > " + SLIPSTREAM_REPORT_DIR + "/" + logfilename + " 2>&1 "
+		userData += "mkdir -p $SLIPSTREAM_REPORT_DIR;";
+		userData += "wget --no-check-certificate -O " + bootstrap + " $SLIPSTREAM_BOOTSTRAP_BIN > $SLIPSTREAM_REPORT_DIR/" + logfilename + " 2>&1 "
 				+ "&& chmod 0755 " + bootstrap + "; "
-				+ bootstrap + " " + targetScript + " >> " + SLIPSTREAM_REPORT_DIR + "/" + logfilename + " 2>&1 "
+				+ bootstrap + " " + targetScript + " >> $SLIPSTREAM_REPORT_DIR/" + logfilename + " 2>&1 "
 				+ "'\\'') > /dev/null 2>&1 &' | at now";
 
 		System.out.print(userData);
