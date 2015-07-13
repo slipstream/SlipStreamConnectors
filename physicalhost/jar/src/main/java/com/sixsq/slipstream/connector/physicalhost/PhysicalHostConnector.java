@@ -54,6 +54,9 @@ public class PhysicalHostConnector extends ConnectorBase {
 
 	public static final String CLOUD_SERVICE_NAME = "physicalhost";
 	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream.cloudconnectors.physicalhost.PhysicalHostClientCloud";
+	public static final String SLIPSTREAM_REPORT_DIR = "/var/log/slipstream/client";
+	public static final String SLIPSTREAM_HOME = "/opt/slipstream";
+
 
 	public PhysicalHostConnector() {
 		this(CLOUD_SERVICE_NAME);
@@ -196,13 +199,13 @@ public class PhysicalHostConnector extends ConnectorBase {
 			throws ConfigurationException, ServerExecutionEnginePluginException, SlipStreamClientException {
 
 		String logfilename = "orchestrator.slipstream.log";
-		String bootstrap = "/tmp/slipstream.bootstrap";
+		String bootstrap = SLIPSTREAM_HOME + "/slipstream.bootstrap";
 		String username = user.getName();
 
-		String targetScript = "";
+		String targetScript = "node";
 		String nodename = Run.MACHINE_NAME;
         if(isInOrchestrationContext(run)){
-			targetScript = "slipstream-orchestrator";
+			targetScript = "orchestrator";
 			nodename = getOrchestratorName(run);
 		}
 
@@ -222,10 +225,10 @@ public class PhysicalHostConnector extends ConnectorBase {
 		userData += "export SLIPSTREAM_VERBOSITY_LEVEL=\"" + getVerboseParameterValue(user) + "\"; ";
 		userData += "export CLOUDCONNECTOR_PYTHON_MODULENAME=\"" + CLOUDCONNECTOR_PYTHON_MODULENAME + "\"; ";
 
-		userData += "mkdir -p $SLIPSTREAM_REPORT_DIR;";
-		userData += "wget --no-check-certificate -O " + bootstrap + " $SLIPSTREAM_BOOTSTRAP_BIN > $SLIPSTREAM_REPORT_DIR/" + logfilename + " 2>&1 "
+		userData += "mkdir -p " + SLIPSTREAM_REPORT_DIR + " " + SLIPSTREAM_HOME + ";";
+		userData += "wget --no-check-certificate -O " + bootstrap + " $SLIPSTREAM_BOOTSTRAP_BIN >" + SLIPSTREAM_REPORT_DIR + "/" + logfilename + " 2>&1 "
 				+ "&& chmod 0755 " + bootstrap + "; "
-				+ bootstrap + " " + targetScript + " >> $SLIPSTREAM_REPORT_DIR/" + logfilename + " 2>&1 "
+				+ bootstrap + " " + targetScript + " >>" + SLIPSTREAM_REPORT_DIR + "/" + logfilename + " 2>&1 "
 				+ "'\\'') > /dev/null 2>&1 &' | at now";
 
 		System.out.print(userData);
