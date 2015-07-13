@@ -23,6 +23,7 @@ package com.sixsq.slipstream.connector.physicalhost;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -136,18 +137,19 @@ public class PhysicalHostConnector extends ConnectorBase {
 
 	// Work only for Orchestrator host
 	@Override
-	public Properties describeInstances(User user, int timeout) throws SlipStreamException {
+	public Map<String, Properties> describeInstances(User user, int timeout) throws SlipStreamException {
 		String host = getOrchestratorImageId(user);
-		Properties statuses = new Properties();
+		Map<String, Properties> instances = new HashMap<String, Properties>();
+		Properties properties = new Properties();
 
-		InetAddress addr;
 		try {
-			addr = InetAddress.getByName(host);
+			InetAddress addr = InetAddress.getByName(host);
 			String status = (addr.isReachable(1000))? "Up" : "Down" ;
-			statuses.put(host, status);
+			properties.put(VM_STATE, status);
+			instances.put(host, properties);
 		} catch (UnknownHostException e) {} catch (IOException e) {}
 
-		return statuses;
+		return instances;
 	}
 
 	@Override

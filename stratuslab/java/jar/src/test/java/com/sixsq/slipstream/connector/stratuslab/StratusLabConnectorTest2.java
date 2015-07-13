@@ -23,8 +23,10 @@ package com.sixsq.slipstream.connector.stratuslab;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.util.Map;
 import java.util.Properties;
 
+import com.sixsq.slipstream.connector.ConnectorBase;
 import org.junit.Test;
 
 import com.sixsq.slipstream.connector.stratuslab.StratusLabConnector;
@@ -34,11 +36,12 @@ public class StratusLabConnectorTest2 extends StratusLabConnector {
 
 	@Test
 	public void parseDescribeInstanceTest() throws SlipStreamException {
-		String result = "id  state           cpu       memory    public ip\n"
-				+ "16  Running         1         128       134.158.73.235\n"
-				+ "17  Pending         1         128       134.158.73.236\n";
-		Properties res = StratusLabConnector.parseDescribeInstanceResult(result);
-		assertThat(res.get("16").toString(), is("Running"));
-		assertThat(res.get("17").toString(), is("Pending"));
+		String result = "id, state, ip, cpu, memory\n"
+				+ "16, Running, 134.158.73.235, 1, 128\n"
+				+ "17, Pending, 134.158.73.236, 1, 128\n";
+		Map<String, Properties> res = StratusLabConnector.parseDescribeInstanceResult(result);
+		Properties empty = new Properties();
+		assertThat(res.getOrDefault("16", empty).getProperty(ConnectorBase.VM_STATE), is("Running"));
+		assertThat(res.getOrDefault("17", empty).getProperty(ConnectorBase.VM_STATE), is("Pending"));
 	}
 }

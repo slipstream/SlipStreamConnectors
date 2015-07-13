@@ -135,6 +135,15 @@ class StratusLabClientCloud(BaseCloudConnector):
         self.slConfigHolder.set('ipToHostname', False)
         return Monitor(self.slConfigHolder).listVms()
 
+    def _vm_get_ip_from_list_instances(self, vm_instance):
+        return vm_instance.template_nic_ip
+
+    def _vm_get_cpu(self, vm_instance):
+        return vm_instance.template_vcpu
+
+    def _vm_get_ram(self, vm_instance):
+        return vm_instance.template_memory
+
     @override
     def _build_image(self, user_info, node_instance):
 
