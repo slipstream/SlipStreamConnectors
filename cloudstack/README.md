@@ -1,6 +1,6 @@
 # CloudStack Connector Instance Configuration
 
-To create and configure a CloudStack connector instance, you can [drop a file in your configuration]().
+To create and configure a CloudStack connector instance, you can [drop a file in your configuration](http://ssdocs.sixsq.com/documentation/developer_guide/configuration_files.html).
 
 Here is an example, which will configure the CloudStack connector to interact with [Exoscale](http://exoscale.ch):
 
