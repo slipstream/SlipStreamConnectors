@@ -3,7 +3,7 @@ SlipStreamConnectors
 
 open-source cloud connectors for SlipStream
 
-To facilatate connector configuration, see here examples of configuration files:
+To facilitate connector configuration, see here examples of configuration files:
 
  - [CloudStack](cloudstack/README.md)
  - OpenStack
