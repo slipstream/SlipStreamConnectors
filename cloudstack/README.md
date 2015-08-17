@@ -5,7 +5,7 @@ To create and configure a CloudStack connector instance, you can [drop a file in
 Here is an example, which will configure the CloudStack connector to interact with [Exoscale](http://exoscale.ch):
 
     $ cat exoscale-ch-gva.conf
-    cloud.connector.class = exoscale-ch-gva:local
+    cloud.connector.class = exoscale-ch-gva:cloudstack
     exoscale-ch-gva.endpoint = https://api.exoscale.ch/compute
     exoscale-ch-gva.zone = CH-GV2
     exoscale-ch-gva.quota.vm = 20
