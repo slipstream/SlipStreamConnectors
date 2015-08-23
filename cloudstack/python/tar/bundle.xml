@@ -1,0 +1,31 @@
+<assembly>
+    <id>bundle</id>
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <formats>
+        <format>tar.gz</format>
+        <format>zip</format>
+    </formats>
+
+  <fileSets>
+    <fileSet>
+      <includes>
+        <include>slipstream_cloudstack/**/*.py</include>
+      </includes>
+      <excludes>
+        <exclude>**/*.pyc</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/dependencies/libcloud</directory>
+      <outputDirectory>.</outputDirectory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <excludes>
+        <exclude>**/*.pyc</exclude>
+      </excludes>
+    </fileSet>
+  </fileSets>
+</assembly>
