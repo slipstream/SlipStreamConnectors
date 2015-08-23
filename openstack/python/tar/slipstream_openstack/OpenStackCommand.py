@@ -1,7 +1,7 @@
 """
  SlipStream Client
  =====
- Copyright (C) 2014 SixSq Sarl (sixsq.com)
+ Copyright (C) 2015 SixSq Sarl (sixsq.com)
  =====
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 """
 
 from slipstream.command.CloudClientCommand import CloudClientCommand
-from slipstream.cloudconnectors.openstack.OpenStackClientCloud import OpenStackClientCloud
+from slipstream_openstack.OpenStackClientCloud import OpenStackClientCloud
 
 
 class OpenStackCommand(CloudClientCommand):

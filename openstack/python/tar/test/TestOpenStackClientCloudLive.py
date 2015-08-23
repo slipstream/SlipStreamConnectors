@@ -2,7 +2,7 @@
 """
  SlipStream Client
  =====
- Copyright (C) 2014 SixSq Sarl (sixsq.com)
+ Copyright (C) 2015 SixSq Sarl (sixsq.com)
  =====
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 import os
 import unittest
 
-from slipstream.cloudconnectors.openstack.OpenStackClientCloud import \
+from slipstream_openstack.OpenStackClientCloud import \
     OpenStackClientCloud
 from slipstream.ConfigHolder import ConfigHolder
 from slipstream.SlipStreamHttpClient import UserInfo
