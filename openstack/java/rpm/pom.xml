@@ -4,11 +4,11 @@
 
   <artifactId>SlipStreamConnector-OpenStack-rpm</artifactId>
   <packaging>rpm</packaging>
-  <name>SlipStream Connector OpenStack (RPM)</name>
+  <name>SlipStream Connector OpenStack - Java (RPM)</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
-    <artifactId>SlipStreamConnector-OpenStack</artifactId>
+    <artifactId>SlipStreamConnector-OpenStack-java</artifactId>
     <version>2.15-SNAPSHOT</version>
   </parent>
 
