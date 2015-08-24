@@ -25,9 +25,8 @@ public class CloudStackSystemConfigurationParametersFactory extends
 		
 		putMandatoryParameter(constructKey(CloudStackUserParametersFactory.ZONE_PARAMETER_NAME), 
 				"Zone");
-		
-		//putMandatoryParameter(constructKey(CloudStackUserParametersFactory.UPDATE_CLIENTURL_PARAMETER_NAME),
-		//		"URL with the cloud client specific connector");
+
+		putMandatoryUpdateUrl();
 	}
 	
 }

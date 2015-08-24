@@ -37,9 +37,6 @@ public class StratusLabSystemConfigurationParametersFactory extends
 
 		putMandatoryEndpoint();
 
-		putMandatoryParameter(constructKey("update.clienturl"),
-				"URL with the cloud client specific connector");
-
 		putMandatoryParameter(constructKey(StratusLabUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME),
 				"Orchestrator instance type");
 
@@ -49,8 +46,7 @@ public class StratusLabSystemConfigurationParametersFactory extends
 		putMandatoryParameter(constructKey(StratusLabUserParametersFactory.PDISK_ENDPOINT_PARAMETER_NAME),
 				"PDisk endpoint");
 
-		putMandatoryParameter(constructKey(StratusLabUserParametersFactory.UPDATE_CLIENTURL_PARAMETER_NAME),
-				"URL with the cloud client specific connector");
+		putMandatoryUpdateUrl();
 	}
 
 }

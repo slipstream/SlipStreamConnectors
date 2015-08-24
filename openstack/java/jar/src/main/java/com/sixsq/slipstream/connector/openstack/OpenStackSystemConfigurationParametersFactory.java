@@ -60,6 +60,8 @@ public class OpenStackSystemConfigurationParametersFactory extends
         putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PRIVATE_NAME),
                 "Mapping for Private network", "");
 
+		putMandatoryUpdateUrl();
+
     }
 
 }
