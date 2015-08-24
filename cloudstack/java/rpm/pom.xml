@@ -2,20 +2,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>SlipStreamConnector-PhysicalHost-rpm</artifactId>
+  <artifactId>SlipStreamConnector-CloudStack-rpm</artifactId>
   <packaging>rpm</packaging>
-  <name>SlipStream Connector PhysicalHost (RPM)</name>
+  <name>SlipStream Connector CloudStack - Java (RPM)</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
-    <artifactId>SlipStreamConnector-PhysicalHost</artifactId>
-    <version>2.9-SNAPSHOT</version>
+    <artifactId>SlipStreamConnector-CloudStack-java</artifactId>
+    <version>2.15-SNAPSHOT</version>
   </parent>
 
   <dependencies>
     <dependency>
       <groupId>com.sixsq.slipstream</groupId>
-      <artifactId>SlipStreamConnector-PhysicalHost-jar</artifactId>
+      <artifactId>SlipStreamConnector-CloudStack-jar</artifactId>
       <version>${project.version}</version>
       <type>jar</type>
     </dependency>
@@ -47,22 +47,23 @@
         <configuration>
           <classifier>${package.os}</classifier>
           <release>${BUILD_NUMBER}.${package.os}</release>
-          <summary>SlipStream Connector for PhysicalHost</summary>
-          <name>slipstream-connector-physicalhost${slipstream.edition}</name>
+          <summary>SlipStream Connector for CloudStack</summary>
+          <name>slipstream-connector-cloudstack${slipstream.edition}</name>
           <group>Applications/Engineering</group>
           <vendor>SixSq</vendor>
           <packager>SixSq</packager>
           <license>Apache 2.0</license>
           <url>http://sixsq.com</url>
           <needarch>noarch</needarch>
-          <description>SlipStream connector for PhysicalHost clouds</description>
+          <description>SlipStream connector for CloudStack clouds</description>
 
           <obsoletes>
-            <obsolete>slipstream-connector-physicalhost</obsolete>
+            <obsolete>slipstream-connector-cloudstack</obsolete>
           </obsoletes>
-
+          
           <requires>
             <require>jre-headless &gt;= 1.8.0</require>
+            <require>libcloud-slipstream-downloads${slipstream.edition}</require>
           </requires>
 
           <mappings>

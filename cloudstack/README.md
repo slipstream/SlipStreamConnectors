@@ -1,5 +1,9 @@
 # CloudStack Connector Instance Configuration
 
+Server-side client (`cloudstack-*` CLI) requires `apache-libcloud`.  It can be
+installed with `pip`.  The version should be the same as defined in
+`slipstream.sixsq.com:SlipStream:pom.xml` with `libcloud.version` property.
+
 To create and configure a CloudStack connector instance, you can [drop a file in your configuration](http://ssdocs.sixsq.com/documentation/developer_guide/configuration_files.html).
 
 Here is an example, which will configure the CloudStack connector to interact with [Exoscale](http://exoscale.ch):

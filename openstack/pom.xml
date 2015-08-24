@@ -13,21 +13,8 @@
   </parent>
 
   <modules>
-    <module>jar</module>
+    <module>java</module>
+    <module>python</module>
   </modules>
 
-  <profiles>
-    <profile>
-      <id>build-connector-rpm</id>
-      <activation>
-        <file>
-          <exists>/usr/bin/rpmbuild</exists>
-        </file>
-      </activation>
-      <modules>
-        <module>rpm</module>
-      </modules>
-    </profile>
-  </profiles>
-  
 </project>
