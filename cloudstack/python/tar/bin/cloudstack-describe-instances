@@ -32,7 +32,8 @@ class CloudStackDescribeInstances(DescribeInstancesCommand, CloudStackCommand):
                  1: 'Rebooting',
                  2: 'Terminated',
                  3: 'Pending',
-                 4: 'Unknown'}
+                 4: 'Unknown',
+                 5: 'Stopped'}
 
     def _vm_get_state(self, cc, vm):
         return self.STATE_MAP[vm.state]
