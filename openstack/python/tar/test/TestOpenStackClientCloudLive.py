@@ -79,9 +79,12 @@ class TestOpenStackClientCloudLive(unittest.TestCase):
         self.user_info[self.constructKey('service.type')] = self.ch.config['openstack.service.type']
         self.user_info[self.constructKey('service.name')] = self.ch.config['openstack.service.name']
         self.user_info[self.constructKey('service.region')] = self.ch.config['openstack.service.region']
+        self.user_info[self.constructKey('network.private')] = self.ch.config['openstack.network.private']
 
         security_groups = self.ch.config['openstack.security.groups']
         image_id = self.ch.config['openstack.imageid']
+        instance_type = self.ch.config.get('openstack.intance.type', 'm1.tiny')
+        network_type = self.ch.config['openstack.network.type']
         node_name = 'test_node'
 
         self.multiplicity = 2
@@ -97,9 +100,9 @@ class TestOpenStackClientCloudLive(unittest.TestCase):
                 'image.platform': 'Ubuntu',
                 'image.imageId': image_id,
                 'image.id': image_id,
-                self.constructKey('instance.type'): 'm1.tiny',
+                self.constructKey('instance.type'): instance_type,
                 self.constructKey('security.groups'): security_groups,
-                'network': 'private'
+                'network': network_type
             })
 
         self.node_instance = NodeInstance({
@@ -109,9 +112,9 @@ class TestOpenStackClientCloudLive(unittest.TestCase):
             'image.platform': 'Ubuntu',
             'image.imageId': image_id,
             'image.id': image_id,
-            self.constructKey('instance.type'): 'm1.tiny',
+            self.constructKey('instance.type'): instance_type,
             self.constructKey('security.groups'): security_groups,
-            'network': 'private',
+            'network': network_type,
             'image.prerecipe':
 """#!/bin/sh
 set -e
