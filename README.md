@@ -6,8 +6,10 @@ open-source cloud connectors for SlipStream
 To facilitate connector configuration, see here examples of configuration files:
 
  - [CloudStack](cloudstack/README.md)
- - OpenStack
+ - [OpenStack](openstack/README.md)
  - StratusLab
+ - OCCI
+ - Phisical
 
 To access configuration information for SixSq proprietary connectors, please
 [get in touch](http://sixsq.com/contact/#contact-us-form).
