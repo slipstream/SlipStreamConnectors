@@ -63,6 +63,7 @@
           
           <requires>
             <require>jre-headless &gt;= 1.8.0</require>
+            <require>slipstream-connector-cloudstack-python${slipstream.edition}</require>
             <require>libcloud-slipstream-downloads${slipstream.edition}</require>
           </requires>
 
