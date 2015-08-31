@@ -40,7 +40,7 @@ import com.sixsq.slipstream.persistence.UserParameter;
 public class OpenStackConnector extends CliConnectorBase {
 
 	public static final String CLOUD_SERVICE_NAME = "openstack";
-	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream.cloudconnectors.openstack.OpenStackClientCloud";
+	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream_openstack.OpenStackClientCloud";
 
 	public OpenStackConnector() {
 		this(CLOUD_SERVICE_NAME);
@@ -173,12 +173,6 @@ public class OpenStackConnector extends CliConnectorBase {
 	@Override
 	public Credentials getCredentials(User user) {
 		return new OpenStackCredentials(user, getConnectorInstanceName());
-	}
-
-	@Override
-	protected String getCloudConnectorBundleUrl(User user) throws ValidationException {
-		Configuration configuration = Configuration.getInstance();
-		return configuration.getRequiredProperty("cloud.connector.library.libcloud.url");
 	}
 
 	protected java.util.Map<String,String> getConnectorSpecificEnvironment(Run run, User user)

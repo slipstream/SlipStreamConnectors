@@ -42,7 +42,7 @@ public class CloudStackConnector extends CliConnectorBase {
 
 	public static final String ZONE_TYPE = "Basic";
 	public static final String CLOUD_SERVICE_NAME = "cloudstack";
-	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream.cloudconnectors.cloudstack.CloudStackClientCloud";
+	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream_cloudstack.CloudStackClientCloud";
 
 	public CloudStackConnector() {
 		this(CLOUD_SERVICE_NAME);
@@ -67,12 +67,6 @@ public class CloudStackConnector extends CliConnectorBase {
 	@Override
 	protected String getCloudConnectorPythonModule() {
 		return CLOUDCONNECTOR_PYTHON_MODULENAME;
-	}
-
-	@Override
-	protected String getCloudConnectorBundleUrl(User user) throws ValidationException {
-		Configuration configuration = Configuration.getInstance();
-		return configuration.getRequiredProperty("cloud.connector.library.libcloud.url");
 	}
 
 	@Override
