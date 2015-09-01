@@ -34,7 +34,7 @@ public class CloudStackAdvancedZoneConnector extends CloudStackConnector {
 
 	public static final String ZONE_TYPE = "Advanced";
 	public static final String CLOUD_SERVICE_NAME = "cloudstackadvancedzone";
-	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream.cloudconnectors.cloudstack.CloudStackAdvancedZoneClientCloud";
+	public static final String CLOUDCONNECTOR_PYTHON_MODULENAME = "slipstream_cloudstack.CloudStackAdvancedZoneClientCloud";
 
 	public CloudStackAdvancedZoneConnector() {
 		this(CLOUD_SERVICE_NAME);
