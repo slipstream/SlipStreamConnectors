@@ -2,4 +2,4 @@ Installation and configuration
 =======
 
 You can find detailed instructions of how to install and configure this connector on the
-[SlipStream documentation](http://ssdocs.sixsq.com/documentation/administrator_guide/cloudstack_connector.html).
+[SlipStream documentation](http://ssdocs.sixsq.com/documentation/administrator_guide/openstack_connector.html).
