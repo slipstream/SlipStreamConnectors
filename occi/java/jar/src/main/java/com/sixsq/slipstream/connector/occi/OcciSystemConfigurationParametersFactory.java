@@ -17,8 +17,7 @@ public class OcciSystemConfigurationParametersFactory extends
 
 		putMandatoryParameter(constructKey("orchestrator.resource.type"),
 				"Orchestrator resource type");
-		putMandatoryParameter(constructKey("update.clienturl"),
-				"URL with the cloud client specific connector");
+		putMandatoryUpdateUrl();
 		putMandatoryParameter(
 				constructKey(OcciImageParametersFactory.NETWORK_ID_PARAMETER_NAME),
 				OcciImageParametersFactory.NETWORK_ID_DESCRIPTION_PARAMETER_NAME);
