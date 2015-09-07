@@ -3,13 +3,8 @@ SlipStreamConnectors
 
 open-source cloud connectors for SlipStream
 
-To facilitate connector configuration, see here examples of configuration files:
+You can find detailed instructions of how to install and configure these connectors on the
+[SlipStream documentation](http://ssdocs.sixsq.com/documentation/administrator_guide/cloud_connectors.html).
 
- - [CloudStack](cloudstack/README.md)
- - [OpenStack](openstack/README.md)
- - StratusLab
- - OCCI
- - Physical
-
-To access configuration information for SixSq proprietary connectors, please
+If you don't find the desired informations, please
 [get in touch](http://sixsq.com/contact/#contact-us-form).
