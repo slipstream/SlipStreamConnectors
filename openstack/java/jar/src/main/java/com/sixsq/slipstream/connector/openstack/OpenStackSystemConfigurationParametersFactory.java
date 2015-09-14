@@ -23,11 +23,9 @@ package com.sixsq.slipstream.connector.openstack;
 import com.sixsq.slipstream.connector.SystemConfigurationParametersFactoryBase;
 import com.sixsq.slipstream.exceptions.ValidationException;
 
-public class OpenStackSystemConfigurationParametersFactory extends
-		SystemConfigurationParametersFactoryBase {
+public class OpenStackSystemConfigurationParametersFactory extends SystemConfigurationParametersFactoryBase {
 
-	public OpenStackSystemConfigurationParametersFactory(String connectorInstanceName)
-			throws ValidationException {
+	public OpenStackSystemConfigurationParametersFactory(String connectorInstanceName) throws ValidationException {
 		super(connectorInstanceName);
 	}
 
@@ -59,6 +57,8 @@ public class OpenStackSystemConfigurationParametersFactory extends
 
         putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PRIVATE_NAME),
                 "Mapping for Private network", "");
+
+		putMandatoryOrchestratorSecurityGroups();
 
 		putMandatoryUpdateUrl();
 
