@@ -6,17 +6,14 @@ import com.sixsq.slipstream.persistence.ImageModule;
 
 public class CloudStackImageParametersFactory extends ModuleParametersFactoryBase {
 
-	public static final String SECURITY_GROUPS = "security.groups";
-
-	public CloudStackImageParametersFactory(String connectorInstanceName)
-			throws ValidationException {
+	public CloudStackImageParametersFactory(String connectorInstanceName) throws ValidationException {
 		super(connectorInstanceName);
 	}
 
 	@Override
 	protected void initReferenceParameters() throws ValidationException {
 		putParameter(ImageModule.INSTANCE_TYPE_KEY, "Instance type (flavor)", true);
-		putMandatoryParameter(SECURITY_GROUPS, "Security Groups (comma separated list)", "default");
+		addSecurityGroupsParameter();
 	}
 
 }

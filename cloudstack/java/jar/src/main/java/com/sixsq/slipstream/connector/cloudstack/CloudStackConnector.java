@@ -83,23 +83,14 @@ public class CloudStackConnector extends CliConnectorBase {
 			throws ConfigurationException, ValidationException {
 		Map<String, String> launchParams = new HashMap<String, String>();
 		launchParams.put("instance-type", getInstanceType(run, user));
-		String securityGroups = getSecurityGroups(run);
-		if (securityGroups != null && !securityGroups.isEmpty()) {
-			launchParams.put("security-groups", securityGroups);
-		}
 		launchParams.put("zone-type", getZoneType());
 		launchParams.put("networks", getNetworks(run, user));
+		putLaunchParamSecurityGroups(launchParams, run, user);
 		return launchParams;
 	}
 
 	protected String getNetworks(Run run, User user) throws ValidationException{
 		return "";
-	}
-
-	protected String getSecurityGroups(Run run) throws ValidationException{
-		return (isInOrchestrationContext(run)) ? ""
-				: getParameterValue(CloudStackImageParametersFactory.SECURITY_GROUPS,
-						ImageModule.load(run.getModuleResourceUrl()));
 	}
 
 	protected String getInstanceType(Run run, User user) throws ValidationException {
@@ -109,16 +100,16 @@ public class CloudStackConnector extends CliConnectorBase {
 	}
 
 	protected String getZone(User user) throws ValidationException {
-		return user.getParameter(constructKey(
-				CloudStackUserParametersFactory.ZONE_PARAMETER_NAME))
-				.getValue();
+		return user.getParameter(constructKey(CloudStackUserParametersFactory.ZONE_PARAMETER_NAME)).getValue();
 	}
 
+	@Override
 	protected void validateDescribe(User user) throws ValidationException {
 		validateCredentials(user);
 		validateBaseParameters(user);
 	}
 
+	@Override
 	protected void validateTerminate(Run run, User user) throws ValidationException {
 		validateCredentials(user);
 		validateBaseParameters(user);
@@ -143,6 +134,7 @@ public class CloudStackConnector extends CliConnectorBase {
 		}
 	}
 
+	@Override
 	protected void validateLaunch(Run run, User user) throws ValidationException{
 		validateCredentials(user);
 		validateBaseParameters(user);

@@ -19,10 +19,14 @@
 import re
 import time
 
+from .LibcloudCloudstackPatch import patch_libcloud
+patch_libcloud()
+
 from urlparse import urlparse
 
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 from slipstream.utils.tasksrunner import TasksRunner
+from slipstream.NodeDecorator import NodeDecorator
 from slipstream.util import override
 import slipstream.util as util
 import slipstream.exceptions.Exceptions as Exceptions
@@ -140,8 +144,23 @@ class CloudStackClientCloud(BaseCloudConnector):
                   id=instance.id)
         return vm
 
+    @override
     def list_instances(self):
         return self._thread_local.driver.list_nodes()
+
+    @override
+    def _create_allow_all_security_group(self):
+        sg_name = NodeDecorator.SECURITY_GROUP_ALLOW_ALL_NAME
+        sg_desc = NodeDecorator.SECURITY_GROUP_ALLOW_ALL_DESCRIPTION
+        driver = self._thread_local.driver
+
+        if any([sg.get('name') == sg_name for sg in driver.ex_list_security_groups()]):
+            return
+
+        sg = driver.ex_create_security_group(sg_name, description=sg_desc)
+        driver.ex_authorize_security_group_ingress(sg_name, 'tcp', '0.0.0.0/0', 0, 65535)
+        driver.ex_authorize_security_group_ingress(sg_name, 'udp', '0.0.0.0/0', 0, 65535)
+        driver.ex_authorize_security_group_ingress(sg_name, 'icmp', '0.0.0.0/0')
 
     def _stop_instances(self, instances):
         max_workers = self._get_max_workers(self.configHolder)
