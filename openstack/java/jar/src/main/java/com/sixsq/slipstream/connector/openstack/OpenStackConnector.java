@@ -80,9 +80,9 @@ public class OpenStackConnector extends CliConnectorBase {
 			throws ConfigurationException, ValidationException {
 		Map<String, String> launchParams = new HashMap<String, String>();
 		launchParams.put("instance-type", getInstanceType(run));
-		launchParams.put("security-groups", getSecurityGroups(run));
         launchParams.put("network-public", getNetworkPublic());
         launchParams.put("network-private", getNetworkPrivate());
+		putLaunchParamSecurityGroups(launchParams, run, user);
 		return launchParams;
 	}
 
@@ -111,11 +111,6 @@ public class OpenStackConnector extends CliConnectorBase {
 		return (isInOrchestrationContext(run)) ? Configuration.getInstance()
 				.getRequiredProperty(constructKey(OpenStackUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME))
 				: getInstanceType(ImageModule.load(run.getModuleResourceUrl()));
-	}
-
-	protected String getSecurityGroups(Run run) throws ValidationException{
-		return (isInOrchestrationContext(run)) ? "default"
-				: getParameterValue(OpenStackImageParametersFactory.SECURITY_GROUPS, ImageModule.load(run.getModuleResourceUrl()));
 	}
 
 	protected String getProject(User user) throws ValidationException {

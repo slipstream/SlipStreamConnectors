@@ -28,6 +28,7 @@ import slipstream.util as util
 import slipstream.exceptions.Exceptions as Exceptions
 
 from slipstream.util import override
+from slipstream.NodeDecorator import NodeDecorator
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 
 def getConnector(configHolder):
@@ -63,7 +64,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         self.flavors = []
         self.images = []
         self.networks = []
-        self.securit_groups = []
+        self.security_groups = []
         self.tempPrivateKey = None
 
     @override
@@ -73,7 +74,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         self.flavors = self._thread_local.driver.list_sizes()
         self.images = self._thread_local.driver.list_images()
         self.networks = self._thread_local.driver.ex_list_networks()
-        self.securit_groups = self._thread_local.driver.ex_list_security_groups()
+        self.security_groups = self._thread_local.driver.ex_list_security_groups()
 
         if self.is_deployment():
             self._import_keypair(user_info)
@@ -133,15 +134,14 @@ class OpenStackClientCloud(BaseCloudConnector):
         image_id = node_instance.get_image_id()
         instance_type = node_instance.get_instance_type()
         keypair = user_info.get_keypair_name()
-        _sec_groups = node_instance.get_security_groups()
-        securityGroups = [[i for i in self.securit_groups if i.name == x.strip()][0] for x in _sec_groups if x]
+        security_groups = self._get_security_groups_for_node_instance(node_instance)
         flavor = searchInObjectList(self.flavors, 'name', instance_type)
         image = searchInObjectList(self.images, 'id', image_id)
-        contextualizationScript = self.is_build_image() and '' or self._get_bootstrap_script(node_instance)
+        contextualization_script = self.is_build_image() and '' or self._get_bootstrap_script(node_instance)
 
-        if flavor == None:
+        if flavor is None:
             raise Exceptions.ParameterNotFoundException("Couldn't find the specified flavor: %s" % instance_type)
-        if image == None:
+        if image is None:
             raise Exceptions.ParameterNotFoundException("Couldn't find the specified image: %s" % image_id)
 
         # extract mappings for Public and Private networks from the connector instance
@@ -158,8 +158,8 @@ class OpenStackClientCloud(BaseCloudConnector):
                   "size": flavor,
                   "image": image,
                   "ex_keyname": keypair,
-                  "ex_userdata": contextualizationScript,
-                  "ex_security_groups": securityGroups}
+                  "ex_userdata": contextualization_script,
+                  "ex_security_groups": security_groups}
 
         if network is not None:
             kwargs["networks"] = [network]
@@ -172,8 +172,46 @@ class OpenStackClientCloud(BaseCloudConnector):
                   id=instance.id)
         return vm
 
+    @override
     def list_instances(self):
         return self._thread_local.driver.list_nodes()
+
+    def _get_security_groups_for_node_instance(self, node_instance):
+        security_groups = []
+        security_groups_not_found = []
+
+        for sg_name in node_instance.get_security_groups():
+            if not sg_name:
+                continue
+            sgs = [sg for sg in self.security_groups if sg.name == sg_name.strip()]
+
+            if len(sgs) < 1:
+                security_groups_not_found.append(sg_name)
+            else:
+                security_groups.append(sgs[0])
+
+        if security_groups_not_found:
+            raise Exceptions.ParameterNotFoundException("Couldn't find the following security groups: %s"
+                                                        % ', '.join(security_groups_not_found))
+
+        return security_groups
+
+    @override
+    def _create_allow_all_security_group(self):
+        sg_name = NodeDecorator.SECURITY_GROUP_ALLOW_ALL_NAME
+        sg_desc = NodeDecorator.SECURITY_GROUP_ALLOW_ALL_DESCRIPTION
+        driver = self._thread_local.driver
+
+        if any([sg.name == sg_name for sg in self.security_groups]):
+            return
+
+        sg = driver.ex_create_security_group(sg_name, sg_desc)
+        driver.ex_create_security_group_rule(sg, 'tcp', 1, 65535, cidr='0.0.0.0/0')
+        driver.ex_create_security_group_rule(sg, 'udp', 1, 65535, cidr='0.0.0.0/0')
+        driver.ex_create_security_group_rule(sg, 'icmp', -1, -1, cidr='0.0.0.0/0')
+
+        # Update the cached list of available security groups
+        self.security_groups = driver.ex_list_security_groups()
 
     @override
     def _stop_deployment(self):
@@ -330,6 +368,6 @@ class OpenStackClientCloud(BaseCloudConnector):
         return kp.name
 
     def _delete_keypair(self, kp_name):
-        kp = searchInObjectList(self._thread_local.driver.ex_list_keypairs(), 'name', kp_name)
-        self._thread_local.driver.ex_delete_keypair(kp)
+        kp = searchInObjectList(self._thread_local.driver.list_key_pairs(), 'name', kp_name)
+        self._thread_local.driver.delete_key_pair(kp)
 
