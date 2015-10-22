@@ -95,7 +95,6 @@ class CloudStackClientCloud(BaseCloudConnector):
         return self._start_image_on_cloudstack(user_info, node_instance, vm_name)
 
     def _start_image_on_cloudstack(self, user_info, node_instance, vm_name):
-        image_id = node_instance.get_image_id()
         instance_name = self.format_instance_name(vm_name)
         instance_type = node_instance.get_instance_type()
         ip_type = node_instance.get_network_type()
@@ -114,11 +113,8 @@ class CloudStackClientCloud(BaseCloudConnector):
         except IndexError:
             raise Exceptions.ParameterNotFoundException(
                 "Couldn't find the specified instance type: %s" % instance_type)
-        try:
-            image = [i for i in self.images if i.id == image_id][0]
-        except IndexError:
-            raise Exceptions.ParameterNotFoundException(
-                "Couldn't find the specified image: %s" % image_id)
+
+        image = self._get_image(node_instance)
 
         if node_instance.is_windows():
             instance = self._thread_local.driver.create_node(
@@ -143,6 +139,14 @@ class CloudStackClientCloud(BaseCloudConnector):
                   ip=ip,
                   id=instance.id)
         return vm
+
+    def _get_image(self, node_instance):
+        image_id = node_instance.get_image_id()
+        try:
+            return [i for i in self.images if i.id == image_id][0]
+        except IndexError:
+            raise Exceptions.ParameterNotFoundException(
+                "Couldn't find the specified image: %s" % image_id)
 
     @override
     def list_instances(self):
@@ -226,6 +230,12 @@ class CloudStackClientCloud(BaseCloudConnector):
     @override
     def _vm_get_ip_from_list_instances(self, vm_instance):
         return self._get_instance_ip_address(vm_instance)
+
+    @override
+    def _vm_get_cpu(self, vm_instance):
+        size = self._get_vm_size(vm_instance)
+        if size and 'cpu' in size.extra:
+            return size.extra.get('cpu')
 
     @override
     def _vm_get_ram(self, vm_instance):

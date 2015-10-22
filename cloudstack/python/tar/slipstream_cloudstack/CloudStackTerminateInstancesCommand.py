@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
  SlipStream Client
  =====
@@ -17,9 +16,11 @@
  limitations under the License.
 """
 
-from slipstream.command.CloudClientCommand import main
-from slipstream_cloudstack.CloudStackTerminateInstancesCommand import CloudStackTerminateInstances
+from slipstream.command.TerminateInstancesCommand import TerminateInstancesCommand
+from slipstream_cloudstack.CloudStackCommand import CloudStackCommand
 
 
-if __name__ == "__main__":
-    main(CloudStackTerminateInstances)
+class CloudStackTerminateInstances(TerminateInstancesCommand, CloudStackCommand):
+
+    def __init__(self):
+        super(CloudStackTerminateInstances, self).__init__()

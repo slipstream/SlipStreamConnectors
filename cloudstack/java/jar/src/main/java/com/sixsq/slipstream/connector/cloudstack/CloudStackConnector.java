@@ -52,6 +52,7 @@ public class CloudStackConnector extends CliConnectorBase {
 		super(instanceName != null ? instanceName : CLOUD_SERVICE_NAME);
 	}
 
+	@Override
     public Connector copy(){
     	return new CloudStackConnector(getConnectorInstanceName());
     }
@@ -60,6 +61,7 @@ public class CloudStackConnector extends CliConnectorBase {
 		return ZONE_TYPE;
 	}
 
+	@Override
 	public String getCloudServiceName() {
 		return CLOUD_SERVICE_NAME;
 	}
