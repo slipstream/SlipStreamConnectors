@@ -48,6 +48,9 @@ from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 from slipstream.utils.ssh import generate_ssh_keypair
 from slipstream.util import override
 
+from .vmrootdisk import (populate_vms_with_disk_sizes,
+                         get_root_disk_size_from_disk_source,
+                         UnkownRootDiskSizeSourceError)
 
 def getConnector(configHolder):
     return getConnectorClass()(configHolder)
@@ -133,7 +136,9 @@ class StratusLabClientCloud(BaseCloudConnector):
 
     def list_instances(self):
         self.slConfigHolder.set('ipToHostname', False)
-        return Monitor(self.slConfigHolder).listVms()
+        vms = Monitor(self.slConfigHolder).listVms()
+        populate_vms_with_disk_sizes(vms, self.slConfigHolder.deepcopy())
+        return vms
 
     def _vm_get_ip_from_list_instances(self, vm_instance):
         return vm_instance.template_nic_ip
@@ -143,6 +148,16 @@ class StratusLabClientCloud(BaseCloudConnector):
 
     def _vm_get_ram(self, vm_instance):
         return vm_instance.template_memory
+
+    def _vm_get_root_disk(self, vm_instance):
+        try:
+            return vm_instance.template_disk_0_size
+        except AttributeError:
+            try:
+                return get_root_disk_size_from_disk_source(vm_instance.template_disk_source,
+                                                           self.slConfigHolder.deepcopy())
+            except UnkownRootDiskSizeSourceError:
+                return super(BaseCloudConnector, self)._vm_get_root_disk()
 
     @override
     def _build_image(self, user_info, node_instance):
@@ -222,6 +237,7 @@ class StratusLabClientCloud(BaseCloudConnector):
     @override
     def _initialization(self, user_info, **kwargs):
         self.slConfigHolder.options.update(Runner.defaultRunOptions())
+
         self._set_user_info_on_stratuslab_config_holder(
             user_info, run_instance=kwargs.get('run_instance', True))
 
