@@ -27,7 +27,7 @@ import slipstream.exceptions.Exceptions as Exceptions
 import slipstream.util as util
 
 
-class UnkownRootDiskSizeSourceError(Exceptions.ExecutionException):
+class UnknownRootDiskSizeSourceError(Exceptions.ExecutionException):
     pass
 
 
@@ -51,7 +51,7 @@ def get_root_disk_size_from_disk_source(disk_source, config_holder):
     elif disk_source.startswith('pdisk'):
         return _vm_get_root_disk_size_from_pdisk(disk_source, config_holder)
     else:
-        raise UnkownRootDiskSizeSourceError('Unknown source to get root disk size: %s' % disk_source)
+        raise UnknownRootDiskSizeSourceError('Unknown source to get root disk size: %s' % disk_source)
 
 
 def _set_root_disk_sizes_on_vms(sources_and_vms, config_holder):
@@ -96,5 +96,5 @@ def _disk_source_get_image_id(disk_source):
     elif disk_source.startswith('pdisk'):
         split_on = ':'
     else:
-        raise UnkownRootDiskSizeSourceError('Unknown source to get image ID: %s' % disk_source)
+        raise UnknownRootDiskSizeSourceError('Unknown source to get image ID: %s' % disk_source)
     return disk_source.split(split_on)[-1]

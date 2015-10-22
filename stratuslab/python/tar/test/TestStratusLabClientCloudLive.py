@@ -27,7 +27,8 @@ from TestStratusLabLiveBase import TestStratusLabLiveBase
 
 
 class TestStratusLabClientCloudLive(TestStratusLabLiveBase):
-    def test_1_start_stop_images(self):
+
+    def xtest_1_start_stop_images(self):
         self._start_stop_instances()
 
     def xtest_2_start_stop_instances_by_ids(self):
@@ -56,7 +57,7 @@ class TestStratusLabClientCloudLive(TestStratusLabLiveBase):
         # + delete manifest from Marketplace
         # + delete volume from PDisk
 
-    def test_4_vm_get_root_disk(self):
+    def xtest_4_vm_get_root_disk(self):
         vm = Mock()
         vm.template_disk_0_size = '123'
         assert '123' == self.client._vm_get_root_disk(vm)

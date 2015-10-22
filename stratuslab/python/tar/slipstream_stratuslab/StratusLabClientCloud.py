@@ -50,7 +50,7 @@ from slipstream.util import override
 
 from .vmrootdisk import (populate_vms_with_disk_sizes,
                          get_root_disk_size_from_disk_source,
-                         UnkownRootDiskSizeSourceError)
+                         UnknownRootDiskSizeSourceError)
 
 def getConnector(configHolder):
     return getConnectorClass()(configHolder)
@@ -156,7 +156,7 @@ class StratusLabClientCloud(BaseCloudConnector):
             try:
                 return get_root_disk_size_from_disk_source(vm_instance.template_disk_source,
                                                            self.slConfigHolder.deepcopy())
-            except UnkownRootDiskSizeSourceError:
+            except UnknownRootDiskSizeSourceError:
                 return super(BaseCloudConnector, self)._vm_get_root_disk()
 
     @override
