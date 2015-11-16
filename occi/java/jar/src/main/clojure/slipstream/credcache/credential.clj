@@ -1,5 +1,6 @@
 (ns slipstream.credcache.credential
   "Management functions for credential resources within the database."
+  (:refer-clojure :exclude [update])
   (:require
     [clojure.tools.logging :as log]
     [clj-time.core :as t]
