@@ -77,6 +77,7 @@ def _vm_get_root_disk_size_from_marketplace(disk_source, config_holder):
 
 
 def _vm_get_root_disk_size_from_pdisk(disk_source, config_holder):
+    disk_source = disk_source.replace('/', ':')
     pdisk_endpoint = ':'.join(disk_source.split(':')[1:3])
     config_holder.set('pdiskUsername', config_holder.username)
     config_holder.set('pdiskPassword', config_holder.password)
