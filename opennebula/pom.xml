@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>SlipStreamConnector-OpenNebula</artifactId>
+  <packaging>pom</packaging>
+  <name>SlipStream Connector OpenNebula (POM)</name>
+
+  <parent>
+    <groupId>com.sixsq.slipstream</groupId>
+    <artifactId>SlipStreamConnectors</artifactId>
+    <version>2.19.2-SNAPSHOT</version>
+  </parent>
+
+  <modules>
+    <module>java</module>
+    <module>python</module>
+  </modules>
+
+</project>

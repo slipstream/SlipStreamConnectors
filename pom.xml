@@ -22,6 +22,7 @@
     <module>physicalhost</module>
     <module>stratuslab</module>
     <module>occi</module>
+    <module>opennebula</module>
   </modules>
 
   <scm>
