@@ -23,6 +23,7 @@
     <module>stratuslab</module>
     <module>occi</module>
     <module>opennebula</module>
+    <!-- Add commercial connectors below.  Do not remove this comment. -->
   </modules>
 
   <scm>
