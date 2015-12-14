@@ -35,8 +35,14 @@ public class OpenNebulaSystemConfigurationParametersFactory extends SystemConfig
 		super.putMandatoryEndpoint();
 
 		putMandatoryParameter(constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME),
-				"OpenNebula Flavor for the orchestrator. " +
-				"The actual image should support the desired Flavor");
+				"OpenNebula instance type for the orchestrator.");
+
+
+		putMandatoryParameter(constructKey(OpenNebulaUserParametersFactory.NETWORK_PUBLIC_NAME),
+				"Mapping for Public network. Network ID:", "");
+
+		putMandatoryParameter(constructKey(OpenNebulaUserParametersFactory.NETWORK_PRIVATE_NAME),
+				"Mapping for Private network. Network ID", "");
 
 		putMandatoryUpdateUrl();
 

@@ -32,6 +32,6 @@ public class OpenNebulaImageParametersFactory extends ModuleParametersFactoryBas
 
 	@Override
 	protected void initReferenceParameters() throws ValidationException {
-		putParameter(ImageModule.INSTANCE_TYPE_KEY, "Instance type (flavor)", true);
+		putParameter(ImageModule.INSTANCE_TYPE_KEY, "Instance type", true);
 	}
 }

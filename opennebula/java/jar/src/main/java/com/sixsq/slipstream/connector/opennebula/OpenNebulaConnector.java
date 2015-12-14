@@ -76,6 +76,8 @@ public class OpenNebulaConnector extends CliConnectorBase {
 			throws ConfigurationException, ValidationException {
 		Map<String, String> launchParams = new HashMap<String, String>();
 		launchParams.put("instance-type", getInstanceType(run));
+		launchParams.put("network-public", getNetworkPublic());
+		launchParams.put("network-private", getNetworkPrivate());
 		return launchParams;
 	}
 
@@ -136,6 +138,14 @@ public class OpenNebulaConnector extends CliConnectorBase {
 	@Override
 	public Credentials getCredentials(User user) {
 		return new OpenNebulaCredentials(user, getConnectorInstanceName());
+	}
+
+	protected String getNetworkPublic() throws ConfigurationException, ValidationException {
+		return Configuration.getInstance().getRequiredProperty(constructKey(OpenNebulaUserParametersFactory.NETWORK_PUBLIC_NAME));
+	}
+
+	protected String getNetworkPrivate() throws ConfigurationException, ValidationException {
+		return Configuration.getInstance().getRequiredProperty(constructKey(OpenNebulaUserParametersFactory.NETWORK_PRIVATE_NAME));
 	}
 
 }

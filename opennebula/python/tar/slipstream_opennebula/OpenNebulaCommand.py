@@ -31,7 +31,7 @@ class OpenNebulaCommand(CloudClientCommand):
         return OpenNebulaClientCloud
 
     def set_cloud_specific_options(self, parser):
-        parser.add_option('--' + self.ENDPOINT_KEY, dest=self.ENDPOINT_KEY, help='Identity service (Keystone)',
+        parser.add_option('--' + self.ENDPOINT_KEY, dest=self.ENDPOINT_KEY, help='URL of OpenNebula xmlrpc frontend',
                           default='', metavar='ENDPOINT')
 
     def get_cloud_specific_user_cloud_params(self):
