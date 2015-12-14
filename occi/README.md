@@ -40,7 +40,7 @@ yum install -y fetch-crl
 /sbin/service fetch-crl-cron start
 
 # Provider of rOCCI client -- occi-cli RPM.
-wget -O /etc/yum.repos.d/rocci.repo http://repository.egi.eu/community/software/rocci.cli/4.2.x/releases/repofiles/sl-6-x86_64.repo
+wget -O /etc/yum.repos.d/rocci.repo http://repository.egi.eu/community/software/rocci.cli/4.3.x/releases/repofiles/sl-6-x86_64.repo
 yum install -y occi-cli
 ```
 
