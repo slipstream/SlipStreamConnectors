@@ -28,10 +28,15 @@ from slipstream_opennebula.OpenNebulaClientCloud import OpenNebulaClientCloud
 
 class OpenNebulaDescribeInstances(DescribeInstancesCommand, OpenNebulaCommand):
 
-    STATE_MAP = {3: 'Running',
-                 2: 'Terminated',
-                 1: 'Pending',
-                 4: 'Stopped'}
+    STATE_MAP = { 0: 'Init',
+                  1: 'Pending',
+                  2: 'Hold',
+                  3: 'Running',
+                  4: 'Stopped',
+                  5: 'Suspended',
+                  6: 'Done',
+                  8: 'Poweroff',
+                  9: 'Undeployed'}
 
     def _vm_get_state(self, cc, vm):
         return self.STATE_MAP[int(vm.findtext('STATE'))]

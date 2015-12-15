@@ -23,8 +23,11 @@ package com.sixsq.slipstream.connector.opennebula;
 import com.sixsq.slipstream.exceptions.ValidationException;
 import com.sixsq.slipstream.factory.ModuleParametersFactoryBase;
 import com.sixsq.slipstream.persistence.ImageModule;
+import com.sixsq.slipstream.persistence.Run;
 
 public class OpenNebulaImageParametersFactory extends ModuleParametersFactoryBase {
+
+	public static final String INSTANCE_TYPE_DEFAULT = InstanceType.MICRO.getValue();
 
 	public OpenNebulaImageParametersFactory(String connectorInstanceName) throws ValidationException {
 		super(connectorInstanceName);
@@ -32,6 +35,11 @@ public class OpenNebulaImageParametersFactory extends ModuleParametersFactoryBas
 
 	@Override
 	protected void initReferenceParameters() throws ValidationException {
-		putParameter(ImageModule.INSTANCE_TYPE_KEY, "Instance type", true);
+		putMandatoryEnumParameter(ImageModule.INSTANCE_TYPE_KEY, "Instance type",
+				InstanceType.getValues(), INSTANCE_TYPE_DEFAULT, 10);
+
+		putMandatoryParameter(Run.CPU_PARAMETER_NAME, Run.CPU_PARAMETER_DESCRIPTION, 20);
+		putMandatoryParameter(Run.RAM_PARAMETER_NAME, Run.RAM_PARAMETER_DESCRIPTION, 30);
+
 	}
 }

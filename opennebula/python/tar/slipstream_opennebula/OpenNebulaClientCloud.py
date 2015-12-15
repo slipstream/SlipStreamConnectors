@@ -98,23 +98,34 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         selected_instance_type = node_instance.get_instance_type()
         if selected_instance_type == 'micro':
             instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
-            cpu = 'CPU = 0.5'
+            cpu = 'VCPU = 1'
             ram = 'MEMORY = 512'
         elif selected_instance_type == 'small':
             instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
-            cpu = 'CPU = 1'
+            cpu = 'VCPU = 2'
             ram = 'MEMORY = 1024'
+        elif selected_instance_type == 'medium':
+            instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
+            cpu = 'VCPU = 4'
+            ram = 'MEMORY = 2048'
         elif selected_instance_type == 'large':
             instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
-            cpu = 'CPU = 2'
-            ram = 'MEMORY = 2048'
-        elif selected_instance_type == 'xlarge':
-            instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
-            cpu = 'CPU = 4'
+            cpu = 'VCPU = 8'
             ram = 'MEMORY = 4096'
         else :
             raise Exceptions.ParameterNotFoundException(
                 "Couldn't find the specified instance type: %s" % selected_instance_type)
+
+        vm_ram_mb = node_instance.get_ram() or None
+        if vm_ram_mb:
+            ram = 'MEMORY = %d' % int(vm_ram_mb)
+
+        vm_cpu =  node_instance.get_cpu() or None
+        if vm_cpu:
+            cpu = 'VCPU = %d' % int(vm_cpu)
+
+        #add real CPU ratio
+        cpu = " ".join(['CPU = 0.5', cpu])
 
         disk = 'DISK = [ IMAGE_ID  = %d ]' % int(node_instance.get_image_id())
 
@@ -161,7 +172,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
     @override
     def list_instances(self):
-        vms = etree.fromstring(self._rpc_execute('one.vmpool.info', -3, -1, -1, 3))
+        vms = etree.fromstring(self._rpc_execute('one.vmpool.info', -3, -1, -1, -1))
         return vms.findall('VM')
 
     @override

@@ -25,6 +25,8 @@ import com.sixsq.slipstream.exceptions.ValidationException;
 
 public class OpenNebulaSystemConfigurationParametersFactory extends SystemConfigurationParametersFactoryBase {
 
+	public static final String ORCHESTRATOR_INSTANCE_TYPE_DEFAULT = InstanceType.MICRO.getValue();
+
 	public OpenNebulaSystemConfigurationParametersFactory(String connectorInstanceName) throws ValidationException {
 		super(connectorInstanceName);
 	}
@@ -37,6 +39,9 @@ public class OpenNebulaSystemConfigurationParametersFactory extends SystemConfig
 		putMandatoryParameter(constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME),
 				"OpenNebula instance type for the orchestrator.");
 
+		putEnumParameter(constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME),
+				"OpenNebula instance type for the orchestrator.",
+				InstanceType.getValues(), ORCHESTRATOR_INSTANCE_TYPE_DEFAULT, true);
 
 		putMandatoryParameter(constructKey(OpenNebulaUserParametersFactory.NETWORK_PUBLIC_NAME),
 				"Mapping for Public network. Network ID:", "");

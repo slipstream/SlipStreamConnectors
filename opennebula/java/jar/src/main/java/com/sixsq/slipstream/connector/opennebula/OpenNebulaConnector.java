@@ -75,10 +75,75 @@ public class OpenNebulaConnector extends CliConnectorBase {
 	protected Map<String, String> getConnectorSpecificLaunchParams(Run run, User user)
 			throws ConfigurationException, ValidationException {
 		Map<String, String> launchParams = new HashMap<String, String>();
+		launchParams.putAll(getInstanceSizeParams(run));
 		launchParams.put("instance-type", getInstanceType(run));
 		launchParams.put("network-public", getNetworkPublic());
 		launchParams.put("network-private", getNetworkPrivate());
 		return launchParams;
+	}
+
+	private Map<String, String> getInstanceSizeParams(Run run) throws ValidationException {
+		Map<String, String> instanceSize = new HashMap<String, String>();
+		if (isInOrchestrationContext(run)) {
+			String instanceType = Configuration
+					.getInstance()
+					.getRequiredProperty(
+							constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME));
+			instanceSize.put("instance-type", instanceType);
+			return instanceSize;
+		} else {
+			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
+			String cpu = getCpu(image);
+			String ram = getRam(image);
+			if (cpu == null || cpu.isEmpty() || ram == null || ram.isEmpty()) {
+				instanceSize.put("instance-type", getInstanceType(image));
+				return instanceSize;
+			} else {
+				instanceSize.put("cpu", cpu);
+				instanceSize.put("ram", ram);
+				return instanceSize;
+			}
+		}
+	}
+
+	@Override
+	protected String getCpu(ImageModule image) throws ValidationException {
+		String cpu = super.getCpu(image);
+		if (cpu == null || cpu.isEmpty()) {
+			return "";
+		} else {
+			checkConvertsToFloat(cpu, "CPU");
+			return cpu;
+		}
+	}
+
+	@Override
+	protected String getRam(ImageModule image) throws ValidationException {
+		String ramMb = super.getRam(image);
+		if (ramMb == null || ramMb.isEmpty()) {
+			return "";
+		} else {
+			checkConvertsToInt(ramMb, "RAM");
+			return ramMb;
+		}
+	}
+
+	private void checkConvertsToInt(String value, String name) throws ValidationException {
+		try {
+			Integer.parseInt(value);
+		} catch (NumberFormatException ex) {
+			throw new ValidationException(name + " should be integer.");
+		}
+
+	}
+
+	private void checkConvertsToFloat(String value, String name) throws ValidationException {
+		try {
+			Float.parseFloat(value);
+		} catch (NumberFormatException ex) {
+			throw new ValidationException(name + " should be float.");
+		}
+
 	}
 
 	protected String getInstanceType(Run run)
