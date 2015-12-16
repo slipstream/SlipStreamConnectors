@@ -25,7 +25,6 @@ from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 
 import xmlrpclib
 import urllib
-from pprint import pprint, pformat
 import xml.etree.ElementTree as etree
 import re
 import base64
@@ -89,7 +88,6 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
     @override
     def _start_image(self, user_info, node_instance, vm_name):
-        util.printStep('KB: _start_image.')
         return self._start_image_on_opennebula(user_info, node_instance, vm_name)
 
     def _start_image_on_opennebula(self, user_info, node_instance, vm_name):
@@ -144,17 +142,6 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         template = ' '.join([instance_name, instance_type, cpu, ram, disk, nic, context])
         vm_id = self._rpc_execute('one.vm.allocate', template, False)
         vm = self._rpc_execute('one.vm.info', vm_id)
-        #xml = etree.fromstring(vm)
-        #pprint('ici:')
-        #pprint(xml.find('TEMPLATE/NIC/IP').text)
-        #vm = self._get_from_rpc(user_info, 'one.template.instantiate', instance_type, vm_name, False, 'NIC = [ NETWORK = "private" ] DISK = [ IMAGE_ID  = 10 ]')
-        #success, vm_id_or_error_msg, error_code = self.driver.one.template.instantiate(self._createSessionString(user_info), instance_type, vm_name, False, "")
-        #pprint("vm_id_or_error_msg:")
-        #pprint(vm_id_or_error_msg)
-        #pprint("success:")
-        #pprint(success)
-        #pprint("error_code:")
-        #pprint(error_code)
         return etree.fromstring(vm)
 
     def format_instance_name(self, name):
@@ -177,9 +164,8 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
     @override
     def _stop_deployment(self):
-        util.printStep('KB: _stop_deployment.')
-        # for _, vm in self.get_vms().items():
-        #     vm['instance'].destroy()
+        for _, vm in self.get_vms().items():
+            self._rpc_execute('one.vm.action', 'delete', int(vm.findtext('ID')))
 
     @override
     def _stop_vms_by_ids(self, ids):
