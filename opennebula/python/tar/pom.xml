@@ -37,7 +37,7 @@
                 <configuration>
                   <executable>nosetests</executable>
                   <environmentVariables>
-                    <PYTHONPATH>.:${project.build.directory}/dependencies/slipstream-client/lib/:${project.build.directory}/dependencies/libcloud/</PYTHONPATH>
+                    <PYTHONPATH>.:${project.build.directory}/dependencies/slipstream-client/lib/</PYTHONPATH>
                   </environmentVariables>
                   <arguments>
                     <argument>-v</argument>

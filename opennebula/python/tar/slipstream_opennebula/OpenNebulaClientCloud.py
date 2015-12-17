@@ -16,44 +16,66 @@
  limitations under the License.
 """
 
+import time
 
 import slipstream.util as util
 import slipstream.exceptions.Exceptions as Exceptions
 
 from slipstream.util import override
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
+from slipstream.utils.ssh import generate_keypair
 
 import xmlrpclib
 import urllib
-import xml.etree.ElementTree as etree
 import re
 import base64
+try:
+    import xml.etree.cElementTree as eTree  # c-version first
+except ImportError:
+    try:
+        import xml.etree.ElementTree as eTree  # python version
+    except ImportError:
+        eTree = None
+        raise Exception('failed to import ElementTree')
 
-def getConnector(configHolder):
-    return getConnectorClass()(configHolder)
+
+def getConnector(config_holder):
+    return getConnectorClass()(config_holder)
 
 
 def getConnectorClass():
     return OpenNebulaClientCloud
 
 
-def searchInObjectList(list_, propertyName, propertyValue):
+def searchInObjectList(list_, property_name, property_value):
     for element in list_:
         if isinstance(element, dict):
-            if element.get(propertyName) == propertyValue:
+            if element.get(property_name) == property_value:
                 return element
         else:
-            if getattr(element, propertyName) == propertyValue:
+            if getattr(element, property_name) == property_value:
                 return element
     return None
 
 
 class OpenNebulaClientCloud(BaseCloudConnector):
+    def _resize(self, node_instance):
+        raise Exceptions.ExecutionException("%s doesn't implement resize feature." %
+                                            self.__class__.__name__)
+
+    def _detach_disk(self, node_instance):
+        raise Exceptions.ExecutionException("%s doesn't implement detach disk feature." %
+                                            self.__class__.__name__)
+
+    def _attach_disk(self, node_instance):
+        raise Exceptions.ExecutionException("%s doesn't implement attach disk feature." %
+                                            self.__class__.__name__)
+
     cloudName = 'opennebula'
 
-    def __init__(self, configHolder):
+    def __init__(self, config_holder):
 
-        super(OpenNebulaClientCloud, self).__init__(configHolder)
+        super(OpenNebulaClientCloud, self).__init__(config_holder)
 
         self._set_capabilities(contextualization=True,
                                direct_ip_assignment=True,
@@ -61,8 +83,9 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         self.user_info = None
 
     def _rpc_execute(self, command, *args):
-        remoteFunction = getattr(self.driver, command)
-        success, output_or_error_msg, err_code = remoteFunction(self._createSessionString(self.user_info), *args)
+        remote_function = getattr(self.driver, command)
+        success, output_or_error_msg, err_code = \
+            remote_function(self._create_session_string(), *args)
         if not success:
             raise Exceptions.ExecutionException(output_or_error_msg)
         return output_or_error_msg
@@ -70,20 +93,27 @@ class OpenNebulaClientCloud(BaseCloudConnector):
     @override
     def _initialization(self, user_info):
         util.printStep('Initialize the OpenNebula connector.')
-        self.driver = self._createRpcConnection(user_info)
         self.user_info = user_info
 
-    def format_instance_name(self, name):
-        name = self.remove_bad_char_in_instance_name(name)
-        return self.truncate_instance_name(name)
+        if self.is_build_image():
+            self.tmp_private_key, self.tmp_public_key = generate_keypair()
+            self.user_info.set_private_key(self.tmp_private_key)
 
-    def truncate_instance_name(self, name):
+        self.driver = self._create_rpc_connection()
+
+    def format_instance_name(self, name):
+        new_name = self.remove_bad_char_in_instance_name(name)
+        return self.truncate_instance_name(new_name)
+
+    @staticmethod
+    def truncate_instance_name(name):
         if len(name) <= 128:
             return name
         else:
             return name[:63] + '-' + name[-63:]
 
-    def remove_bad_char_in_instance_name(self, name):
+    @staticmethod
+    def remove_bad_char_in_instance_name(name):
         return re.sub('[^a-zA-Z0-9-]', '', name)
 
     @override
@@ -110,7 +140,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
             cpu = 'VCPU = 8'
             ram = 'MEMORY = 4096'
-        else :
+        else:
             raise Exceptions.ParameterNotFoundException(
                 "Couldn't find the specified instance type: %s" % selected_instance_type)
 
@@ -118,17 +148,18 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         if vm_ram_mb:
             ram = 'MEMORY = %d' % int(vm_ram_mb)
 
-        vm_cpu =  node_instance.get_cpu() or None
+        vm_cpu = node_instance.get_cpu() or None
         if vm_cpu:
             cpu = 'VCPU = %d' % int(vm_cpu)
 
-        #add real CPU ratio
+        # add real CPU ratio
         cpu = " ".join(['CPU = 0.5', cpu])
 
         disk = 'DISK = [ IMAGE_ID  = %d ]' % int(node_instance.get_image_id())
 
         # extract mappings for Public and Private networks from the connector instance
         network_type = node_instance.get_network_type()
+        network_id = None
         if network_type == 'Public':
             network_id = int(user_info.get_public_network_name())
         elif network_type == 'Private':
@@ -136,30 +167,22 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         nic = 'NIC = [ NETWORK_ID = %d ]' % network_id
 
         contextualization_script = self.is_build_image() and '' or self._get_bootstrap_script(node_instance)
-        context = 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + self.user_info.get_public_keys() \
-                  + '", START_SCRIPT_BASE64 = "%s"]' % base64.b64encode(contextualization_script)
 
+        if self.is_build_image():
+            public_key = self.tmp_public_key
+        else:
+            public_key = self.user_info.get_public_keys()
+
+        context = 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + public_key \
+                  + '", START_SCRIPT_BASE64 = "%s"]' % base64.b64encode(contextualization_script)
         template = ' '.join([instance_name, instance_type, cpu, ram, disk, nic, context])
         vm_id = self._rpc_execute('one.vm.allocate', template, False)
         vm = self._rpc_execute('one.vm.info', vm_id)
-        return etree.fromstring(vm)
-
-    def format_instance_name(self, name):
-        name = self.remove_bad_char_in_instance_name(name)
-        return self.truncate_instance_name(name)
-
-    def truncate_instance_name(self, name):
-        if len(name) <= 128:
-            return name
-        else:
-            return name[:63] + '-' + name[-63:]
-
-    def remove_bad_char_in_instance_name(self, name):
-        return re.sub('[^a-zA-Z0-9-]', '', name)
+        return eTree.fromstring(vm)
 
     @override
     def list_instances(self):
-        vms = etree.fromstring(self._rpc_execute('one.vmpool.info', -3, -1, -1, -1))
+        vms = eTree.fromstring(self._rpc_execute('one.vmpool.info', -3, -1, -1, -1))
         return vms.findall('VM')
 
     @override
@@ -172,15 +195,65 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         for _id in map(int, ids):
             self._rpc_execute('one.vm.action', 'delete', _id)
 
-    def _createSessionString(self, user_info):
-        quotedUsername = urllib.quote(user_info.get_cloud_username(), '')
-        quotedPassword = urllib.quote(user_info.get_cloud_password(), '')
-        return '%s:%s' % (quotedUsername, quotedPassword)
+    @override
+    def _build_image(self, user_info, node_instance):
+        return self._build_image_on_opennebula(user_info, node_instance)
 
-    def _createRpcConnection(self, user_info):
-        protocolSeparator = '://'
-        parts = user_info.get_cloud_endpoint().split(protocolSeparator)
-        url = parts[0] + protocolSeparator + self._createSessionString(user_info) + "@" + ''.join(parts[1:])
+    def _build_image_on_opennebula(self, user_info, node_instance):
+        listener = self._get_listener()
+        machine_name = node_instance.get_name()
+        vm = self._get_vm(machine_name)
+        ip_address = self._vm_get_ip(vm)
+        vm_id = int(self._vm_get_id(vm))
+        self._wait_instance_in_running_state(vm_id)
+        self._build_image_increment(user_info, node_instance, ip_address)
+        util.printStep('Creation of the new Image.')
+        listener.write_for(machine_name, 'Saving the image')
+        new_image_id = int(self._rpc_execute(
+            'one.vm.disksaveas', vm_id, 0, node_instance.get_image_short_name(), '', -1))
+        self._wait_image_creation_completed(new_image_id)
+        listener.write_for(machine_name, 'Image saved !')
+        return str(new_image_id)
+
+    def _wait_instance_in_running_state(self, vm_id):
+        time_wait = 300
+        time_stop = time.time() + time_wait
+
+        state = None
+        running_code = 3
+        while state != running_code:
+            if time.time() > time_stop:
+                raise Exceptions.ExecutionException(
+                    'Timed out while waiting for instance "%s" enter in running state'
+                    % vm_id)
+            time.sleep(3)
+            vm = self._rpc_execute('one.vm.info', vm_id)
+            state = int(eTree.fromstring(vm).findtext('STATE'))
+
+    def _wait_image_creation_completed(self, new_image_id):
+        time_wait = 600
+        time_stop = time.time() + time_wait
+
+        image_state = None
+        ready_code = 1
+        while image_state != ready_code:
+            if time.time() > time_stop:
+                raise Exceptions.ExecutionException(
+                    'Timed out while waiting for image "%s" to be created' % new_image_id)
+            time.sleep(3)
+            image = self._rpc_execute('one.image.info', new_image_id)
+            image_state = int(eTree.fromstring(image).findtext('STATE'))
+
+    def _create_session_string(self):
+        quoted_username = urllib.quote(self.user_info.get_cloud_username(), '')
+        quoted_password = urllib.quote(self.user_info.get_cloud_password(), '')
+        return '%s:%s' % (quoted_username, quoted_password)
+
+    def _create_rpc_connection(self):
+        protocol_separator = '://'
+        parts = self.user_info.get_cloud_endpoint().split(protocol_separator)
+        url = parts[0] + protocol_separator + self._create_session_string() \
+            + "@" + ''.join(parts[1:])
         return xmlrpclib.ServerProxy(url)
 
     @override
@@ -210,4 +283,3 @@ class OpenNebulaClientCloud(BaseCloudConnector):
     @override
     def _vm_get_instance_type(self, vm_instance):
         return vm_instance.findtext('USER_TEMPLATE/INSTANCE_TYPE')
-
