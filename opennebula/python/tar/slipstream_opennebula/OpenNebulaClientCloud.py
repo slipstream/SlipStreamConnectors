@@ -16,352 +16,270 @@
  limitations under the License.
 """
 
-
 import time
 
 import slipstream.util as util
 import slipstream.exceptions.Exceptions as Exceptions
 
 from slipstream.util import override
-from slipstream.NodeDecorator import NodeDecorator
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
+from slipstream.utils.ssh import generate_keypair
 
-def getConnector(configHolder):
-    return getConnectorClass()(configHolder)
+import xmlrpclib
+import urllib
+import re
+import base64
+try:
+    import xml.etree.cElementTree as eTree  # c-version first
+except ImportError:
+    try:
+        import xml.etree.ElementTree as eTree  # python version
+    except ImportError:
+        eTree = None
+        raise Exception('failed to import ElementTree')
+
+
+def getConnector(config_holder):
+    return getConnectorClass()(config_holder)
 
 
 def getConnectorClass():
     return OpenNebulaClientCloud
 
 
-def searchInObjectList(list_, propertyName, propertyValue):
+def searchInObjectList(list_, property_name, property_value):
     for element in list_:
         if isinstance(element, dict):
-            if element.get(propertyName) == propertyValue:
+            if element.get(property_name) == property_value:
                 return element
         else:
-            if getattr(element, propertyName) == propertyValue:
+            if getattr(element, property_name) == property_value:
                 return element
     return None
 
 
 class OpenNebulaClientCloud(BaseCloudConnector):
+    def _resize(self, node_instance):
+        raise Exceptions.ExecutionException("%s doesn't implement resize feature." %
+                                            self.__class__.__name__)
+
+    def _detach_disk(self, node_instance):
+        raise Exceptions.ExecutionException("%s doesn't implement detach disk feature." %
+                                            self.__class__.__name__)
+
+    def _attach_disk(self, node_instance):
+        raise Exceptions.ExecutionException("%s doesn't implement attach disk feature." %
+                                            self.__class__.__name__)
+
     cloudName = 'opennebula'
 
-    def __init__(self, configHolder):
+    def __init__(self, config_holder):
 
-        super(OpenNebulaClientCloud, self).__init__(configHolder)
+        super(OpenNebulaClientCloud, self).__init__(config_holder)
 
         self._set_capabilities(contextualization=True,
+                               direct_ip_assignment=True,
                                orchestrator_can_kill_itself_or_its_vapp=True)
+        self.user_info = None
 
-        self.flavors = []
-        self.images = []
-        self.tempPrivateKey = None
+    def _rpc_execute(self, command, *args):
+        remote_function = getattr(self.driver, command)
+        success, output_or_error_msg, err_code = \
+            remote_function(self._create_session_string(), *args)
+        if not success:
+            raise Exceptions.ExecutionException(output_or_error_msg)
+        return output_or_error_msg
 
     @override
     def _initialization(self, user_info):
         util.printStep('Initialize the OpenNebula connector.')
-        # self._thread_local.driver = self._get_driver(user_info)
-        # self.flavors = self._thread_local.driver.list_sizes()
-        # self.images = self._thread_local.driver.list_images()
-        #
-        # if self.is_deployment():
-        #     self._import_keypair(user_info)
-        # elif self.is_build_image():
-        #     self._create_keypair_and_set_on_user_info(user_info)
+        self.user_info = user_info
+
+        if self.is_build_image():
+            self.tmp_private_key, self.tmp_public_key = generate_keypair()
+            self.user_info.set_private_key(self.tmp_private_key)
+
+        self.driver = self._create_rpc_connection()
+
+    def format_instance_name(self, name):
+        new_name = self.remove_bad_char_in_instance_name(name)
+        return self.truncate_instance_name(new_name)
+
+    @staticmethod
+    def truncate_instance_name(name):
+        if len(name) <= 128:
+            return name
+        else:
+            return name[:63] + '-' + name[-63:]
+
+    @staticmethod
+    def remove_bad_char_in_instance_name(name):
+        return re.sub('[^a-zA-Z0-9-]', '', name)
 
     @override
-    def _finalization(self, user_info):
-        util.printStep('KB: _finalization.')
-        # try:
-        #     kp_name = user_info.get_keypair_name()
-        #     self._delete_keypair(kp_name)
-        # # pylint: disable=W0703
-        # except Exception:
-        #     pass
+    def _start_image(self, user_info, node_instance, vm_name):
+        return self._start_image_on_opennebula(user_info, node_instance, vm_name)
 
+    def _start_image_on_opennebula(self, user_info, node_instance, vm_name):
+        instance_name = 'NAME = %s' % self.format_instance_name(vm_name)
+
+        selected_instance_type = node_instance.get_instance_type()
+        if selected_instance_type == 'micro':
+            instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
+            cpu = 'VCPU = 1'
+            ram = 'MEMORY = 512'
+        elif selected_instance_type == 'small':
+            instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
+            cpu = 'VCPU = 2'
+            ram = 'MEMORY = 1024'
+        elif selected_instance_type == 'medium':
+            instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
+            cpu = 'VCPU = 4'
+            ram = 'MEMORY = 2048'
+        elif selected_instance_type == 'large':
+            instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
+            cpu = 'VCPU = 8'
+            ram = 'MEMORY = 4096'
+        else:
+            raise Exceptions.ParameterNotFoundException(
+                "Couldn't find the specified instance type: %s" % selected_instance_type)
+
+        vm_ram_mb = node_instance.get_ram() or None
+        if vm_ram_mb:
+            ram = 'MEMORY = %d' % int(vm_ram_mb)
+
+        vm_cpu = node_instance.get_cpu() or None
+        if vm_cpu:
+            cpu = 'VCPU = %d' % int(vm_cpu)
+
+        # add real CPU ratio
+        cpu = " ".join(['CPU = 0.5', cpu])
+
+        disk = 'DISK = [ IMAGE_ID  = %d ]' % int(node_instance.get_image_id())
+
+        # extract mappings for Public and Private networks from the connector instance
+        network_type = node_instance.get_network_type()
+        network_id = None
+        if network_type == 'Public':
+            network_id = int(user_info.get_public_network_name())
+        elif network_type == 'Private':
+            network_id = int(user_info.get_private_network_name())
+        nic = 'NIC = [ NETWORK_ID = %d ]' % network_id
+
+        contextualization_script = self.is_build_image() and '' or self._get_bootstrap_script(node_instance)
+
+        if self.is_build_image():
+            public_key = self.tmp_public_key
+        else:
+            public_key = self.user_info.get_public_keys()
+
+        context = 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + public_key \
+                  + '", START_SCRIPT_BASE64 = "%s"]' % base64.b64encode(contextualization_script)
+        template = ' '.join([instance_name, instance_type, cpu, ram, disk, nic, context])
+        vm_id = self._rpc_execute('one.vm.allocate', template, False)
+        vm = self._rpc_execute('one.vm.info', vm_id)
+        return eTree.fromstring(vm)
+
+    @override
+    def list_instances(self):
+        vms = eTree.fromstring(self._rpc_execute('one.vmpool.info', -3, -1, -1, -1))
+        return vms.findall('VM')
+
+    @override
+    def _stop_deployment(self):
+        for _, vm in self.get_vms().items():
+            self._rpc_execute('one.vm.action', 'delete', int(vm.findtext('ID')))
+
+    @override
+    def _stop_vms_by_ids(self, ids):
+        for _id in map(int, ids):
+            self._rpc_execute('one.vm.action', 'delete', _id)
+
+    @override
     def _build_image(self, user_info, node_instance):
         return self._build_image_on_opennebula(user_info, node_instance)
 
     def _build_image_on_opennebula(self, user_info, node_instance):
-        util.printStep('KB: _build_image_on_opennebula.')
-        # self._thread_local.driver = self._get_driver(user_info)
-        # listener = self._get_listener()
-        #
-        # if not user_info.get_private_key() and self.tempPrivateKey:
-        #     user_info.set_private_key(self.tempPrivateKey)
-        # machine_name = node_instance.get_name()
-        #
-        # vm = self._get_vm(machine_name)
-        #
-        # util.printAndFlush("\n  node_instance: %s \n" % str(node_instance))
-        # util.printAndFlush("\n  VM: %s \n" % str(vm))
-        #
-        # ip_address = self._vm_get_ip(vm)
-        # vm_id = self._vm_get_id(vm)
-        # instance = vm['instance']
-        #
-        # self._wait_instance_in_running_state(vm_id)
-        #
-        # self._build_image_increment(user_info, node_instance, ip_address)
-        #
-        # util.printStep('Creation of the new Image.')
-        # listener.write_for(machine_name, 'Saving the image')
-        # newImg = self._thread_local.driver.ex_save_image(instance,
-        #                                                  node_instance.get_image_short_name(),
-        #                                                  metadata=None)
-        #
-        # self._wait_image_creation_completed(newImg.id)
-        # listener.write_for(machine_name, 'Image saved !')
-        #
-        # return newImg.id
-        return None
+        listener = self._get_listener()
+        machine_name = node_instance.get_name()
+        vm = self._get_vm(machine_name)
+        ip_address = self._vm_get_ip(vm)
+        vm_id = int(self._vm_get_id(vm))
+        self._wait_instance_in_running_state(vm_id)
+        self._build_image_increment(user_info, node_instance, ip_address)
+        util.printStep('Creation of the new Image.')
+        listener.write_for(machine_name, 'Saving the image')
+        new_image_id = int(self._rpc_execute(
+            'one.vm.disksaveas', vm_id, 0, node_instance.get_image_short_name(), '', -1))
+        self._wait_image_creation_completed(new_image_id)
+        listener.write_for(machine_name, 'Image saved !')
+        return str(new_image_id)
 
-    @override
-    def _start_image(self, user_info, node_instance, vm_name):
-        util.printStep('KB: _start_image.')
-        #self._thread_local.driver = self._get_driver(user_info)
-        return self._start_image_on_opennebula(user_info, node_instance, vm_name)
+    def _wait_instance_in_running_state(self, vm_id):
+        time_wait = 300
+        time_stop = time.time() + time_wait
 
-    def _start_image_on_opennebula(self, user_info, node_instance, vm_name):
-        util.printStep('KB: _start_image_on_opennebula.')
-        # image_id = node_instance.get_image_id()
-        # instance_type = node_instance.get_instance_type()
-        # keypair = user_info.get_keypair_name()
-        # #security_groups = self._get_security_groups_for_node_instance(node_instance)
-        # flavor = searchInObjectList(self.flavors, 'name', instance_type)
-        # image = searchInObjectList(self.images, 'id', image_id)
-        # contextualization_script = self.is_build_image() and '' or self._get_bootstrap_script(node_instance)
-        #
-        # if flavor is None:
-        #     raise Exceptions.ParameterNotFoundException("Couldn't find the specified flavor: %s" % instance_type)
-        # if image is None:
-        #     raise Exceptions.ParameterNotFoundException("Couldn't find the specified image: %s" % image_id)
-        #
-        # # extract mappings for Public and Private networks from the connector instance
-        # network = None
-        # network_type = node_instance.get_network_type()
-        # if network_type == 'Public':
-        #     network_name = user_info.get_public_network_name()
-        #     network = searchInObjectList(self.networks, 'name', network_name)
-        # elif network_type == 'Private':
-        #     network_name = user_info.get_private_network_name()
-        #     network = searchInObjectList(self.networks, 'name', network_name)
-        #
-        # kwargs = {"name": vm_name,
-        #           "size": flavor,
-        #           "image": image,
-        #           "ex_keyname": keypair,
-        #           "ex_userdata": contextualization_script,
-        #           "ex_security_groups": security_groups}
-        #
-        # if network is not None:
-        #     kwargs["networks"] = [network]
-        #
-        # instance = self._thread_local.driver.create_node(**kwargs)
-        #
-        # vm = dict(networkType=node_instance.get_network_type(),
-        #           instance=instance,
-        #           ip='',
-        #           id=instance.id)
-        # return vm
-        return None
+        state = None
+        running_code = 3
+        while state != running_code:
+            if time.time() > time_stop:
+                raise Exceptions.ExecutionException(
+                    'Timed out while waiting for instance "%s" enter in running state'
+                    % vm_id)
+            time.sleep(3)
+            vm = self._rpc_execute('one.vm.info', vm_id)
+            state = int(eTree.fromstring(vm).findtext('STATE'))
 
+    def _wait_image_creation_completed(self, new_image_id):
+        time_wait = 600
+        time_stop = time.time() + time_wait
 
-    @override
-    def list_instances(self):
-        util.printStep('KB: list_instances.')
-        #return self._thread_local.driver.list_nodes()
-        return None
+        image_state = None
+        ready_code = 1
+        while image_state != ready_code:
+            if time.time() > time_stop:
+                raise Exceptions.ExecutionException(
+                    'Timed out while waiting for image "%s" to be created' % new_image_id)
+            time.sleep(3)
+            image = self._rpc_execute('one.image.info', new_image_id)
+            image_state = int(eTree.fromstring(image).findtext('STATE'))
 
-    @override
-    def _stop_deployment(self):
-        util.printStep('KB: _stop_deployment.')
-        # for _, vm in self.get_vms().items():
-        #     vm['instance'].destroy()
+    def _create_session_string(self):
+        quoted_username = urllib.quote(self.user_info.get_cloud_username(), '')
+        quoted_password = urllib.quote(self.user_info.get_cloud_password(), '')
+        return '%s:%s' % (quoted_username, quoted_password)
 
-    @override
-    def _stop_vms_by_ids(self, ids):
-        util.printStep('KB: _stop_vms_by_ids.')
-        # for node in self._thread_local.driver.list_nodes():
-        #     if node.id in ids:
-        #         node.destroy()
-
-    def _get_driver(self, user_info):
-        util.printStep('KB: _get_driver.')
-        # driverOpenStack = get_driver(Provider.OPENSTACK)
-        # isHttps = user_info.get_cloud_endpoint().lower().startswith('https://')
-        #
-        # return driverOpenStack(user_info.get_cloud_username(),
-        #                        user_info.get_cloud_password(),
-        #                        secure=isHttps,
-        #                        ex_tenant_name=user_info.get_cloud('tenant.name'),
-        #                        ex_force_auth_url=user_info.get_cloud_endpoint(),
-        #                        ex_force_auth_version='2.0_password',
-        #                        ex_force_service_type=user_info.get_cloud('service.type'),
-        #                        ex_force_service_name=user_info.get_cloud('service.name'),
-        #                        ex_force_service_region=user_info.get_cloud('service.region'))
-        return None
+    def _create_rpc_connection(self):
+        protocol_separator = '://'
+        parts = self.user_info.get_cloud_endpoint().split(protocol_separator)
+        url = parts[0] + protocol_separator + self._create_session_string() \
+            + "@" + ''.join(parts[1:])
+        return xmlrpclib.ServerProxy(url)
 
     @override
     def _vm_get_ip(self, vm):
-        util.printStep('KB: _vm_get_ip.')
-        #return vm['ip']
-        return None
+        return vm.findtext('TEMPLATE/NIC/IP')
 
     @override
     def _vm_get_id(self, vm):
-        util.printStep('KB: _vm_get_id.')
-        #return vm['id']
-        return None
-
-    def _get_vm_size(self, vm_instance):
-        util.printStep('KB: _get_vm_size.')
-        # try:
-        #     size = [i for i in self.flavors if i.id == vm_instance.extra.get('flavorId')][0]
-        # except IndexError:
-        #     return None
-        # else:
-        #     return size
-        return None
+        return vm.findtext('ID')
 
     @override
     def _vm_get_ip_from_list_instances(self, vm_instance):
-        util.printStep('KB: _vm_get_ip_from_list_instances.')
-        #return self._get_instance_ip_address(vm_instance)
-        return None
+        return self._vm_get_ip(vm_instance)
 
     @override
     def _vm_get_cpu(self, vm_instance):
-        util.printStep('KB: _vm_get_cpu.')
-        # size = self._get_vm_size(vm_instance)
-        # if size:
-        #     return size.vcpus
-        return None
+        return vm_instance.findtext('TEMPLATE/VCPU')
 
     @override
     def _vm_get_ram(self, vm_instance):
-        util.printStep('KB: _vm_get_ram.')
-        # size = self._get_vm_size(vm_instance)
-        # if size:
-        #     return size.ram
-        return None
+        return vm_instance.findtext('TEMPLATE/MEMORY')
 
     @override
     def _vm_get_root_disk(self, vm_instance):
-        util.printStep('KB: _vm_get_root_disk.')
-        # size = self._get_vm_size(vm_instance)
-        # if size:
-        #     return size.disk
-        return None
+        return vm_instance.findtext('TEMPLATE/DISK/SIZE')
 
     @override
     def _vm_get_instance_type(self, vm_instance):
-        util.printStep('KB: _vm_get_instance_type.')
-        # size = self._get_vm_size(vm_instance)
-        # if size:
-        #     return size.name
-        return None
-
-    def _get_instance_ip_address(self, instance, ip_type='', strict=True):
-        util.printStep('KB: _get_instance_ip_address.')
-        # if ip_type.lower() == 'private':
-        #     return (len(instance.private_ips) != 0) and instance.private_ips[0] or (len(instance.public_ips) != 0 and not strict) and instance.public_ips[0] or ''
-        # elif ip_type.lower() == 'public':
-        #     return (len(instance.public_ips) != 0) and instance.public_ips[0] or (len(instance.private_ips) != 0 and not strict) and instance.private_ips[0] or ''
-        # else:
-        #     return (len(instance.public_ips) != 0) and instance.public_ips[0] or (len(instance.private_ips) != 0) and instance.private_ips[0] or ''
-        return None
-
-    @override
-    def _wait_and_get_instance_ip_address(self, vm):
-        util.printStep('KB: _wait_and_get_instance_ip_address.')
-        # timeWait = 300
-        # timeStop = time.time() + timeWait
-        #
-        # while time.time() < timeStop:
-        #     time.sleep(1)
-        #
-        #     ipType = vm['networkType']
-        #     vmId = vm['id']
-        #
-        #     instances = self._thread_local.driver.list_nodes()
-        #     instance = searchInObjectList(instances, 'id', vmId)
-        #     ip = self._get_instance_ip_address(instance, ipType or '')
-        #     if ip:
-        #         vm['ip'] = ip
-        #         return vm
-        #
-        # try:
-        #     ip = self._get_instance_ip_address(instance, ipType or '', False)
-        # # pylint: disable=W0703
-        # except Exception:
-        #     pass
-        #
-        # if ip:
-        #     vm['ip'] = ip
-        #     return vm
-        #
-        # raise Exceptions.ExecutionException(
-        #     'Timed out while waiting for IPs to be assigned to instances: %s' % vmId)
-        return None
-
-    def _wait_instance_in_running_state(self, instanceId):
-        util.printStep('KB: _wait_instance_in_running_state.')
-        # timeWait = 300
-        # timeStop = time.time() + timeWait
-        #
-        # state = ''
-        # while state != NodeState.RUNNING:
-        #     if time.time() > timeStop:
-        #         raise Exceptions.ExecutionException(
-        #             'Timed out while waiting for instance "%s" enter in running state'
-        #             % instanceId)
-        #     time.sleep(1)
-        #     node = self._thread_local.driver.list_nodes()
-        #     state = searchInObjectList(node, 'id', instanceId).state
-        return None
-
-    def _wait_image_creation_completed(self, imageId):
-        util.printStep('KB: _wait_image_creation_completed.')
-        # timeWait = 600
-        # timeStop = time.time() + timeWait
-        #
-        # imgState = None
-        # while imgState == None:
-        #     if time.time() > timeStop:
-        #         raise Exceptions.ExecutionException(
-        #             'Timed out while waiting for image "%s" to be created' % imageId)
-        #     time.sleep(1)
-        #     images = self._thread_local.driver.list_images()
-        #     imgState = searchInObjectList(images, 'id', imageId)
-
-    def _import_keypair(self, user_info):
-        util.printStep('KB: _import_keypair.')
-        # kp_name = 'ss-key-%i' % int(time.time())
-        # public_key = user_info.get_public_keys()
-        # try:
-        #     kp = self._thread_local.driver.ex_import_keypair_from_string(kp_name, public_key)
-        # except Exception as ex:
-        #     raise Exceptions.ExecutionException('Cannot import the public key. Reason: %s' % ex)
-        # kp_name = kp.name
-        # user_info.set_keypair_name(kp_name)
-        # return kp_name
-        return None
-
-    def _create_keypair_and_set_on_user_info(self, user_info):
-        util.printStep('KB: _import_keypair.')
-        # kp_name = 'ss-build-image-%i' % int(time.time())
-        # kp = self._thread_local.driver.ex_create_keypair(kp_name)
-        # user_info.set_private_key(kp.private_key)
-        # user_info.set_keypair_name(kp.name)
-        # self.tempPrivateKey = kp.private_key
-        # return kp.name
-        return None
-
-    def _delete_keypair(self, kp_name):
-        util.printStep('KB: _delete_keypair.')
-        #kp = searchInObjectList(self._thread_local.driver.list_key_pairs(), 'name', kp_name)
-        #self._thread_local.driver.delete_key_pair(kp)
-
+        return vm_instance.findtext('USER_TEMPLATE/INSTANCE_TYPE')
