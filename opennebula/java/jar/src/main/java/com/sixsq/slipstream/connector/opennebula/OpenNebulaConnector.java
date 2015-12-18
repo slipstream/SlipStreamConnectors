@@ -112,19 +112,19 @@ public class OpenNebulaConnector extends CliConnectorBase {
 		if (cpu == null || cpu.isEmpty()) {
 			return "";
 		} else {
-			checkConvertsToFloat(cpu, "CPU");
+			checkConvertsToInt(cpu, "CPU");
 			return cpu;
 		}
 	}
 
 	@Override
 	protected String getRam(ImageModule image) throws ValidationException {
-		String ramGo = super.getRam(image);
-		if (ramGo == null || ramGo.isEmpty()) {
+		String ramGB = super.getRam(image);
+		if (ramGB == null || ramGB.isEmpty()) {
 			return "";
 		} else {
-			checkConvertsToFloat(ramGo, "RAM");
-			return ramGo;
+			checkConvertsToFloat(ramGB, "RAM");
+			return ramGB;
 		}
 	}
 
