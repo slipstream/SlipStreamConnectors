@@ -119,12 +119,12 @@ public class OpenNebulaConnector extends CliConnectorBase {
 
 	@Override
 	protected String getRam(ImageModule image) throws ValidationException {
-		String ramMb = super.getRam(image);
-		if (ramMb == null || ramMb.isEmpty()) {
+		String ramGo = super.getRam(image);
+		if (ramGo == null || ramGo.isEmpty()) {
 			return "";
 		} else {
-			checkConvertsToInt(ramMb, "RAM");
-			return ramMb;
+			checkConvertsToFloat(ramGo, "RAM");
+			return ramGo;
 		}
 	}
 
