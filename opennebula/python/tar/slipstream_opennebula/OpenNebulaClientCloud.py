@@ -59,6 +59,20 @@ def searchInObjectList(list_, property_name, property_value):
 
 
 class OpenNebulaClientCloud(BaseCloudConnector):
+
+    VM_STATE = [
+        'Init',       # 0
+        'Pending',    # 1
+        'Hold',       # 2
+        'Running',    # 3
+        'Stopped',    # 4
+        'Suspended',  # 5
+        'Done',       # 6
+        '_',          # 7
+        'Poweroff',   # 8
+        'Undeployed'  # 0
+        ]
+
     def _resize(self, node_instance):
         raise Exceptions.ExecutionException("%s doesn't implement resize feature." %
                                             self.__class__.__name__)
@@ -166,12 +180,12 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             network_id = int(user_info.get_private_network_name())
         nic = 'NIC = [ NETWORK_ID = %d ]' % network_id
 
-        contextualization_script = self.is_build_image() and '' or self._get_bootstrap_script(node_instance)
-
         if self.is_build_image():
             public_key = self.tmp_public_key
+            contextualization_script = ''
         else:
             public_key = self.user_info.get_public_keys()
+            contextualization_script = self._get_bootstrap_script(node_instance)
 
         context = 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + public_key \
                   + '", START_SCRIPT_BASE64 = "%s"]' % base64.b64encode(contextualization_script)
@@ -205,30 +219,33 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         vm = self._get_vm(machine_name)
         ip_address = self._vm_get_ip(vm)
         vm_id = int(self._vm_get_id(vm))
-        self._wait_instance_in_running_state(vm_id)
+        self._wait_instance_in_state(vm_id, 'Running', time_out=300)
         self._build_image_increment(user_info, node_instance, ip_address)
         util.printStep('Creation of the new Image.')
+        self._rpc_execute('one.vm.action', 'poweroff', vm_id)
+        self._wait_instance_in_state(vm_id, 'Poweroff', time_out=300)
         listener.write_for(machine_name, 'Saving the image')
+        new_image_name = node_instance.get_image_short_name() + time.strftime("_%Y%m%d-%H%M%S")
         new_image_id = int(self._rpc_execute(
-            'one.vm.disksaveas', vm_id, 0, node_instance.get_image_short_name(), '', -1))
+            'one.vm.disksaveas', vm_id, 0, new_image_name, '', -1))
         self._wait_image_creation_completed(new_image_id)
         listener.write_for(machine_name, 'Image saved !')
+        self._rpc_execute('one.vm.action', 'resume', vm_id)
+        self._wait_instance_in_state(vm_id, 'Running', time_out=300)
         return str(new_image_id)
 
-    def _wait_instance_in_running_state(self, vm_id):
-        time_wait = 300
-        time_stop = time.time() + time_wait
+    def _wait_instance_in_state(self, vm_id, state, time_out):
+        time_stop = time.time() + time_out
 
-        state = None
-        running_code = 3
-        while state != running_code:
+        current_state = None
+        while current_state != self.VM_STATE.index(state):
             if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
-                    'Timed out while waiting for instance "%s" enter in running state'
-                    % vm_id)
+                    'Timed out while waiting for instance "%s" enter in %s state'
+                    % vm_id, state)
             time.sleep(3)
             vm = self._rpc_execute('one.vm.info', vm_id)
-            state = int(eTree.fromstring(vm).findtext('STATE'))
+            current_state = int(eTree.fromstring(vm).findtext('STATE'))
 
     def _wait_image_creation_completed(self, new_image_id):
         time_wait = 600
