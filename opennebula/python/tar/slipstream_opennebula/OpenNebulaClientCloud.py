@@ -158,9 +158,9 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             raise Exceptions.ParameterNotFoundException(
                 "Couldn't find the specified instance type: %s" % selected_instance_type)
 
-        vm_ram_mb = node_instance.get_ram() or None
-        if vm_ram_mb:
-            ram = 'MEMORY = %d' % int(vm_ram_mb)
+        vm_ram_gbytes = node_instance.get_ram() or None
+        if vm_ram_gbytes:
+            ram = 'MEMORY = %d' % int(float(vm_ram_gbytes) * 1024)
 
         vm_cpu = node_instance.get_cpu() or None
         if vm_cpu:
