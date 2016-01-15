@@ -40,16 +40,16 @@
                        {:typeURI "unknown" :other "field"}]]
                    (validate m)))
 
-(expect-let [m {}]
-            m
-            (try
-              (validate m)
-              (catch Exception e
-                (ex-data e))))
+(let [m {}]
+  (expect m
+          (try
+            (validate m)
+            (catch Exception e
+              (ex-data e)))))
 
-(expect-let [m {:typeURI "unknown" :other "field"}]
-            m
-            (try
-              (validate m)
-              (catch Exception e
-                (ex-data e))))
+(let [m {:typeURI "unknown" :other "field"}]
+  (expect m
+          (try
+            (validate m)
+            (catch Exception e
+              (ex-data e)))))
