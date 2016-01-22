@@ -46,6 +46,7 @@
   "Adds a new credential to the database given the information in the
    template; returns the id of the created credential."
   [template]
+  (log/debug "Creating credential with: " (assoc template :passphrase "HIDDEN"))
   (let [resource (-> template
                      (c/validate-template)
                      (c/template->resource))]

@@ -77,6 +77,8 @@
            myproxy-port default-myproxy-port
            lifetime     ttl-12h}
     :as   params}]
+  (log/debug (format "Geting proxy from %s:%s for %s"
+                     myproxy-host myproxy-port (:username params)))
   (let [myproxy (MyProxy. myproxy-host myproxy-port)]
     (->> params
          (merge {:myproxy-host myproxy-host

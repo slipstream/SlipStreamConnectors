@@ -1,17 +1,5 @@
 package com.sixsq.slipstream.connector.occi;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.io.IOUtils;
-
 import com.sixsq.slipstream.connector.CredentialsBase;
 import com.sixsq.slipstream.credentials.Credentials;
 import com.sixsq.slipstream.exceptions.InvalidElementException;
@@ -20,10 +8,20 @@ import com.sixsq.slipstream.exceptions.SlipStreamRuntimeException;
 import com.sixsq.slipstream.exceptions.ValidationException;
 import com.sixsq.slipstream.persistence.User;
 import com.sixsq.slipstream.persistence.UserParameter;
-
+import org.apache.commons.io.IOUtils;
 import slipstream.credcache.JavaWrapper;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Logger;
+
 class OcciCredentials extends CredentialsBase implements Credentials {
+
+	private static Logger logger = Logger.getLogger(OcciCredentials.class.getName());
+
 	public OcciCredentials(User user, String connectorInstanceName) {
 		super(user);
 		try {
@@ -97,7 +95,9 @@ class OcciCredentials extends CredentialsBase implements Credentials {
 	}
 
 	private String createVomsProxyAndStoreCredcacheIdOnUser() throws InvalidElementException, ValidationException {
-	    String credcacheId = JavaWrapper.create(getCredcacheTemplate());
+		Map<String, Object> template = getCredcacheTemplate();
+		logger.fine("Create proxy from template: " + template);
+	    String credcacheId = JavaWrapper.create(template);
 	    storeCredcacheIdAsUserParameter(credcacheId);
 	    return credcacheId;
     }
