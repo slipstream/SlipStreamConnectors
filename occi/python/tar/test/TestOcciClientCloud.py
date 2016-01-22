@@ -4,6 +4,8 @@ import os
 import unittest
 
 from slipstream.ConfigHolder import ConfigHolder
+
+from slipstream_occi.OcciDriver import OcciDriver
 from slipstream_occi.OcciClientCloud import OcciClientCloud, NoPublicIpFound
 
 JSON_NODES = \
@@ -82,3 +84,13 @@ class TestOcciClientCloud(unittest.TestCase):
         cc._is_public_ip = Mock(return_value=False)
         self.assertRaises(NoPublicIpFound, cc._vm_get_ip, nodes[0],
                           public_ip_only=True)
+
+    def test_update_resource_to_full_url(self):
+        assert [] == OcciDriver._update_resource_to_full_url([], None)
+        assert ['--resource', '/a/b/foo'] == OcciDriver._update_resource_to_full_url(['--resource', 'foo'], '/a/b')
+        assert ['--resource', '/a/b/foo/'] == OcciDriver._update_resource_to_full_url(['--resource', 'foo/'], '/a/b')
+        assert ['--resource', '/a/b/foo'] == OcciDriver._update_resource_to_full_url(['--resource', '/foo'], '/a/b')
+        assert ['--resource', '/a/b/foo'] == OcciDriver._update_resource_to_full_url(['--resource', '/foo'], '/a/b/')
+        assert ['-bar', '--resource', '/a/b/foo', 'baz'] == \
+               OcciDriver._update_resource_to_full_url(['-bar', '--resource', '/foo', 'baz'], '/a/b/')
+

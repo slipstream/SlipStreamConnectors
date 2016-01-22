@@ -163,13 +163,20 @@ class OcciDriver(object):
                    '--user-cred', self.proxy_file,
                    '--output-format', 'json_extended']
 
-        cmd = cmd_base + options
+        cmd = cmd_base + self._update_resource_to_full_url(options, self.endpoint)
 
         rc, output = util.execute(cmd, withOutput=True)
         if rc != 0:
             raise Exceptions.ExecutionException('Failed running: %s\n%s' %
                                                 (' '.join(cmd), output))
         return output
+
+    @staticmethod
+    def _update_resource_to_full_url(options, endpoint):
+        if '--resource' in options:
+            i = options.index('--resource')
+            options[i + 1] = '/'.join([endpoint.rstrip('/'), options[i + 1].lstrip('/')])
+        return options
 
     def _check_resource_name_valid(self, resource_name):
         if resource_name not in self.SUPPORTED_RESOURCES:
