@@ -23,7 +23,7 @@ from IPy import IP
 
 from slipstream import util
 from slipstream.util import override
-from slipstream.SlipStreamHttpClient import UserInfo
+from slipstream.UserInfo import UserInfo
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 from slipstream.exceptions import Exceptions
 from .OcciDriver import OcciDriver, VOLATILE_DISK_DEF_BY_ATTRIBUTE, \
@@ -141,11 +141,14 @@ class OcciClientCloud(BaseCloudConnector):
             return ips[0]
 
     def _get_proxy_file(self, user_info):
-        try:
-            # When called from occi-run-instances, VOMS proxy is given as file.
-            return user_info.get_cloud('proxy_file')
-        except KeyError:
+        # When called from occi-run-instances, VOMS proxy is given as file.
+        fn = user_info.get_cloud('proxy_file')
+        if fn:
+            return fn
+        else:
             material = user_info.get_cloud('proxy')
+            if not material:
+                raise Exceptions.ExecutionException('No proxy material provided.')
             return util.file_put_content_in_temp_file(material + '\n')
 
     def __start_image(self, context_file, node_instance, vm_name,
@@ -214,9 +217,9 @@ class OcciClientCloud(BaseCloudConnector):
         '''
         extra_disk_ids = []
 
-        if node_instance.get_volatile_extra_disk_size():
-            volatile_disk_id = self._create_volatile_disk(
-                node_instance.get_volatile_extra_disk_size())
+        disk_size = node_instance.get_volatile_extra_disk_size()
+        if disk_size:
+            volatile_disk_id = self._create_volatile_disk(disk_size)
             extra_disk_ids.append(volatile_disk_id)
 
         # TODO: enable when providing persistent disk is implemented server side.
