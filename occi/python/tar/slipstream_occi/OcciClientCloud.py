@@ -290,7 +290,7 @@ Content-Disposition: attachment; filename="run.sh"
 cat > /etc/yum.repos.d/egi-rocci.repo <<EOF
 [rocci.cli-sl-6-x86_64]
 name=Repository for rocci.cli (o/s: sl6 arch: x86_64)
-baseurl=http://repository.egi.eu/community/software/rocci.cli/4.2.x/releases/sl/6/x86_64/RPMS/
+baseurl=http://repository.egi.eu/community/software/rocci.cli/4.3.x/releases/sl/6/x86_64/RPMS/
 enabled=1
 gpgcheck=0
 EOF

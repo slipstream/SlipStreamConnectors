@@ -136,7 +136,7 @@
 					<requires>
 					  <require>python &gt;= 2.6</require>
 					  <require>slipstream-client${slipstream.edition}</require>
-					  <require>occi-cli</require> <!-- http://repository.egi.eu/community/software/rocci.cli/4.2.x/releases/sl/6/x86_64/RPMS/ -->
+					  <require>occi-cli</require> <!-- http://repository.egi.eu/community/software/rocci.cli/4.3.x/releases/sl/6/x86_64/RPMS/ -->
 					  <require>lcg-CA</require> <!-- http://repository.egi.eu/sw/production/umd/ -->
 					</requires>
 
