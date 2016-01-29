@@ -3,6 +3,8 @@ from mock import Mock
 import os
 import unittest
 
+from slipstream.UserInfo import UserInfo
+from slipstream.exceptions import Exceptions
 from slipstream.ConfigHolder import ConfigHolder
 from slipstream_occi.OcciClientCloud import OcciClientCloud, NoPublicIpFound
 
@@ -82,3 +84,24 @@ class TestOcciClientCloud(unittest.TestCase):
         cc._is_public_ip = Mock(return_value=False)
         self.assertRaises(NoPublicIpFound, cc._vm_get_ip, nodes[0],
                           public_ip_only=True)
+
+    def test_get_proxy_file(self):
+        user_info = UserInfo('occi')
+        cc = OcciClientCloud(ConfigHolder(config={'foo': 'bar'},
+                                          context={'foo': 'bar'}))
+
+        self.assertRaises(Exceptions.ExecutionException, cc._get_proxy_file, *(user_info,))
+
+        user_info['occi.proxy'] = 'material'
+        fn = cc._get_proxy_file(user_info)
+        try:
+            assert os.path.exists(fn)
+            with open(fn) as fh:
+                assert fh.read().startswith('material')
+        finally:
+            try: os.unlink(fn)
+            except: pass
+
+        user_info['occi.proxy_file'] = '/path/to/proxy'
+        assert '/path/to/proxy' == cc._get_proxy_file(user_info)
+
