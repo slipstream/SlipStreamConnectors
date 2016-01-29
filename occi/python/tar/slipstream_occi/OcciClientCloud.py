@@ -50,6 +50,9 @@ def is_public_ip(ip):
     return (IP(ip).iptype() == 'PUBLIC') and True or False
 
 
+rOCCI_VER = '4.3.x'
+
+
 class OcciClientCloud(BaseCloudConnector):
 
     cloudName = 'occi'
@@ -290,23 +293,36 @@ Content-Disposition: attachment; filename="run.sh"
         script = 'yum install -y wget python'
         if self.is_start_orchestrator():
             script += """
-cat > /etc/yum.repos.d/egi-rocci.repo <<EOF
+check='import platform as p; d, _, _ = p.linux_distribution(); print d.lower()'
+if (python -c "$check" | grep -q ubuntu); then
+   # Ubuntu
+   add-apt-repository http://repository.egi.eu/community/software/rocci.cli/%(rocci_ver)s/releases/ubuntu/
+   apt-get update
+   apt-get install -y --force-yes occi-cli
+
+   apt-get -y remove python-crypto python-paramiko || true
+   apt-get install -y gcc python-dev python-pip
+else
+   # RedHat
+   cat > /etc/yum.repos.d/egi-rocci.repo <<EOF
 [rocci.cli-sl-6-x86_64]
 name=Repository for rocci.cli (o/s: sl6 arch: x86_64)
-baseurl=http://repository.egi.eu/community/software/rocci.cli/4.3.x/releases/sl/6/x86_64/RPMS/
+baseurl=http://repository.egi.eu/community/software/rocci.cli/%(rocci_ver)s/releases/sl/6/x86_64/RPMS/
 enabled=1
 gpgcheck=0
 EOF
-yum install -y occi-cli
+   yum install -y occi-cli
 
-# To resolve an issue with image os_tpl#02f8cd09-7c79-4b3a-923a-51cd16496a6f
-# on https://prisma-cloud.ba.infn.it:8787
-rpm -e --nodeps python-crypto || true
-rpm -e --nodeps python-paramiko || true
-yum install -y gcc python-devel python-pip
+   # To resolve an issue with image os_tpl#02f8cd09-7c79-4b3a-923a-51cd16496a6f
+   # on https://prisma-cloud.ba.infn.it:8787
+   rpm -e --nodeps python-crypto || true
+   rpm -e --nodeps python-paramiko || true
+   yum install -y gcc python-devel python-pip
+fi
+
 pip install paramiko==1.9.0
-pip install pycrypto
-"""
+""" % {'rocci_ver': rOCCI_VER}
+
         return script
 
     @staticmethod
