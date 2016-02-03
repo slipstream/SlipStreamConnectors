@@ -97,7 +97,8 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         self.user_info = None
 
     def _rpc_execute(self, command, *args):
-        remote_function = getattr(self.driver, command)
+        proxy = self._create_rpc_connection()
+        remote_function = getattr(proxy, command)
         success, output_or_error_msg, err_code = \
             remote_function(self._create_session_string(), *args)
         if not success:
@@ -112,8 +113,6 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         if self.is_build_image():
             self.tmp_private_key, self.tmp_public_key = generate_keypair()
             self.user_info.set_private_key(self.tmp_private_key)
-
-        self.driver = self._create_rpc_connection()
 
     def format_instance_name(self, name):
         new_name = self.remove_bad_char_in_instance_name(name)
