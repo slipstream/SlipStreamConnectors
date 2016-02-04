@@ -23,7 +23,6 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 from slipstream.command.CloudClientCommand import main
 from slipstream.command.DescribeInstancesCommand import DescribeInstancesCommand
 from slipstream_openstack.OpenStackCommand import OpenStackCommand
-from slipstream_openstack.OpenStackClientCloud import OpenStackClientCloud
 
 
 class OpenStackDescribeInstances(DescribeInstancesCommand, OpenStackCommand):
