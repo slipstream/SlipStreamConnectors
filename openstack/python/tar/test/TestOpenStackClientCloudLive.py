@@ -164,6 +164,10 @@ lvs
         new_id = self.client.build_image(self.user_info, self.node_instance)
         assert new_id
 
+    def xtest_3_list_instances(self):
+        self.client._initialization(self.user_info)
+        assert isinstance(self.client.list_instances(), list)
+
 
 if __name__ == '__main__':
     unittest.main()

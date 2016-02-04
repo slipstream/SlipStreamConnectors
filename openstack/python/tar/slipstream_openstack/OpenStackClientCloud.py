@@ -71,14 +71,12 @@ class OpenStackClientCloud(BaseCloudConnector):
     def _initialization(self, user_info):
         util.printStep('Initialize the OpenStack connector.')
         self._thread_local.driver = self._get_driver(user_info)
-        self.flavors = self._thread_local.driver.list_sizes()
-        self.images = self._thread_local.driver.list_images()
-        self.networks = self._thread_local.driver.ex_list_networks()
-        self.security_groups = self._thread_local.driver.ex_list_security_groups()
 
         if self.is_deployment():
+            self._get_iaas_attributes()
             self._import_keypair(user_info)
         elif self.is_build_image():
+            self._get_iaas_attributes()
             self._create_keypair_and_set_on_user_info(user_info)
 
     @override
@@ -89,6 +87,12 @@ class OpenStackClientCloud(BaseCloudConnector):
         # pylint: disable=W0703
         except Exception:
             pass
+
+    def _get_iaas_attributes(self):
+        self.flavors = self._thread_local.driver.list_sizes()
+        self.images = self._thread_local.driver.list_images()
+        self.networks = self._thread_local.driver.ex_list_networks()
+        self.security_groups = self._thread_local.driver.ex_list_security_groups()
 
     def _build_image(self, user_info, node_instance):
         return self._build_image_on_openstack(user_info, node_instance)
