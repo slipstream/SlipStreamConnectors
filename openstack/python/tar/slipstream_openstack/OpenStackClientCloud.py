@@ -71,6 +71,7 @@ class OpenStackClientCloud(BaseCloudConnector):
     def _initialization(self, user_info):
         util.printStep('Initialize the OpenStack connector.')
         self._thread_local.driver = self._get_driver(user_info)
+        self.flavors = self._thread_local.driver.list_sizes()
 
         if self.is_deployment():
             self._get_iaas_attributes()
@@ -89,7 +90,6 @@ class OpenStackClientCloud(BaseCloudConnector):
             pass
 
     def _get_iaas_attributes(self):
-        self.flavors = self._thread_local.driver.list_sizes()
         self.images = self._thread_local.driver.list_images()
         self.networks = self._thread_local.driver.ex_list_networks()
         self.security_groups = self._thread_local.driver.ex_list_security_groups()
