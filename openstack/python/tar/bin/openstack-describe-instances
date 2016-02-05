@@ -32,7 +32,8 @@ class OpenStackDescribeInstances(DescribeInstancesCommand, OpenStackCommand):
                  2: 'Terminated',
                  3: 'Pending',
                  4: 'Unknown',
-                 5: 'Stopped'}
+                 5: 'Stopped',
+                 7: 'Error'}
 
     def _vm_get_state(self, cc, vm):
         return self.STATE_MAP[vm.state]
