@@ -75,14 +75,16 @@ class OpenStackClientCloud(BaseCloudConnector):
         try:
             self.flavors = self._thread_local.driver.list_sizes()
         except InvalidCredsError as e:
-            raise Exceptions.ValidationException("Invalid Cloud credentials. "
+            raise Exceptions.ValidationException("%s: Invalid Cloud credentials. "
                                                  "Please check your Cloud username, password, project name and domain "
-                                                 "(if applicable) in your SlipStream user profile.")
+                                                 "(if applicable) in your SlipStream user profile."
+                                                 % self.get_cloud_service_name())
         except LibcloudError as e:
             if e.message == 'Could not find specified endpoint':
-                raise Exceptions.ValidationException("Invalid Cloud configuration. "
+                raise Exceptions.ValidationException("%s: Invalid Cloud configuration. "
                                                      "Please ask your SlipStream administrator to check the region, "
-                                                     "service-type and service-name.")
+                                                     "service-type and service-name."
+                                                     % self.get_cloud_service_name())
             else:
                 raise
 
