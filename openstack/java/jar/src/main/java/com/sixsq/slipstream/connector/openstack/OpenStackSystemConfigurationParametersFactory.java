@@ -23,6 +23,8 @@ package com.sixsq.slipstream.connector.openstack;
 import com.sixsq.slipstream.connector.SystemConfigurationParametersFactoryBase;
 import com.sixsq.slipstream.exceptions.ValidationException;
 
+import java.util.Arrays;
+
 public class OpenStackSystemConfigurationParametersFactory extends SystemConfigurationParametersFactoryBase {
 
 	public OpenStackSystemConfigurationParametersFactory(String connectorInstanceName) throws ValidationException {
@@ -57,6 +59,11 @@ public class OpenStackSystemConfigurationParametersFactory extends SystemConfigu
 
         putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PRIVATE_NAME),
                 "Mapping for Private network", "");
+
+
+		putMandatoryEnumParameter(constructKey(OpenStackUserParametersFactory.IDENTITY_VERSION_PARAMETER_NAME),
+				"Identity API version", Arrays.asList("v2", "v3"), "v2",
+				"If the 'domain' feature is enable, you have to select 'v3'.", 10);
 
 		putMandatoryOrchestratorSecurityGroups();
 

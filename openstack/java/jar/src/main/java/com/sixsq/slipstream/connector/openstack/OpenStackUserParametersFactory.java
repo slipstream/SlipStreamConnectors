@@ -22,13 +22,16 @@ package com.sixsq.slipstream.connector.openstack;
 
 import com.sixsq.slipstream.connector.UserParametersFactoryBase;
 import com.sixsq.slipstream.exceptions.ValidationException;
+import com.sixsq.slipstream.persistence.ParameterType;
 
 public class OpenStackUserParametersFactory extends UserParametersFactoryBase {
 
 	public static final String TENANT_NAME = "tenant.name";
+	public static final String DOMAIN_NAME = "domain.name";
 	public static final String SERVICE_TYPE_PARAMETER_NAME = "service.type";
 	public static final String SERVICE_NAME_PARAMETER_NAME = "service.name";
     public static final String SERVICE_REGION_PARAMETER_NAME = "service.region";
+	public static final String IDENTITY_VERSION_PARAMETER_NAME = "identity.version";
     public static final String NETWORK_PUBLIC_NAME = "network.public";
     public static final String NETWORK_PRIVATE_NAME = "network.private";
 
@@ -41,8 +44,8 @@ public class OpenStackUserParametersFactory extends UserParametersFactoryBase {
 	protected void initReferenceParameters() throws ValidationException {
 		putMandatoryParameter(KEY_PARAMETER_NAME, "Username", 10);
 		putMandatoryPasswordParameter(SECRET_PARAMETER_NAME, "Password", 20);
-		putMandatoryParameter(TENANT_NAME,
-				"Project name (Tenant name)", 30);
+		putMandatoryParameter(TENANT_NAME, "Project name (Tenant name)", 30);
+		putMandatoryParameter(DOMAIN_NAME, "Domain", "default", "Only useful if Identity API v3", 40);
 	}
 
 }
