@@ -19,8 +19,8 @@
 
 import time
 
-from libcloud.compute.types import Provider
-from libcloud.compute.types import NodeState
+from libcloud.common.types import InvalidCredsError, LibcloudError
+from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.providers import get_driver
 import libcloud.security
 
@@ -71,7 +71,20 @@ class OpenStackClientCloud(BaseCloudConnector):
     def _initialization(self, user_info):
         util.printStep('Initialize the OpenStack connector.')
         self._thread_local.driver = self._get_driver(user_info)
-        self.flavors = self._thread_local.driver.list_sizes()
+
+        try:
+            self.flavors = self._thread_local.driver.list_sizes()
+        except InvalidCredsError as e:
+            raise Exceptions.ValidationException("Invalid Cloud credentials. "
+                                                 "Please check your Cloud username, password, project name and domain "
+                                                 "(if applicable) in your SlipStream user profile.")
+        except LibcloudError as e:
+            if e.message == 'Could not find specified endpoint':
+                raise Exceptions.ValidationException("Invalid Cloud configuration. "
+                                                     "Please ask your SlipStream administrator to check the region, "
+                                                     "service-type and service-name.")
+            else:
+                raise
 
         if self.is_deployment():
             self._get_iaas_attributes()
