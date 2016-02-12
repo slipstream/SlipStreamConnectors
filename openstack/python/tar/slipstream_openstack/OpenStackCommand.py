@@ -22,11 +22,13 @@ from slipstream_openstack.OpenStackClientCloud import OpenStackClientCloud
 
 class OpenStackCommand(CloudClientCommand):
 
+    DOMAIN_KEY = 'domain'
     REGION_KEY = 'region'
     PROJECT_KEY = 'project'
     ENDPOINT_KEY = 'endpoint'
     SERVICE_TYPE_KEY = 'service-type'
     SERVICE_NAME_KEY = 'service-name'
+    IDENTITY_VERSION_KEY = 'identity-version'
 
     def __init__(self):
         super(OpenStackCommand, self).__init__()
@@ -41,8 +43,14 @@ class OpenStackCommand(CloudClientCommand):
         parser.add_option('--' + self.REGION_KEY, dest=self.REGION_KEY, help='Region (default: regionOne)',
                           default='regionOne', metavar='REGION')
 
+        parser.add_option('--' + self.DOMAIN_KEY, dest=self.DOMAIN_KEY, help='Domain (Identity v3 only)',
+                          default='', metavar='DOMAIN')
+
         parser.add_option('--' + self.PROJECT_KEY, dest=self.PROJECT_KEY, help='Project (Tenant)',
                           default='', metavar='PROJECT')
+
+        parser.add_option('--' + self.IDENTITY_VERSION_KEY, dest=self.IDENTITY_VERSION_KEY,
+                          help='Identity API version (v2|v3)', default='v2', metavar='VERSION')
 
         parser.add_option('--' + self.SERVICE_TYPE_KEY, dest=self.SERVICE_TYPE_KEY,
                           help='Type-name of the service which provides the instances functionality (default: compute)',
@@ -55,9 +63,11 @@ class OpenStackCommand(CloudClientCommand):
     def get_cloud_specific_user_cloud_params(self):
         return {'tenant.name': self.get_option(self.PROJECT_KEY),
                 'service.region': self.get_option(self.REGION_KEY),
+                self.DOMAIN_KEY: self.get_option(self.DOMAIN_KEY),
                 self.ENDPOINT_KEY: self.get_option(self.ENDPOINT_KEY),
                 'service.type': self.get_option(self.SERVICE_TYPE_KEY),
-                'service.name': self.get_option(self.SERVICE_NAME_KEY)}
+                'service.name': self.get_option(self.SERVICE_NAME_KEY),
+                'identity.version': self.get_option(self.IDENTITY_VERSION_KEY)}
 
     def get_cloud_specific_mandatory_options(self):
         return [self.REGION_KEY,

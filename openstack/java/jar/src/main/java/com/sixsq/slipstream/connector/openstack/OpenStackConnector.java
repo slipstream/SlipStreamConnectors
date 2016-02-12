@@ -67,9 +67,11 @@ public class OpenStackConnector extends CliConnectorBase {
 	protected Map<String, String> getConnectorSpecificUserParams(User user)
 			throws ConfigurationException, ValidationException {
 		Map<String, String> userParams = new HashMap<String, String>();
+		userParams.put("domain", getDomain(user));
 		userParams.put("project", getProject(user));
 		userParams.put("endpoint", getEndpoint(user));
 		userParams.put("region", getRegion());
+		userParams.put("identity-version", getIdentityVersion());
         userParams.put("service-type", getServiceType());
         userParams.put("service-name", getServiceName());
 		return userParams;
@@ -106,16 +108,22 @@ public class OpenStackConnector extends CliConnectorBase {
 		return Configuration.getInstance().getRequiredProperty(constructKey(OpenStackUserParametersFactory.SERVICE_REGION_PARAMETER_NAME));
 	}
 
-	protected String getInstanceType(Run run)
-			throws ConfigurationException, ValidationException {
+	protected String getProject(User user) throws ValidationException {
+		return user.getParameter(constructKey(OpenStackUserParametersFactory.TENANT_NAME)).getValue(null);
+	}
+
+	protected String getDomain(User user) throws ValidationException {
+		return user.getParameterValue(OpenStackUserParametersFactory.DOMAIN_NAME, null);
+	}
+
+	protected String getInstanceType(Run run) throws ConfigurationException, ValidationException {
 		return (isInOrchestrationContext(run)) ? Configuration.getInstance()
 				.getRequiredProperty(constructKey(OpenStackUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME))
 				: getInstanceType(ImageModule.load(run.getModuleResourceUrl()));
 	}
 
-	protected String getProject(User user) throws ValidationException {
-		return user.getParameter(constructKey(
-				OpenStackUserParametersFactory.TENANT_NAME)).getValue(null);
+	protected String getIdentityVersion() throws ValidationException {
+		return Configuration.getInstance().getRequiredProperty(constructKey(OpenStackUserParametersFactory.IDENTITY_VERSION_PARAMETER_NAME));
 	}
 
 	protected void validateCredentials(User user) throws ValidationException {
@@ -144,8 +152,7 @@ public class OpenStackConnector extends CliConnectorBase {
 	@Override
 	public Map<String, ServiceConfigurationParameter> getServiceConfigurationParametersTemplate()
 			throws ValidationException {
-		return new OpenStackSystemConfigurationParametersFactory(getConnectorInstanceName())
-				.getParameters();
+		return new OpenStackSystemConfigurationParametersFactory(getConnectorInstanceName()).getParameters();
 	}
 
 	@Override

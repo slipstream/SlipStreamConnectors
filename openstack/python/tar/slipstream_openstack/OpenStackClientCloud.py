@@ -246,16 +246,26 @@ class OpenStackClientCloud(BaseCloudConnector):
     def _get_driver(self, user_info):
         driverOpenStack = get_driver(Provider.OPENSTACK)
         isHttps = user_info.get_cloud_endpoint().lower().startswith('https://')
+        version = user_info.get_cloud('identity.version', '').strip()
+        domain = user_info.get_cloud('domain', '').strip()
+        kwargs = {}
+
+        if version == 'v3':
+            auth_version = '3.x_password'
+            kwargs['domain_name'] = domain
+        else:
+            auth_version = '2.0_password'
 
         return driverOpenStack(user_info.get_cloud_username(),
                                user_info.get_cloud_password(),
                                secure=isHttps,
                                ex_tenant_name=user_info.get_cloud('tenant.name'),
                                ex_force_auth_url=user_info.get_cloud_endpoint(),
-                               ex_force_auth_version='2.0_password',
+                               ex_force_auth_version=auth_version,
                                ex_force_service_type=user_info.get_cloud('service.type'),
                                ex_force_service_name=user_info.get_cloud('service.name'),
-                               ex_force_service_region=user_info.get_cloud('service.region'))
+                               ex_force_service_region=user_info.get_cloud('service.region'),
+                               **kwargs)
 
     @override
     def _vm_get_ip(self, vm):
