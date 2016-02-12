@@ -60,16 +60,19 @@ class CloudStackClientCloud(BaseCloudConnector):
                                direct_ip_assignment=True,
                                orchestrator_can_kill_itself_or_its_vapp=True)
 
+        self.zones = []
         self.sizes = []
         self.images = []
-        self.user_info = []
 
     @override
     def _initialization(self, user_info):
         util.printStep('Initialize the CloudStack connector.')
         self._thread_local.driver = self._get_driver(user_info)
-        self.sizes = self._thread_local.driver.list_sizes()
-        self.images = self._thread_local.driver.list_images()
+        self.zones = self._thread_local.driver.list_locations()
+        self.zone = self._get_zone(user_info)
+        self.sizes = self._thread_local.driver.list_sizes(location=self.zone)
+        self.images = self._thread_local.driver.list_images(location=self.zone)
+
         self.user_info = user_info
 
         if self.is_build_image():
@@ -111,8 +114,7 @@ class CloudStackClientCloud(BaseCloudConnector):
         try:
             size = [i for i in self.sizes if i.name == instance_type][0]
         except IndexError:
-            raise Exceptions.ParameterNotFoundException(
-                "Couldn't find the specified instance type: %s" % instance_type)
+            raise Exceptions.ParameterNotFoundException("Couldn't find the specified instance type: %s" % instance_type)
 
         image = self._get_image(node_instance)
 
@@ -121,12 +123,14 @@ class CloudStackClientCloud(BaseCloudConnector):
                 name=instance_name,
                 size=size,
                 image=image,
+                location=self.zone,
                 ex_security_groups=security_groups)
         else:
             instance = self._thread_local.driver.create_node(
                 name=instance_name,
                 size=size,
                 image=image,
+                location=self.zone,
                 ex_keyname=keypair,
                 ex_userdata=contextualization_script,
                 ex_security_groups=security_groups)
@@ -140,17 +144,23 @@ class CloudStackClientCloud(BaseCloudConnector):
                   id=instance.id)
         return vm
 
+    def _get_zone(self, user_info):
+        zone_name = user_info.get_cloud('zone', '')
+        try:
+            return [i for i in self.zones if i.name.lower() == zone_name.lower()][0]
+        except IndexError:
+            raise Exceptions.ParameterNotFoundException("Couldn't find the specified zone: %s" % zone_name)
+
     def _get_image(self, node_instance):
         image_id = node_instance.get_image_id()
         try:
             return [i for i in self.images if i.id == image_id][0]
         except IndexError:
-            raise Exceptions.ParameterNotFoundException(
-                "Couldn't find the specified image: %s" % image_id)
+            raise Exceptions.ParameterNotFoundException("Couldn't find the specified image: %s" % image_id)
 
     @override
     def list_instances(self):
-        return self._thread_local.driver.list_nodes()
+        return self._thread_local.driver.list_nodes(location=self.zone)
 
     @override
     def _create_allow_all_security_group(self):
