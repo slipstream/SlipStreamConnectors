@@ -45,7 +45,7 @@ public class OpenStackUserParametersFactory extends UserParametersFactoryBase {
 		putMandatoryParameter(KEY_PARAMETER_NAME, "Username", 10);
 		putMandatoryPasswordParameter(SECRET_PARAMETER_NAME, "Password", 20);
 		putMandatoryParameter(TENANT_NAME, "Project name (Tenant name)", 30);
-		putMandatoryParameter(DOMAIN_NAME, "Domain", "default", "Only useful if Identity API v3", 40);
+		putMandatoryParameter(DOMAIN_NAME, "Domain", ParameterType.String, "Only useful if Identity API v3", 40);
 	}
 
 }
