@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnectors</artifactId>
   <packaging>pom</packaging>
-  <version>2.23-SNAPSHOT</version>
+  <version>2.23</version>
   <name>SlipStream Cloud Connectors (POM)</name>
 
   <url>http://sixsq.com/</url>
@@ -12,7 +12,7 @@
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
     <artifactId>SlipStream</artifactId>
-    <version>2.23-SNAPSHOT</version>
+    <version>2.23</version>
     <relativePath>../SlipStream</relativePath>
   </parent>
 
@@ -30,7 +30,7 @@
     <connection>${scm.read}/SlipStreamConnectors.git</connection>
     <developerConnection>${scm.write}/SlipStreamConnectors.git</developerConnection>
     <url>${scm.public}/SlipStreamConnectors</url>
-    <tag>HEAD</tag>
+    <tag>v2.23-community</tag>
   </scm>
 
 </project>
