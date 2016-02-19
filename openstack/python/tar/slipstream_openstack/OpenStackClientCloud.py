@@ -266,9 +266,13 @@ class OpenStackClientCloud(BaseCloudConnector):
                                ex_force_auth_url=user_info.get_cloud_endpoint(),
                                ex_force_auth_version=auth_version,
                                ex_force_service_type=user_info.get_cloud('service.type'),
-                               ex_force_service_name=user_info.get_cloud('service.name'),
+                               ex_force_service_name=self._get_service_name(user_info),
                                ex_force_service_region=user_info.get_cloud('service.region'),
                                **kwargs)
+
+    def _get_service_name(self, user_info):
+        service_name = user_info.get_cloud('service.name', '')
+        return service_name if service_name is not None and service_name.strip() != '' else None
 
     @override
     def _vm_get_ip(self, vm):

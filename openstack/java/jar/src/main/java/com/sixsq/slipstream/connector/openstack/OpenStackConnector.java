@@ -73,7 +73,7 @@ public class OpenStackConnector extends CliConnectorBase {
 		userParams.put("region", getRegion());
 		userParams.put("identity-version", getIdentityVersion());
         userParams.put("service-type", getServiceType());
-        userParams.put("service-name", getServiceName());
+		putUserParamServiceName(userParams);
 		return userParams;
 	}
 
@@ -86,6 +86,13 @@ public class OpenStackConnector extends CliConnectorBase {
         launchParams.put("network-private", getNetworkPrivate());
 		putLaunchParamSecurityGroups(launchParams, run, user);
 		return launchParams;
+	}
+
+	protected void putUserParamServiceName(Map<String, String> userParams) throws ValidationException {
+		String serviceName = getServiceName();
+		if (serviceName != null && !serviceName.isEmpty()) {
+			userParams.put("service-name", serviceName);
+		}
 	}
 
 	protected String getServiceType() throws ConfigurationException, ValidationException {

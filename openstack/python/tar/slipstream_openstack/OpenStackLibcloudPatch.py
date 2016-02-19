@@ -16,6 +16,7 @@
  limitations under the License.
 """
 
+from libcloud.compute.drivers.openstack import OpenStackComputeConnection
 from libcloud.common.openstack_identity import OpenStackServiceCatalog,\
                                                OpenStackServiceCatalogEntry, \
                                                OpenStackServiceCatalogEntryEndpoint, \
@@ -54,5 +55,6 @@ def _parse_service_catalog_auth_v3(self, service_catalog):
     return entries
 
 def patch_libcloud():
+    OpenStackComputeConnection.service_name = None
     OpenStackServiceCatalog._parse_service_catalog_auth_v3 = _parse_service_catalog_auth_v3
 

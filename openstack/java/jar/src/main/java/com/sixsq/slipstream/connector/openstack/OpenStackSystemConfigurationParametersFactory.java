@@ -48,11 +48,10 @@ public class OpenStackSystemConfigurationParametersFactory extends SystemConfigu
 
 		putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_NAME_PARAMETER_NAME),
 				"Name of the service which provides the instances functionality",
-				"nova");
-				//"('nova' for OpenStack essex&folsom and 'Compute' for HP Cloud)"
-
-        putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_REGION_PARAMETER_NAME),
-                "Region used by this cloud connector", "RegionOne");
+				"",
+				"Usually the value is 'nova'. " +
+					"It can be left empty if there is only one service of this type for the specified region.",
+				140);
 
         putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PUBLIC_NAME),
                 "Mapping for Public network", "");
