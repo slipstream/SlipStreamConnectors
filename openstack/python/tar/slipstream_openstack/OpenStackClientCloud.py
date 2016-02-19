@@ -19,6 +19,9 @@
 
 import time
 
+from .OpenStackLibcloudPatch import patch_libcloud
+patch_libcloud()
+
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.providers import get_driver
