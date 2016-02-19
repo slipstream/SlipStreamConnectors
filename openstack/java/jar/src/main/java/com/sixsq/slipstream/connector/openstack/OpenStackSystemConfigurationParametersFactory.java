@@ -40,11 +40,23 @@ public class OpenStackSystemConfigurationParametersFactory extends SystemConfigu
 
 		putMandatoryParameter(constructKey(OpenStackUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME),
 				"OpenStack Flavor for the orchestrator. " +
-				"The actual image should support the desired Flavor");
+					"The actual image should support the desired Flavor",
+				100);
+
+		putMandatoryEnumParameter(constructKey(OpenStackUserParametersFactory.IDENTITY_VERSION_PARAMETER_NAME),
+				"Identity API version", Arrays.asList("v2", "v3"), "v2",
+				"If the 'domain' feature is enable, you have to select 'v3'.",
+				110);
+
+		putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_REGION_PARAMETER_NAME),
+				"Region used by this cloud connector",
+				"RegionOne",
+				120);
 
 		putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_TYPE_PARAMETER_NAME),
 				"Type-name of the service which provides the instances functionality",
-				"compute");
+				"compute",
+				130);
 
 		putMandatoryParameter(constructKey(OpenStackUserParametersFactory.SERVICE_NAME_PARAMETER_NAME),
 				"Name of the service which provides the instances functionality",
@@ -54,15 +66,16 @@ public class OpenStackSystemConfigurationParametersFactory extends SystemConfigu
 				140);
 
         putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PUBLIC_NAME),
-                "Mapping for Public network", "");
+                "Mapping for Public network",
+				"",
+				150);
 
         putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PRIVATE_NAME),
-                "Mapping for Private network", "");
+                "Mapping for Private network",
+				"",
+				160);
 
 
-		putMandatoryEnumParameter(constructKey(OpenStackUserParametersFactory.IDENTITY_VERSION_PARAMETER_NAME),
-				"Identity API version", Arrays.asList("v2", "v3"), "v2",
-				"If the 'domain' feature is enable, you have to select 'v3'.", 10);
 
 		putMandatoryOrchestratorSecurityGroups();
 
