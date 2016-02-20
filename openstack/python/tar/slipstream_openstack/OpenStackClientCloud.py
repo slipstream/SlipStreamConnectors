@@ -22,6 +22,7 @@ import time
 from .OpenStackLibcloudPatch import patch_libcloud
 patch_libcloud()
 
+from libcloud.utils.networking import is_private_subnet
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.providers import get_driver
@@ -318,24 +319,48 @@ class OpenStackClientCloud(BaseCloudConnector):
         if size:
             return size.name
 
-    def _get_instance_ip_address(self, instance, ip_type='', strict=True):
-        if ip_type.lower() == 'private':
-            return (len(instance.private_ips) != 0) and instance.private_ips[0] or (len(instance.public_ips) != 0 and not strict) and instance.public_ips[0] or ''
-        elif ip_type.lower() == 'public':
-            return (len(instance.public_ips) != 0) and instance.public_ips[0] or (len(instance.private_ips) != 0 and not strict) and instance.private_ips[0] or ''
+    def _extract_public_private_ips(self, ips):
+        private_ips = []
+        public_ips = []
+        for ip in ips:
+            if is_private_subnet(ip):
+                private_ips.append(ip)
+            else:
+                public_ips.append(ip)
+        return private_ips, public_ips
+
+    def _get_instance_ip_address(self, instance, ip_type='public', strict=True):
+        type = ip_type.strip().lower() if ip_type is not None else 'public'
+
+        # The OpenStack driver of libcloud doesn't detect correctly the type of the IP. So we do it ourself.
+        private_ips, public_ips = self._extract_public_private_ips(instance.private_ips + instance.public_ips)
+        # private_ips = instance.private_ips, public_ips = instance.public_ips
+
+        if type == 'private' and len(private_ips) > 0:
+            return private_ips[0]
+        elif type != 'private' and len(public_ips) > 0:
+            return public_ips[0]
+
+        if strict:
+            return ''
         else:
-            return (len(instance.public_ips) != 0) and instance.public_ips[0] or (len(instance.private_ips) != 0) and instance.private_ips[0] or ''
+            try:
+                return public_ips[0] if len(public_ips) > 1 else private_ips[0]
+            except IndexError:
+                return ''
 
     @override
     def _wait_and_get_instance_ip_address(self, vm):
-        timeWait = 300
-        timeStop = time.time() + timeWait
+        time_wait = 180
+        time_stop = time.time() + time_wait
 
-        while time.time() < timeStop:
+        instance = vm['instance']
+        ipType = vm['networkType']
+        vmId = vm['id']
+        ip = vm['ip']
+
+        while time.time() < time_stop:
             time.sleep(1)
-
-            ipType = vm['networkType']
-            vmId = vm['id']
 
             instances = self._thread_local.driver.list_nodes()
             instance = searchInObjectList(instances, 'id', vmId)
@@ -358,12 +383,12 @@ class OpenStackClientCloud(BaseCloudConnector):
             'Timed out while waiting for IPs to be assigned to instances: %s' % vmId)
 
     def _wait_instance_in_running_state(self, instanceId):
-        timeWait = 300
-        timeStop = time.time() + timeWait
+        time_wait = 300
+        time_stop = time.time() + time_wait
 
         state = ''
         while state != NodeState.RUNNING:
-            if time.time() > timeStop:
+            if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
                     'Timed out while waiting for instance "%s" enter in running state'
                     % instanceId)
@@ -372,12 +397,12 @@ class OpenStackClientCloud(BaseCloudConnector):
             state = searchInObjectList(node, 'id', instanceId).state
 
     def _wait_image_creation_completed(self, imageId):
-        timeWait = 600
-        timeStop = time.time() + timeWait
+        time_wait = 600
+        time_stop = time.time() + time_wait
 
         imgState = None
         while imgState == None:
-            if time.time() > timeStop:
+            if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
                     'Timed out while waiting for image "%s" to be created' % imageId)
             time.sleep(1)
