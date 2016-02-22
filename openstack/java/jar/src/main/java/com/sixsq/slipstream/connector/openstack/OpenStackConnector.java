@@ -67,13 +67,13 @@ public class OpenStackConnector extends CliConnectorBase {
 	protected Map<String, String> getConnectorSpecificUserParams(User user)
 			throws ConfigurationException, ValidationException {
 		Map<String, String> userParams = new HashMap<String, String>();
-		userParams.put("domain", getDomain(user));
 		userParams.put("project", getProject(user));
 		userParams.put("endpoint", getEndpoint(user));
 		userParams.put("region", getRegion());
 		userParams.put("identity-version", getIdentityVersion());
         userParams.put("service-type", getServiceType());
-        userParams.put("service-name", getServiceName());
+		putUserParamDomain(userParams, user);
+		putUserParamServiceName(userParams);
 		return userParams;
 	}
 
@@ -86,6 +86,20 @@ public class OpenStackConnector extends CliConnectorBase {
         launchParams.put("network-private", getNetworkPrivate());
 		putLaunchParamSecurityGroups(launchParams, run, user);
 		return launchParams;
+	}
+
+	protected void putUserParamDomain(Map<String, String> userParams, User user) throws ValidationException {
+		String domain = getDomain(user);
+		if (domain != null && !domain.isEmpty()) {
+			userParams.put("domain", domain);
+		}
+	}
+
+	protected void putUserParamServiceName(Map<String, String> userParams) throws ValidationException {
+		String serviceName = getServiceName();
+		if (serviceName != null && !serviceName.isEmpty()) {
+			userParams.put("service-name", serviceName);
+		}
 	}
 
 	protected String getServiceType() throws ConfigurationException, ValidationException {
@@ -113,7 +127,7 @@ public class OpenStackConnector extends CliConnectorBase {
 	}
 
 	protected String getDomain(User user) throws ValidationException {
-		return user.getParameterValue(OpenStackUserParametersFactory.DOMAIN_NAME, null);
+		return user.getParameterValue(constructKey(OpenStackUserParametersFactory.DOMAIN_NAME), null);
 	}
 
 	protected String getInstanceType(Run run) throws ConfigurationException, ValidationException {

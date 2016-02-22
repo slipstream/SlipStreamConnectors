@@ -57,8 +57,8 @@ class OpenStackCommand(CloudClientCommand):
                           default='compute', metavar='TYPE')
 
         parser.add_option('--' + self.SERVICE_NAME_KEY, dest=self.SERVICE_NAME_KEY,
-                          help='Name of the service which provides the instances functionality (default: nova)',
-                          default='nova', metavar='NAME')
+                          help='Name of the service which provides the instances functionality (optional)',
+                          default=None, metavar='NAME')
 
     def get_cloud_specific_user_cloud_params(self):
         return {'tenant.name': self.get_option(self.PROJECT_KEY),
@@ -73,5 +73,4 @@ class OpenStackCommand(CloudClientCommand):
         return [self.REGION_KEY,
                 self.PROJECT_KEY,
                 self.ENDPOINT_KEY,
-                self.SERVICE_TYPE_KEY,
-                self.SERVICE_NAME_KEY]
+                self.SERVICE_TYPE_KEY]

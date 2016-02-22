@@ -19,6 +19,9 @@
 
 import time
 
+from .OpenStackLibcloudPatch import patch_libcloud
+patch_libcloud()
+
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.providers import get_driver
@@ -247,7 +250,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         driverOpenStack = get_driver(Provider.OPENSTACK)
         isHttps = user_info.get_cloud_endpoint().lower().startswith('https://')
         version = user_info.get_cloud('identity.version', '').strip()
-        domain = user_info.get_cloud('domain', '').strip()
+        domain = user_info.get_cloud('domain', 'default').strip()
         kwargs = {}
 
         if version == 'v3':
@@ -263,9 +266,13 @@ class OpenStackClientCloud(BaseCloudConnector):
                                ex_force_auth_url=user_info.get_cloud_endpoint(),
                                ex_force_auth_version=auth_version,
                                ex_force_service_type=user_info.get_cloud('service.type'),
-                               ex_force_service_name=user_info.get_cloud('service.name'),
+                               ex_force_service_name=self._get_service_name(user_info),
                                ex_force_service_region=user_info.get_cloud('service.region'),
                                **kwargs)
+
+    def _get_service_name(self, user_info):
+        service_name = user_info.get_cloud('service.name', '')
+        return service_name if service_name is not None and service_name.strip() != '' else None
 
     @override
     def _vm_get_ip(self, vm):
