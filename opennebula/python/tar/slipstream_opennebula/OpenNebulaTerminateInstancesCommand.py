@@ -17,11 +17,15 @@
  limitations under the License.
 """
 
-import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-
 from slipstream.command.CloudClientCommand import main
-from slipstream_opennebula.OpenNebulaTerminateInstancesCommand import OpenNebulaTerminateInstances
+from slipstream.command.TerminateInstancesCommand import TerminateInstancesCommand
+from slipstream_opennebula.OpenNebulaCommand import OpenNebulaCommand
+
+
+class OpenNebulaTerminateInstances(TerminateInstancesCommand, OpenNebulaCommand):
+
+    def __init__(self):
+        super(OpenNebulaTerminateInstances, self).__init__()
 
 
 if __name__ == "__main__":

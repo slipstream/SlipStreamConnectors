@@ -21,8 +21,22 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from slipstream.command.CloudClientCommand import main
-from slipstream_opennebula.OpenNebulaTerminateInstancesCommand import OpenNebulaTerminateInstances
+from slipstream.command.DescribeInstancesCommand import DescribeInstancesCommand
+from slipstream_opennebula.OpenNebulaCommand import OpenNebulaCommand
+from slipstream_opennebula.OpenNebulaClientCloud import OpenNebulaClientCloud
+
+
+class OpenNebulaDescribeInstances(DescribeInstancesCommand, OpenNebulaCommand):
+
+    def _vm_get_state(self, cc, vm):
+        return OpenNebulaClientCloud.VM_STATE[int(vm.findtext('STATE'))]
+
+    def _vm_get_id(self, cc, vm):
+        return vm.findtext('ID')
+
+    def __init__(self):
+        super(OpenNebulaDescribeInstances, self).__init__()
 
 
 if __name__ == "__main__":
-    main(OpenNebulaTerminateInstances)
+    main(OpenNebulaDescribeInstances)

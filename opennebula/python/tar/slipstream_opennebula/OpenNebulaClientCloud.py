@@ -30,13 +30,9 @@ import urllib
 import re
 import base64
 try:
-    import xml.etree.cElementTree as eTree  # c-version first
+    import xml.etree.cElementTree as eTree  # c-version, faster
 except ImportError:
-    try:
-        import xml.etree.ElementTree as eTree  # python version
-    except ImportError:
-        eTree = None
-        raise Exception('failed to import ElementTree')
+    import xml.etree.ElementTree as eTree  # python version
 
 
 def getConnector(config_holder):
@@ -70,8 +66,20 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         'Done',       # 6
         '_',          # 7
         'Poweroff',   # 8
-        'Undeployed'  # 0
-        ]
+        'Undeployed'  # 9
+    ]
+
+    IMAGE_STATE = [
+        'Init',       # 0
+        'Ready',      # 1
+        'Used',       # 2
+        'Disabled',   # 3
+        'Locked',     # 4
+        'Error',      # 5
+        'Clone',      # 6
+        'Delete',     # 7
+        'Used_pers'   # 8
+    ]
 
     def _resize(self, node_instance):
         raise Exceptions.ExecutionException("%s doesn't implement resize feature." %
@@ -106,7 +114,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         return output_or_error_msg
 
     @override
-    def _initialization(self, user_info):
+    def _initialization(self, user_info, **kwargs):
         util.printStep('Initialize the OpenNebula connector.')
         self.user_info = user_info
 
@@ -129,66 +137,75 @@ class OpenNebulaClientCloud(BaseCloudConnector):
     def remove_bad_char_in_instance_name(name):
         return re.sub('[^a-zA-Z0-9-]', '', name)
 
+    def _set_instance_name(self, vm_name):
+        return 'NAME = %s' % self.format_instance_name(vm_name)
+
+    def _set_disks(self, image_id):
+        return 'DISK = [ IMAGE_ID  = %d ]' % int(image_id)
+
+    def _set_cpu(self, vm_vcpu):
+        cpu = 'VCPU = %d' % int(vm_vcpu)
+        # add real CPU ratio - quota 2 vms per cpu
+        return " ".join(['CPU = 0.5', cpu])
+
+    def _set_ram(self, vm_ram_gbytes):
+        return 'MEMORY = %d' % int(float(vm_ram_gbytes) * 1024)
+
+    def _set_nics(self, requested_network_type, public_network_id, private_network_id):
+        # extract mappings for Public and Private networks from the connector instance
+        if requested_network_type == 'Public':
+            network_id = int(public_network_id)
+        elif requested_network_type == 'Private':
+            network_id = int(private_network_id)
+        else:
+            return ''
+        return 'NIC = [ NETWORK_ID = %d ]' % network_id
+
+    def _set_contextualization(self, public_ssh_key, contextualization_script):
+        return 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + public_ssh_key \
+               + '", START_SCRIPT_BASE64 = "%s"]' % base64.b64encode(contextualization_script)
+
     @override
     def _start_image(self, user_info, node_instance, vm_name):
         return self._start_image_on_opennebula(user_info, node_instance, vm_name)
 
     def _start_image_on_opennebula(self, user_info, node_instance, vm_name):
-        instance_name = 'NAME = %s' % self.format_instance_name(vm_name)
+        instance_name = self._set_instance_name(vm_name)
 
         selected_instance_type = node_instance.get_instance_type()
         if selected_instance_type == 'micro':
-            instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
-            cpu = 'VCPU = 1'
-            ram = 'MEMORY = 512'
+            vm_cpu = 1
+            vm_ram_gbytes = 0.5
         elif selected_instance_type == 'small':
-            instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
-            cpu = 'VCPU = 2'
-            ram = 'MEMORY = 1024'
+            vm_cpu = 2
+            vm_ram_gbytes = 1
         elif selected_instance_type == 'medium':
-            instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
-            cpu = 'VCPU = 4'
-            ram = 'MEMORY = 2048'
+            vm_cpu = 4
+            vm_ram_gbytes = 2
         elif selected_instance_type == 'large':
-            instance_type = 'INSTANCE_TYPE = %s' % selected_instance_type
-            cpu = 'VCPU = 8'
-            ram = 'MEMORY = 4096'
+            vm_cpu = 8
+            vm_ram_gbytes = 4
         else:
             raise Exceptions.ParameterNotFoundException(
                 "Couldn't find the specified instance type: %s" % selected_instance_type)
 
-        vm_ram_gbytes = node_instance.get_ram() or None
-        if vm_ram_gbytes:
-            ram = 'MEMORY = %d' % int(float(vm_ram_gbytes) * 1024)
+        ram = self._set_ram(node_instance.get_ram() or vm_ram_gbytes)
 
-        vm_cpu = node_instance.get_cpu() or None
-        if vm_cpu:
-            cpu = 'VCPU = %d' % int(vm_cpu)
+        cpu = self._set_cpu(node_instance.get_cpu() or vm_cpu)
 
-        # add real CPU ratio
-        cpu = " ".join(['CPU = 0.5', cpu])
+        disks = self._set_disks(node_instance.get_image_id())
 
-        disk = 'DISK = [ IMAGE_ID  = %d ]' % int(node_instance.get_image_id())
-
-        # extract mappings for Public and Private networks from the connector instance
-        network_type = node_instance.get_network_type()
-        network_id = None
-        if network_type == 'Public':
-            network_id = int(user_info.get_public_network_name())
-        elif network_type == 'Private':
-            network_id = int(user_info.get_private_network_name())
-        nic = 'NIC = [ NETWORK_ID = %d ]' % network_id
+        nics = self._set_nics(node_instance.get_network_type(),
+                      user_info.get_public_network_name(),
+                      user_info.get_private_network_name())
 
         if self.is_build_image():
-            public_key = self.tmp_public_key
-            contextualization_script = ''
+            context = self._set_contextualization(self.tmp_public_key, '')
         else:
-            public_key = self.user_info.get_public_keys()
-            contextualization_script = self._get_bootstrap_script(node_instance)
+            context = self._set_contextualization(self.user_info.get_public_keys(),
+                                                  self._get_bootstrap_script(node_instance))
 
-        context = 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + public_key \
-                  + '", START_SCRIPT_BASE64 = "%s"]' % base64.b64encode(contextualization_script)
-        template = ' '.join([instance_name, instance_type, cpu, ram, disk, nic, context])
+        template = ' '.join([instance_name, cpu, ram, disks, nics, context])
         vm_id = self._rpc_execute('one.vm.allocate', template, False)
         vm = self._rpc_execute('one.vm.info', vm_id)
         return eTree.fromstring(vm)
@@ -218,47 +235,61 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         vm = self._get_vm(machine_name)
         ip_address = self._vm_get_ip(vm)
         vm_id = int(self._vm_get_id(vm))
-        self._wait_instance_in_state(vm_id, 'Running', time_out=300)
+        self._wait_instance_in_state(vm_id, 'Running', time_out=300, time_sleep=10)
         self._build_image_increment(user_info, node_instance, ip_address)
         util.printStep('Creation of the new Image.')
         self._rpc_execute('one.vm.action', 'poweroff', vm_id)
-        self._wait_instance_in_state(vm_id, 'Poweroff', time_out=300)
+        self._wait_instance_in_state(vm_id, 'Poweroff', time_out=300, time_sleep=10)
         listener.write_for(machine_name, 'Saving the image')
         new_image_name = node_instance.get_image_short_name() + time.strftime("_%Y%m%d-%H%M%S")
         new_image_id = int(self._rpc_execute(
             'one.vm.disksaveas', vm_id, 0, new_image_name, '', -1))
-        self._wait_image_creation_completed(new_image_id)
+        self._wait_image_state(new_image_id, 'Ready', time_out=1800, time_sleep=30)
         listener.write_for(machine_name, 'Image saved !')
         self._rpc_execute('one.vm.action', 'resume', vm_id)
-        self._wait_instance_in_state(vm_id, 'Running', time_out=300)
+        self._wait_instance_in_state(vm_id, 'Running', time_out=300, time_sleep=10)
         return str(new_image_id)
 
-    def _wait_instance_in_state(self, vm_id, state, time_out):
-        time_stop = time.time() + time_out
+    def _get_vm_state(self, vm_id):
+        vm = self._rpc_execute('one.vm.info', vm_id)
+        return int(eTree.fromstring(vm).findtext('STATE'))
 
-        current_state = None
+    def _wait_instance_in_state(self, vm_id, state, time_out, time_sleep=30):
+        time_stop = time.time() + time_out
+        current_state = self._get_vm_state()
         while current_state != self.VM_STATE.index(state):
             if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
-                    'Timed out while waiting for instance "%s" enter in %s state'
-                    % vm_id, state)
-            time.sleep(3)
-            vm = self._rpc_execute('one.vm.info', vm_id)
-            current_state = int(eTree.fromstring(vm).findtext('STATE'))
+                    'Timed out while waiting VM %s to enter in state %s' % (vm_id, state))
+            time.sleep(time_sleep)
+            current_state = self._get_vm_state()
+        return current_state
 
-    def _wait_image_creation_completed(self, new_image_id):
-        time_wait = 600
-        time_stop = time.time() + time_wait
+    def _get_image_state(self, image_id):
+        image = self._rpc_execute('one.image.info', image_id)
+        return int(eTree.fromstring(image).findtext('STATE'))
 
-        image_state = None
-        ready_code = 1
-        while image_state != ready_code:
+    def _wait_image_in_state(self, image_id, state, time_out, time_sleep=30):
+        time_stop = time.time() + time_out
+        current_state = self._get_image_state(image_id)
+        while current_state != self.IMAGE_STATE.index(state):
             if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
-                    'Timed out while waiting for image "%s" to be created' % new_image_id)
-            time.sleep(3)
-            image = self._rpc_execute('one.image.info', new_image_id)
-            image_state = int(eTree.fromstring(image).findtext('STATE'))
+                    'Timed out while waiting for image %s to be in state %s' % (image_id, state))
+            time.sleep(time_sleep)
+            current_state = self._get_image_state(image_id)
+        return current_state
+
+    def _wait_image_not_in_state(self, image_id, state, time_out, time_sleep=30):
+        time_stop = time.time() + time_out
+        current_state = self._get_image_state(image_id)
+        while current_state == self.IMAGE_STATE.index(state):
+            if time.time() > time_stop:
+                raise Exceptions.ExecutionException(
+                        'Timed out while waiting for image %s to be in state %s' % (image_id, state))
+            time.sleep(time_sleep)
+            current_state = self._get_image_state(image_id)
+        return current_state
 
     def _create_session_string(self):
         quoted_username = urllib.quote(self.user_info.get_cloud_username(), '')
