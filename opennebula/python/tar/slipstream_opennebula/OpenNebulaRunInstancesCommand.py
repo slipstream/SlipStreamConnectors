@@ -23,7 +23,6 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 from slipstream.command.CloudClientCommand import main
 from slipstream.command.RunInstancesCommand import RunInstancesCommand
 from slipstream_opennebula.OpenNebulaCommand import OpenNebulaCommand
-from slipstream_opennebula.OpenNebulaClientCloud import OpenNebulaClientCloud
 
 
 class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
@@ -33,6 +32,7 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
     NETWORK_PRIVATE_KEY = 'network-private'
     CPU_KEY = 'cpu'
     RAM_KEY = 'ram'
+    CUSTOM_VM_TEMPLATE_KEY = 'custom-vm-template'
 
     def __init__(self):
         super(OpenNebulaRunInstances, self).__init__()
@@ -51,12 +51,19 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
         self.parser.add_option('--' + self.NETWORK_PRIVATE_KEY, dest=self.NETWORK_PRIVATE_KEY,
                                help='Mapping for Private network (default: "")',
                                default='', metavar='ID')
+
         self.parser.add_option('--' + self.CPU_KEY, dest=self.CPU_KEY,
                                help='Number of CPUs.',
                                default='', metavar='CPU')
+
         self.parser.add_option('--' + self.RAM_KEY, dest=self.RAM_KEY,
-                               help='RAM in MB.',
+                               help='RAM in GB.',
                                default='', metavar='RAM')
+
+        self.parser.add_option('--' + self.CUSTOM_VM_TEMPLATE_KEY, dest=self.CUSTOM_VM_TEMPLATE_KEY,
+                               help='Additional VM template ex. ' +
+                                    '\'GRAPHICS = [ TYPE = "VNC", LISTEN = "0.0.0.0", PORT = "5900"]\'',
+                               default='', metavar='CUSTOM_VM_TEMPLATE')
 
     def get_cloud_specific_user_cloud_params(self):
         user_params = OpenNebulaCommand.get_cloud_specific_user_cloud_params(self)
@@ -67,7 +74,8 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
     def get_cloud_specific_node_inst_cloud_params(self):
         return {'instance.type': self.get_option(self.INSTANCE_TYPE_KEY),
                 'cpu': self.get_option(self.CPU_KEY),
-                'ram': self.get_option(self.RAM_KEY)}
+                'ram': self.get_option(self.RAM_KEY),
+                'custom.vm.template': self.get_option(self.CUSTOM_VM_TEMPLATE_KEY)}
 
     def get_cloud_specific_mandatory_options(self):
         return OpenNebulaCommand.get_cloud_specific_mandatory_options(self) + \

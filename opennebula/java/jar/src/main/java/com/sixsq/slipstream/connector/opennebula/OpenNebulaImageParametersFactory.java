@@ -28,6 +28,8 @@ import com.sixsq.slipstream.persistence.Run;
 public class OpenNebulaImageParametersFactory extends ModuleParametersFactoryBase {
 
 	public static final String INSTANCE_TYPE_DEFAULT = InstanceType.MICRO.getValue();
+	public static final String CUSTOM_VM_TEMPLATE_NAME = "custom.vm.template";
+	public static final String CUSTOM_VM_TEMPLATE_DESCRIPTION = "Additional custom VM template";
 
 	public OpenNebulaImageParametersFactory(String connectorInstanceName) throws ValidationException {
 		super(connectorInstanceName);
@@ -40,6 +42,6 @@ public class OpenNebulaImageParametersFactory extends ModuleParametersFactoryBas
 
 		putMandatoryParameter(Run.CPU_PARAMETER_NAME, Run.CPU_PARAMETER_DESCRIPTION, 20);
 		putMandatoryParameter(Run.RAM_PARAMETER_NAME, Run.RAM_PARAMETER_DESCRIPTION, 30);
-
+		putMandatoryParameter(CUSTOM_VM_TEMPLATE_NAME, CUSTOM_VM_TEMPLATE_DESCRIPTION, 40);
 	}
 }

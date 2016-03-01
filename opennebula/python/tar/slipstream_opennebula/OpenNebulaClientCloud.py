@@ -165,6 +165,10 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         return 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + public_ssh_key \
                + '", START_SCRIPT_BASE64 = "%s"]' % base64.b64encode(contextualization_script)
 
+    def _set_custom_vm_template(self, custom_vm_template):
+        return custom_vm_template
+
+
     @override
     def _start_image(self, user_info, node_instance, vm_name):
         return self._start_image_on_opennebula(user_info, node_instance, vm_name)
@@ -204,8 +208,9 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         else:
             context = self._set_contextualization(self.user_info.get_public_keys(),
                                                   self._get_bootstrap_script(node_instance))
+        custom_vm_template = self._set_custom_vm_template(node_instance.get_cloud_parameter('custom.vm.template'))
 
-        template = ' '.join([instance_name, cpu, ram, disks, nics, context])
+        template = ' '.join([instance_name, cpu, ram, disks, nics, context, custom_vm_template])
         vm_id = self._rpc_execute('one.vm.allocate', template, False)
         vm = self._rpc_execute('one.vm.info', vm_id)
         return eTree.fromstring(vm)
