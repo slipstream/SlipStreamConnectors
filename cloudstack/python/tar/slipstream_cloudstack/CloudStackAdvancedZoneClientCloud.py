@@ -18,6 +18,7 @@
 
 import slipstream.exceptions.Exceptions as Exceptions
 
+from slipstream import util
 from slipstream.util import override
 from slipstream_cloudstack.CloudStackClientCloud import CloudStackClientCloud
 
@@ -72,6 +73,8 @@ class CloudStackAdvancedZoneClientCloud(CloudStackClientCloud):
         try:
             networks = [[i for i in self.networks if i.name == x.strip()][0] for x in _networks if x]
         except IndexError:
+            networks = []
+        if not networks:
             raise Exceptions.ParameterNotFoundException(
                 "Couldn't find one or more of the specified networks: %s" % _networks)
 
@@ -80,6 +83,7 @@ class CloudStackAdvancedZoneClientCloud(CloudStackClientCloud):
         except IndexError:
             raise Exceptions.ParameterNotFoundException(
                 "Couldn't find the specified instance type: %s" % instance_type)
+
         try:
             image = [i for i in self.images if i.id == image_id][0]
         except IndexError:
