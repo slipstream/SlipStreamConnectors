@@ -62,7 +62,8 @@ class CloudStackRunInstances(RunInstancesCommand, CloudStackCommand):
 
     def get_cloud_specific_node_inst_cloud_params(self):
         return {'security.groups': self.get_option(self.SECURITY_GROUPS_KEY),
-                'instance.type': self.get_option(self.INSTANCE_TYPE_KEY)}
+                'instance.type': self.get_option(self.INSTANCE_TYPE_KEY),
+                self.NETWORKS_KEY: self.get_option(self.NETWORKS_KEY)}
 
     def get_cloud_specific_mandatory_options(self):
         return CloudStackCommand.get_cloud_specific_mandatory_options(self) + \
