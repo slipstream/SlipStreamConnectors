@@ -108,13 +108,18 @@ public class OpenNebulaConnector extends CliConnectorBase {
 	}
 
 	private String getCustomVMTemplate(Run run) throws ValidationException {
-		ImageModule image = ImageModule.load(run.getModuleResourceUrl());
-		String vm_additional_template = this.getParameterValue(
-				OpenNebulaImageParametersFactory.CUSTOM_VM_TEMPLATE_NAME, image);
-		if (vm_additional_template == null || vm_additional_template.isEmpty()) {
+		if (isInOrchestrationContext(run)) {
 			return "";
+		} else {
+			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
+			String vm_additional_template = this.getParameterValue(
+					OpenNebulaImageParametersFactory.CUSTOM_VM_TEMPLATE_NAME, image);
+			if (vm_additional_template == null || vm_additional_template.isEmpty()) {
+				return "";
+			} else {
+				return vm_additional_template;
+			}
 		}
-		return vm_additional_template;
 	}
 
 	@Override

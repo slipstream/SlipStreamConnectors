@@ -166,6 +166,8 @@ class OpenNebulaClientCloud(BaseCloudConnector):
                + '", START_SCRIPT_BASE64 = "%s"]' % base64.b64encode(contextualization_script)
 
     def _set_custom_vm_template(self, custom_vm_template):
+        if custom_vm_template is None:
+            return ''
         return custom_vm_template
 
 
