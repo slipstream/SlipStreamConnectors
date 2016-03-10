@@ -190,7 +190,7 @@ public class StratusLabConnector extends CliConnectorBase {
 	    		Configuration.getInstance().getRequiredProperty(
 	    				constructKey(StratusLabUserParametersFactory.PDISK_ENDPOINT_PARAMETER_NAME));
 	    if (pdiskEndpoint == null || pdiskEndpoint.isEmpty()){
-	    	throw new ValidationException("Missing PDisk endpoint. Please contact you SlipStream administrator");
+	    	throw new ValidationException("Missing PDisk endpoint. Please contact your SlipStream administrator");
 	    }
     }
 
