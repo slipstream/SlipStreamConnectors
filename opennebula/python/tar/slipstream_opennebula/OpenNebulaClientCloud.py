@@ -60,11 +60,11 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         'Init',       # 0
         'Pending',    # 1
         'Hold',       # 2
-        'Running',    # 3
+        'Active',     # 3
         'Stopped',    # 4
         'Suspended',  # 5
         'Done',       # 6
-        '_',          # 7
+        '//Failed',   # 7
         'Poweroff',   # 8
         'Undeployed'  # 9
     ]
@@ -141,22 +141,40 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         return 'NAME = %s' % self.format_instance_name(vm_name)
 
     def _set_disks(self, image_id):
-        return 'DISK = [ IMAGE_ID  = %d ]' % int(image_id)
+        try:
+            img_id = int(image_id)
+        except:
+            raise "Something wrong with image ID : %s!" % image_id
+        return 'DISK = [ IMAGE_ID  = %d ]' % img_id
 
     def _set_cpu(self, vm_vcpu):
-        cpu = 'VCPU = %d' % int(vm_vcpu)
+        try:
+            number_vcpu = int(vm_vcpu)
+        except:
+            raise "Something wrong with CPU size : %s!" % vm_vcpu
+        vcpu = 'VCPU = %d' % number_vcpu
         # add real CPU ratio - quota 2 vms per cpu
-        return " ".join(['CPU = 0.5', cpu])
+        return " ".join(['CPU = 0.5', vcpu])
 
     def _set_ram(self, vm_ram_gbytes):
-        return 'MEMORY = %d' % int(float(vm_ram_gbytes) * 1024)
+        try:
+            ram = int(float(vm_ram_gbytes) * 1024)
+        except ValueError:
+            raise "Something wrong with RAM size : %s!" % vm_ram_gbytes
+        return 'MEMORY = %d' % ram
 
     def _set_nics(self, requested_network_type, public_network_id, private_network_id):
         # extract mappings for Public and Private networks from the connector instance
         if requested_network_type == 'Public':
-            network_id = int(public_network_id)
+            try:
+                network_id = int(public_network_id)
+            except ValueError:
+                raise "Something wrong with specified Public Network ID : %s!" % public_network_id
         elif requested_network_type == 'Private':
-            network_id = int(private_network_id)
+            try:
+                network_id = int(private_network_id)
+            except ValueError:
+                raise "Something wrong with specified Private Network ID : %s!" % private_network_id
         else:
             return ''
         return 'NIC = [ NETWORK_ID = %d ]' % network_id
@@ -178,26 +196,9 @@ class OpenNebulaClientCloud(BaseCloudConnector):
     def _start_image_on_opennebula(self, user_info, node_instance, vm_name):
         instance_name = self._set_instance_name(vm_name)
 
-        selected_instance_type = node_instance.get_instance_type()
-        if selected_instance_type == 'micro':
-            vm_cpu = 1
-            vm_ram_gbytes = 0.5
-        elif selected_instance_type == 'small':
-            vm_cpu = 2
-            vm_ram_gbytes = 1
-        elif selected_instance_type == 'medium':
-            vm_cpu = 4
-            vm_ram_gbytes = 2
-        elif selected_instance_type == 'large':
-            vm_cpu = 8
-            vm_ram_gbytes = 4
-        else:
-            raise Exceptions.ParameterNotFoundException(
-                "Couldn't find the specified instance type: %s" % selected_instance_type)
+        ram = self._set_ram(node_instance.get_ram())
 
-        ram = self._set_ram(node_instance.get_ram() or vm_ram_gbytes)
-
-        cpu = self._set_cpu(node_instance.get_cpu() or vm_cpu)
+        cpu = self._set_cpu(node_instance.get_cpu())
 
         disks = self._set_disks(node_instance.get_image_id())
 
@@ -242,34 +243,34 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         vm = self._get_vm(machine_name)
         ip_address = self._vm_get_ip(vm)
         vm_id = int(self._vm_get_id(vm))
-        self._wait_instance_in_state(vm_id, 'Running', time_out=300, time_sleep=10)
+        self._wait_vm_in_state(vm_id, 'Active', time_out=300, time_sleep=10)
         self._build_image_increment(user_info, node_instance, ip_address)
         util.printStep('Creation of the new Image.')
         self._rpc_execute('one.vm.action', 'poweroff', vm_id)
-        self._wait_instance_in_state(vm_id, 'Poweroff', time_out=300, time_sleep=10)
+        self._wait_vm_in_state(vm_id, 'Poweroff', time_out=300, time_sleep=10)
         listener.write_for(machine_name, 'Saving the image')
         new_image_name = node_instance.get_image_short_name() + time.strftime("_%Y%m%d-%H%M%S")
         new_image_id = int(self._rpc_execute(
             'one.vm.disksaveas', vm_id, 0, new_image_name, '', -1))
-        self._wait_image_state(new_image_id, 'Ready', time_out=1800, time_sleep=30)
+        self._wait_image_in_state(new_image_id, 'Ready', time_out=1800, time_sleep=30)
         listener.write_for(machine_name, 'Image saved !')
         self._rpc_execute('one.vm.action', 'resume', vm_id)
-        self._wait_instance_in_state(vm_id, 'Running', time_out=300, time_sleep=10)
+        self._wait_vm_in_state(vm_id, 'Active', time_out=300, time_sleep=10)
         return str(new_image_id)
 
     def _get_vm_state(self, vm_id):
         vm = self._rpc_execute('one.vm.info', vm_id)
         return int(eTree.fromstring(vm).findtext('STATE'))
 
-    def _wait_instance_in_state(self, vm_id, state, time_out, time_sleep=30):
+    def _wait_vm_in_state(self, vm_id, state, time_out, time_sleep=30):
         time_stop = time.time() + time_out
-        current_state = self._get_vm_state()
+        current_state = self._get_vm_state(vm_id)
         while current_state != self.VM_STATE.index(state):
             if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
                     'Timed out while waiting VM %s to enter in state %s' % (vm_id, state))
             time.sleep(time_sleep)
-            current_state = self._get_vm_state()
+            current_state = self._get_vm_state(vm_id)
         return current_state
 
     def _get_image_state(self, image_id):

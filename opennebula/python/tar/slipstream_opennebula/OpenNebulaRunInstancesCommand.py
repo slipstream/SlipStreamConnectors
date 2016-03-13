@@ -27,7 +27,6 @@ from slipstream_opennebula.OpenNebulaCommand import OpenNebulaCommand
 
 class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
 
-    INSTANCE_TYPE_KEY = 'instance-type'
     NETWORK_PUBLIC_KEY = 'network-public'
     NETWORK_PRIVATE_KEY = 'network-private'
     CPU_KEY = 'cpu'
@@ -39,10 +38,6 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
 
     def set_cloud_specific_options(self, parser):
         OpenNebulaCommand.set_cloud_specific_options(self, parser)
-
-        self.parser.add_option('--' + self.INSTANCE_TYPE_KEY, dest=self.INSTANCE_TYPE_KEY,
-                               help='Instance Type',
-                               default=None, metavar='TYPE')
 
         self.parser.add_option('--' + self.NETWORK_PUBLIC_KEY, dest=self.NETWORK_PUBLIC_KEY,
                                help='Mapping for Public network (default: "")',
@@ -72,14 +67,12 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
         return user_params
 
     def get_cloud_specific_node_inst_cloud_params(self):
-        return {'instance.type': self.get_option(self.INSTANCE_TYPE_KEY),
-                'cpu': self.get_option(self.CPU_KEY),
+        return {'cpu': self.get_option(self.CPU_KEY),
                 'ram': self.get_option(self.RAM_KEY),
                 'custom.vm.template': self.get_option(self.CUSTOM_VM_TEMPLATE_KEY)}
 
     def get_cloud_specific_mandatory_options(self):
-        return OpenNebulaCommand.get_cloud_specific_mandatory_options(self) + \
-               [self.INSTANCE_TYPE_KEY]
+        return OpenNebulaCommand.get_cloud_specific_mandatory_options(self)
 
 
 if __name__ == "__main__":

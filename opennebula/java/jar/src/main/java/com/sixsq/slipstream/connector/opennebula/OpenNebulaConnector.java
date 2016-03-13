@@ -76,7 +76,6 @@ public class OpenNebulaConnector extends CliConnectorBase {
 			throws ConfigurationException, ValidationException {
 		Map<String, String> launchParams = new HashMap<String, String>();
 		launchParams.putAll(getInstanceSizeParams(run));
-		launchParams.put("instance-type", getInstanceType(run));
 		launchParams.put("network-public", getNetworkPublic());
 		launchParams.put("network-private", getNetworkPrivate());
 		launchParams.put("custom-vm-template", getCustomVMTemplate(run));
@@ -85,26 +84,18 @@ public class OpenNebulaConnector extends CliConnectorBase {
 
 	private Map<String, String> getInstanceSizeParams(Run run) throws ValidationException {
 		Map<String, String> instanceSize = new HashMap<String, String>();
+		String cpu, ram;
 		if (isInOrchestrationContext(run)) {
-			String instanceType = Configuration
-					.getInstance()
-					.getRequiredProperty(
-							constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME));
-			instanceSize.put("instance-type", instanceType);
-			return instanceSize;
+			cpu = getCpuSizeOrchestrator();
+			ram = getRamSizeOrchestrator();
 		} else {
 			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
-			String cpu = getCpu(image);
-			String ram = getRam(image);
-			if (cpu == null || cpu.isEmpty() || ram == null || ram.isEmpty()) {
-				instanceSize.put("instance-type", getInstanceType(image));
-				return instanceSize;
-			} else {
-				instanceSize.put("cpu", cpu);
-				instanceSize.put("ram", ram);
-				return instanceSize;
-			}
+			cpu = getCpu(image);
+			ram = getRam(image);
 		}
+		instanceSize.put("cpu", cpu);
+		instanceSize.put("ram", ram);
+		return instanceSize;
 	}
 
 	private String getCustomVMTemplate(Run run) throws ValidationException {
@@ -122,11 +113,37 @@ public class OpenNebulaConnector extends CliConnectorBase {
 		}
 	}
 
+	protected String getCpuSizeOrchestrator() throws ValidationException {
+		String cpu = Configuration
+				.getInstance()
+				.getRequiredProperty(
+						constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_CPU_PARAMETER_NAME));
+		if (cpu == null || cpu.isEmpty()) {
+			throw new ValidationException("Orchestrator CPU value should not be empty.");
+		} else {
+			checkConvertsToInt(cpu, "Orchestrator CPU");
+			return cpu;
+		}
+	}
+
+	protected String getRamSizeOrchestrator() throws ValidationException {
+		String ram = Configuration
+				.getInstance()
+				.getRequiredProperty(
+						constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_RAM_PARAMETER_NAME));
+		if (ram == null || ram.isEmpty()) {
+			throw new ValidationException("Orchestrator RAM value should not be empty.");
+		} else {
+			checkConvertsToFloat(ram, "Orchestrator RAM");
+			return ram;
+		}
+	}
+
 	@Override
 	protected String getCpu(ImageModule image) throws ValidationException {
 		String cpu = super.getCpu(image);
 		if (cpu == null || cpu.isEmpty()) {
-			return "";
+			throw new ValidationException("CPU value should not be empty.");
 		} else {
 			checkConvertsToInt(cpu, "CPU");
 			return cpu;
@@ -137,7 +154,7 @@ public class OpenNebulaConnector extends CliConnectorBase {
 	protected String getRam(ImageModule image) throws ValidationException {
 		String ramGB = super.getRam(image);
 		if (ramGB == null || ramGB.isEmpty()) {
-			return "";
+			throw new ValidationException("RAM value should not be empty.");
 		} else {
 			checkConvertsToFloat(ramGB, "RAM");
 			return ramGB;
@@ -162,28 +179,17 @@ public class OpenNebulaConnector extends CliConnectorBase {
 
 	}
 
-	protected String getInstanceType(Run run)
-			throws ConfigurationException, ValidationException {
-		return (isInOrchestrationContext(run)) ? Configuration.getInstance()
-				.getRequiredProperty(constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME))
-				: getInstanceType(ImageModule.load(run.getModuleResourceUrl()));
-	}
-
 	protected void validateCredentials(User user) throws ValidationException {
 		super.validateCredentials(user);
 
 		String endpoint = getEndpoint(user);
 		if (endpoint == null || "".equals(endpoint)) {
-			throw (new ValidationException("Cloud Endpoint cannot be empty. Please contact your SlipStream administrator."));
+			throw (new ValidationException("Cloud Endpoint cannot be empty. " +
+					"Please contact your SlipStream administrator."));
 		}
 	}
 
 	protected void validateLaunch(Run run, User user) throws ValidationException {
-
-		String instanceSize = getInstanceType(run);
-		if (instanceSize == null || instanceSize.isEmpty() || "".equals(instanceSize) ){
-			throw (new ValidationException("Instance type cannot be empty."));
-		}
 
 		String imageId = getImageId(run, user);
 		if (imageId == null  || "".equals(imageId)){
@@ -222,11 +228,13 @@ public class OpenNebulaConnector extends CliConnectorBase {
 	}
 
 	protected String getNetworkPublic() throws ConfigurationException, ValidationException {
-		return Configuration.getInstance().getRequiredProperty(constructKey(OpenNebulaUserParametersFactory.NETWORK_PUBLIC_NAME));
+		return Configuration.getInstance().getRequiredProperty(
+				constructKey(OpenNebulaUserParametersFactory.NETWORK_PUBLIC_NAME));
 	}
 
 	protected String getNetworkPrivate() throws ConfigurationException, ValidationException {
-		return Configuration.getInstance().getRequiredProperty(constructKey(OpenNebulaUserParametersFactory.NETWORK_PRIVATE_NAME));
+		return Configuration.getInstance().getRequiredProperty(
+				constructKey(OpenNebulaUserParametersFactory.NETWORK_PRIVATE_NAME));
 	}
 
 }

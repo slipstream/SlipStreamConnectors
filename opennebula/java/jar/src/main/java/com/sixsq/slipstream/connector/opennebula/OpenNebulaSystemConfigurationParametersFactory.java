@@ -25,7 +25,8 @@ import com.sixsq.slipstream.exceptions.ValidationException;
 
 public class OpenNebulaSystemConfigurationParametersFactory extends SystemConfigurationParametersFactoryBase {
 
-	public static final String ORCHESTRATOR_INSTANCE_TYPE_DEFAULT = InstanceType.MICRO.getValue();
+	public static final String ORCHESTRATOR_CPU_SIZE_DEFAULT = "1";   //   1 vCPU
+	public static final String ORCHESTRATOR_RAM_SIZE_DEFAULT = "0.5"; // 512 MB
 
 	public OpenNebulaSystemConfigurationParametersFactory(String connectorInstanceName) throws ValidationException {
 		super(connectorInstanceName);
@@ -36,18 +37,19 @@ public class OpenNebulaSystemConfigurationParametersFactory extends SystemConfig
 		super.initReferenceParameters();
 		super.putMandatoryEndpoint();
 
-		putMandatoryParameter(constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME),
-				"OpenNebula instance type for the orchestrator.");
+		putMandatoryParameter(constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_CPU_PARAMETER_NAME),
+				"Orchestrator CPU size",
+				OpenNebulaSystemConfigurationParametersFactory.ORCHESTRATOR_CPU_SIZE_DEFAULT, "Number of vCPU", 16);
 
-		putEnumParameter(constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME),
-				"OpenNebula instance type for the orchestrator.",
-				InstanceType.getValues(), ORCHESTRATOR_INSTANCE_TYPE_DEFAULT, true);
+		putMandatoryParameter(constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_RAM_PARAMETER_NAME),
+				"Orchestrator RAM size",
+				OpenNebulaSystemConfigurationParametersFactory.ORCHESTRATOR_RAM_SIZE_DEFAULT, "Ram size in GB", 17);
 
 		putMandatoryParameter(constructKey(OpenNebulaUserParametersFactory.NETWORK_PUBLIC_NAME),
-				"Mapping for Public network. Network ID:", "");
+				"Mapping for Public network", "", "Numerical id", 30);
 
 		putMandatoryParameter(constructKey(OpenNebulaUserParametersFactory.NETWORK_PRIVATE_NAME),
-				"Mapping for Private network. Network ID", "");
+				"Mapping for Private network", "", "Numerical id", 31);
 
 		putMandatoryUpdateUrl();
 

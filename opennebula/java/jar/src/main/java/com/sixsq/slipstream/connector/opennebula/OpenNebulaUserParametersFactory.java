@@ -27,6 +27,8 @@ public class OpenNebulaUserParametersFactory extends UserParametersFactoryBase {
 
     public static final String NETWORK_PUBLIC_NAME = "network.public";
     public static final String NETWORK_PRIVATE_NAME = "network.private";
+	public static final String ORCHESTRATOR_CPU_PARAMETER_NAME = "orchestrator.cpu.size";
+	public static final String ORCHESTRATOR_RAM_PARAMETER_NAME = "orchestrator.ram.size";
 
 	public OpenNebulaUserParametersFactory(String connectorInstanceName)
 			throws ValidationException {
