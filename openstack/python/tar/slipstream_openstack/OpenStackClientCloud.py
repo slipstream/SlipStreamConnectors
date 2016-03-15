@@ -139,9 +139,9 @@ class OpenStackClientCloud(BaseCloudConnector):
 
         util.printStep('Creation of the new Image.')
         listener.write_for(machine_name, 'Saving the image')
-        newImg = self._thread_local.driver.ex_save_image(instance,
-                                                         node_instance.get_image_short_name(),
-                                                         metadata=None)
+        newImg = self._thread_local.driver.create_image(instance,
+                                                        node_instance.get_image_short_name(),
+                                                        metadata=None)
 
         self._wait_image_creation_completed(newImg.id)
         listener.write_for(machine_name, 'Image saved !')
