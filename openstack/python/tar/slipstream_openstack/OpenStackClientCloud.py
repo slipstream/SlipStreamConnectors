@@ -160,7 +160,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         security_groups = self._get_security_groups_for_node_instance(node_instance)
         flavor = searchInObjectList(self.flavors, 'name', instance_type)
         image = searchInObjectList(self.images, 'id', image_id)
-        contextualization_script = self.is_build_image() and '' or self._get_bootstrap_script(node_instance)
+        contextualization_script = self._get_bootstrap_script_if_not_build_image(node_instance)
 
         if flavor is None:
             raise Exceptions.ParameterNotFoundException("Couldn't find the specified flavor: %s" % instance_type)
