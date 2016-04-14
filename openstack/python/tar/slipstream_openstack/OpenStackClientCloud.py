@@ -256,7 +256,7 @@ class OpenStackClientCloud(BaseCloudConnector):
 
         if version == 'v3':
             auth_version = '3.x_password'
-            kwargs['domain_name'] = domain
+            kwargs['ex_domain_name'] = domain
         else:
             auth_version = '2.0_password'
 

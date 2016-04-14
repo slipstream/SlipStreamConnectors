@@ -17,14 +17,20 @@
 """
 
 from libcloud.compute.base import Node
-from libcloud.compute.types import NodeState
+from libcloud.compute.types import NodeState, LibcloudError
 from libcloud.utils.networking import is_public_subnet
+from libcloud.common.openstack import OpenStackDriverMixin, \
+                                      OpenStackBaseConnection
 from libcloud.compute.drivers.openstack import OpenStackComputeConnection, \
                                                OpenStack_1_1_NodeDriver
 from libcloud.common.openstack_identity import OpenStackServiceCatalog,\
                                                OpenStackServiceCatalogEntry, \
                                                OpenStackServiceCatalogEntryEndpoint, \
-                                               OpenStackIdentityEndpointType
+                                               OpenStackIdentityConnection, \
+                                               OpenStackIdentity_3_0_Connection, \
+                                               OpenStackIdentityEndpointType, \
+                                               OpenStackIdentityTokenScope, \
+                                               get_class_for_auth_version
 
 
 def _parse_service_catalog_auth_v3(self, service_catalog):
@@ -140,8 +146,219 @@ def _to_node(self, api_node):
         ),
     )
 
+# -------------------------------------------------------------------------------- #
+
+def OpenStackDriverMixin__init__(self, *args, **kwargs):
+    self._ex_force_base_url = kwargs.get('ex_force_base_url', None)
+    self._ex_force_auth_url = kwargs.get('ex_force_auth_url', None)
+    self._ex_force_auth_version = kwargs.get('ex_force_auth_version', None)
+    self._ex_force_auth_token = kwargs.get('ex_force_auth_token', None)
+    self._ex_token_scope = kwargs.get('ex_token_scope', None)
+    self._ex_domain_name = kwargs.get('ex_domain_name', None)
+    self._ex_tenant_name = kwargs.get('ex_tenant_name', None)
+    self._ex_force_service_type = kwargs.get('ex_force_service_type', None)
+    self._ex_force_service_name = kwargs.get('ex_force_service_name', None)
+    self._ex_force_service_region = kwargs.get('ex_force_service_region',
+                                               None)
+
+def openstack_connection_kwargs(self):
+    """
+
+    :rtype: ``dict``
+    """
+    rv = {}
+    if self._ex_force_base_url:
+        rv['ex_force_base_url'] = self._ex_force_base_url
+    if self._ex_force_auth_token:
+        rv['ex_force_auth_token'] = self._ex_force_auth_token
+    if self._ex_force_auth_url:
+        rv['ex_force_auth_url'] = self._ex_force_auth_url
+    if self._ex_force_auth_version:
+        rv['ex_force_auth_version'] = self._ex_force_auth_version
+    if self._ex_token_scope:
+        rv['ex_token_scope'] = self._ex_token_scope
+    if self._ex_domain_name:
+        rv['ex_domain_name'] = self._ex_domain_name
+    if self._ex_tenant_name:
+        rv['ex_tenant_name'] = self._ex_tenant_name
+    if self._ex_force_service_type:
+        rv['ex_force_service_type'] = self._ex_force_service_type
+    if self._ex_force_service_name:
+        rv['ex_force_service_name'] = self._ex_force_service_name
+    if self._ex_force_service_region:
+        rv['ex_force_service_region'] = self._ex_force_service_region
+    return rv
+
+"""
+    :param token_scope: Whether to scope a token to a "project", a
+                        "domain" or "unscoped".
+    :type token_scope: ``str``
+
+:param ex_domain_name: When authenticating, provide this domain
+name to the identity service.  A scoped token will be returned.
+Some cloud providers require the domain name to be provided at
+authentication time.  Others will use a default domain if none
+is provided.
+:type ex_domain_name: ``str``
+"""
+
+AUTH_API_VERSION = '1.1'
+
+def OpenStackBaseConnection__init__(self, user_id, key, secure=True,
+                                    host=None, port=None, timeout=None,
+                                    ex_force_base_url=None,
+                                    ex_force_auth_url=None,
+                                    ex_force_auth_version=None,
+                                    ex_force_auth_token=None,
+                                    ex_token_scope=None,
+                                    ex_domain_name=None,
+                                    ex_tenant_name=None,
+                                    ex_force_service_type=None,
+                                    ex_force_service_name=None,
+                                    ex_force_service_region=None,
+                                    retry_delay=None, backoff=None):
+    super(OpenStackBaseConnection, self).__init__(
+        user_id, key, secure=secure, timeout=timeout,
+        retry_delay=retry_delay, backoff=backoff)
+
+    if ex_force_auth_version:
+        self._auth_version = ex_force_auth_version
+
+    self._ex_force_base_url = ex_force_base_url
+    self._ex_force_auth_url = ex_force_auth_url
+    self._ex_force_auth_token = ex_force_auth_token
+    self._ex_token_scope = ex_token_scope
+    self._ex_domain_name = ex_domain_name
+    self._ex_tenant_name = ex_tenant_name
+    self._ex_force_service_type = ex_force_service_type
+    self._ex_force_service_name = ex_force_service_name
+    self._ex_force_service_region = ex_force_service_region
+    self._osa = None
+
+    if ex_force_auth_token and not ex_force_base_url:
+        raise LibcloudError(
+            'Must also provide ex_force_base_url when specifying '
+            'ex_force_auth_token.')
+
+    if ex_force_auth_token:
+        self.auth_token = ex_force_auth_token
+
+    if not self._auth_version:
+        self._auth_version = AUTH_API_VERSION
+
+    auth_url = self._get_auth_url()
+
+    if not auth_url:
+        raise LibcloudError('OpenStack instance must ' +
+                            'have auth_url set')
+
+def get_auth_class(self):
+    """
+    Retrieve identity / authentication class instance.
+
+    :rtype: :class:`OpenStackIdentityConnection`
+    """
+    if not self._osa:
+        auth_url = self._get_auth_url()
+
+        cls = get_class_for_auth_version(auth_version=self._auth_version)
+        self._osa = cls(auth_url=auth_url,
+                        user_id=self.user_id,
+                        key=self.key,
+                        domain_name=self._ex_domain_name,
+                        tenant_name=self._ex_tenant_name,
+                        token_scope=self._ex_token_scope,
+                        timeout=self.timeout,
+                        parent_conn=self)
+
+    return self._osa
+
+def OpenStackIdentityConnection__init__(self, auth_url, user_id, key, tenant_name=None,
+                                        domain_name=None, token_scope=None,
+                                        timeout=None, parent_conn=None):
+    super(OpenStackIdentityConnection, self).__init__(user_id=user_id,
+                                                      key=key,
+                                                      url=auth_url,
+                                                      timeout=timeout)
+
+    self.parent_conn = parent_conn
+
+    # enable tests to use the same mock connection classes.
+    if parent_conn:
+        self.conn_classes = parent_conn.conn_classes
+        self.driver = parent_conn.driver
+    else:
+        self.driver = None
+
+    self.auth_url = auth_url
+    self.tenant_name = tenant_name
+    self.domain_name = domain_name if domain_name is not None else 'Default'
+    self.token_scope = token_scope if token_scope is not None else \
+        OpenStackIdentityTokenScope.PROJECT
+    self.timeout = timeout
+
+    self.urls = {}
+    self.auth_token = None
+    self.auth_token_expires = None
+    self.auth_user_info = None
+
+def OpenStackIdentity_3_0_Connection__init__(self, auth_url, user_id, key, tenant_name=None,
+                                             domain_name=None, token_scope=None,
+                                             timeout=None, parent_conn=None):
+    """
+    :param tenant_name: Name of the project this user belongs to. Note:
+                        When token_scope is set to project, this argument
+                        control to which project to scope the token to.
+    :type tenant_name: ``str``
+
+    :param domain_name: Domain the user belongs to. Note: Then token_scope
+                        is set to token, this argument controls to which
+                        domain to scope the token to.
+    :type domain_name: ``str``
+
+    :param token_scope: Whether to scope a token to a "project", a
+                        "domain" or "unscoped"
+    :type token_scope: ``str``
+    """
+    super(OpenStackIdentity_3_0_Connection,
+          self).__init__(auth_url=auth_url,
+                         user_id=user_id,
+                         key=key,
+                         tenant_name=tenant_name,
+                         domain_name=domain_name,
+                         token_scope=token_scope,
+                         timeout=timeout,
+                         parent_conn=parent_conn)
+
+    if self.token_scope not in self.VALID_TOKEN_SCOPES:
+        raise ValueError('Invalid value for "token_scope" argument: %s' %
+                         (self.token_scope))
+
+    if (self.token_scope == OpenStackIdentityTokenScope.PROJECT and
+            (not self.tenant_name or not self.domain_name)):
+        raise ValueError('Must provide tenant_name and domain_name '
+                         'argument')
+    elif (self.token_scope == OpenStackIdentityTokenScope.DOMAIN and
+              not self.domain_name):
+        raise ValueError('Must provide domain_name argument')
+
+    self.auth_user_roles = None
+
+
 def patch_libcloud():
     OpenStack_1_1_NodeDriver._to_node = _to_node
     OpenStackComputeConnection.service_name = None
+    OpenStackComputeConnection.service_name = None
     OpenStackServiceCatalog._parse_service_catalog_auth_v3 = _parse_service_catalog_auth_v3
+
+    OpenStackDriverMixin.__init__ = OpenStackDriverMixin__init__
+    OpenStackDriverMixin.openstack_connection_kwargs = openstack_connection_kwargs
+
+    OpenStackBaseConnection._ex_domain_name = None
+    OpenStackBaseConnection.__init__ = OpenStackBaseConnection__init__
+    OpenStackBaseConnection.get_auth_class = get_auth_class
+
+    OpenStackIdentityConnection.__init__ = OpenStackIdentityConnection__init__
+    OpenStackIdentity_3_0_Connection.__init__ = OpenStackIdentity_3_0_Connection__init__
+
 
