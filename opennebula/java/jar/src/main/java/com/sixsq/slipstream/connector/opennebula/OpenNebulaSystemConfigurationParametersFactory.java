@@ -36,6 +36,7 @@ public class OpenNebulaSystemConfigurationParametersFactory extends SystemConfig
 	protected void initReferenceParameters() throws ValidationException {
 		super.initReferenceParameters();
 		super.putMandatoryEndpoint();
+		super.putMandatoryContextualizationType();
 
 		putMandatoryParameter(constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_CPU_PARAMETER_NAME),
 				"Orchestrator CPU size",
