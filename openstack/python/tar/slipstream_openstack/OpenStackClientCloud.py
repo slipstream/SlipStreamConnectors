@@ -380,7 +380,7 @@ class OpenStackClientCloud(BaseCloudConnector):
             return vm
 
         raise Exceptions.ExecutionException(
-            'Timed out while waiting for IPs to be assigned to instances: %s' % vmId)
+            'Timed out after %s sec, while waiting for IPs to be assigned to instances: %s' % (time_wait, vmId))
 
     def _wait_instance_in_running_state(self, instanceId):
         time_wait = 300
