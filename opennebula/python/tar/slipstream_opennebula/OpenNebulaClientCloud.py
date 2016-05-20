@@ -333,7 +333,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
     @override
     def _vm_get_root_disk(self, vm_instance):
-        return vm_instance.findtext('TEMPLATE/DISK/SIZE')
+        return format(int(vm_instance.findtext('TEMPLATE/DISK/SIZE')) / 1024.0, '.3f')
 
     @override
     def _vm_get_instance_type(self, vm_instance):
