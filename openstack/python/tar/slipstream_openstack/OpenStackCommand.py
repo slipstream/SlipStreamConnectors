@@ -63,7 +63,7 @@ class OpenStackCommand(CloudClientCommand):
     def get_cloud_specific_user_cloud_params(self):
         return {'tenant.name': self.get_option(self.PROJECT_KEY),
                 'service.region': self.get_option(self.REGION_KEY),
-                self.DOMAIN_KEY: self.get_option(self.DOMAIN_KEY),
+                'domain.name': self.get_option(self.DOMAIN_KEY),
                 self.ENDPOINT_KEY: self.get_option(self.ENDPOINT_KEY),
                 'service.type': self.get_option(self.SERVICE_TYPE_KEY),
                 'service.name': self.get_option(self.SERVICE_NAME_KEY),

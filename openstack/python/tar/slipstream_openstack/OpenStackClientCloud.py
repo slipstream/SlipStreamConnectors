@@ -251,7 +251,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         driverOpenStack = get_driver(Provider.OPENSTACK)
         isHttps = user_info.get_cloud_endpoint().lower().startswith('https://')
         version = user_info.get_cloud('identity.version', '').strip()
-        domain = user_info.get_cloud('domain', 'default').strip()
+        domain = user_info.get_cloud('domain.name', 'default').strip()
         kwargs = {}
 
         if version == 'v3':
