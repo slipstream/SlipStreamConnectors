@@ -26,6 +26,7 @@ from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 from slipstream.utils.ssh import generate_keypair
 
 import xmlrpclib
+import ssl
 import urllib
 import re
 import base64
@@ -309,7 +310,11 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         parts = self.user_info.get_cloud_endpoint().split(protocol_separator)
         url = parts[0] + protocol_separator + self._create_session_string() \
             + "@" + ''.join(parts[1:])
-        return xmlrpclib.ServerProxy(url)
+        no_certif_check = hasattr(ssl, '_create_unverified_context') and ssl._create_unverified_context() or None
+        try:
+            return xmlrpclib.ServerProxy(url, context=no_certif_check)
+        except TypeError:
+            return xmlrpclib.ServerProxy(url)
 
     @override
     def _vm_get_ip(self, vm):
