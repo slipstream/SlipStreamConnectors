@@ -148,6 +148,15 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             raise "Something wrong with image ID : %s!" % image_id
         return 'DISK = [ IMAGE_ID  = %d ]' % img_id
 
+    def _set_additionnal_disks(self, disk_size_gb):
+        if disk_size_gb is None:
+            return ''
+        try:
+            disk_size_mb = float(disk_size_gb) * 1024
+        except:
+            raise "Something wrong with additionnal disk size : %s!" % disk_size_gb
+        return 'DISK = [ FORMAT = "ext4", SIZE="%d", TYPE="fs" ]' % disk_size_mb
+
     def _set_cpu(self, vm_vcpu):
         try:
             number_vcpu = int(vm_vcpu)
@@ -203,6 +212,8 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
         disks = self._set_disks(node_instance.get_image_id())
 
+        additionnal_disks = self._set_additionnal_disks(node_instance.get_volatile_extra_disk_size())
+
         nics = self._set_nics(node_instance.get_network_type(),
                       user_info.get_public_network_name(),
                       user_info.get_private_network_name())
@@ -214,7 +225,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
                                                   self._get_bootstrap_script(node_instance))
         custom_vm_template = self._set_custom_vm_template(node_instance.get_cloud_parameter('custom.vm.template'))
 
-        template = ' '.join([instance_name, cpu, ram, disks, nics, context, custom_vm_template])
+        template = ' '.join([instance_name, cpu, ram, disks, additionnal_disks, nics, context, custom_vm_template])
         vm_id = self._rpc_execute('one.vm.allocate', template, False)
         vm = self._rpc_execute('one.vm.info', vm_id)
         return eTree.fromstring(vm)
