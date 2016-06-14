@@ -83,13 +83,13 @@ class OpenNebulaClientCloud(BaseCloudConnector):
     ]
 
     def _resize(self, node_instance):
-        raise Exceptions.ExecutionException('{} doesn't implement resize feature.'.format(self.__class__.__name__))
+        raise Exceptions.ExecutionException('{} doesn\'t implement resize feature.'.format(self.__class__.__name__))
 
     def _detach_disk(self, node_instance):
-        raise Exceptions.ExecutionException('{} doesn't implement detach disk feature.'.format(self.__class__.__name__))
+        raise Exceptions.ExecutionException('{} doesn\'t implement detach disk feature.'.format(self.__class__.__name__))
 
     def _attach_disk(self, node_instance):
-        raise Exceptions.ExecutionException('{} doesn't implement attach disk feature.'.format(self.__class__.__name__))
+        raise Exceptions.ExecutionException('{} doesn\'t implement attach disk feature.'.format(self.__class__.__name__))
 
     cloudName = 'opennebula'
 
