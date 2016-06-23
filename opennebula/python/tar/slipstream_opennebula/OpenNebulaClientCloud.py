@@ -149,7 +149,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         if disk_size_gb is None:
             return ''
         try:
-            disk_size_mb = float(disk_size_gb) * 1024
+            disk_size_mb = int(float(disk_size_gb) * 1024)
         except:
             raise 'Something wrong with additionnal disk size : {}!'.format(disk_size_gb)
         return 'DISK = [ FORMAT = "ext4", SIZE="{:d}", TYPE="fs" ]'.format(disk_size_mb)
