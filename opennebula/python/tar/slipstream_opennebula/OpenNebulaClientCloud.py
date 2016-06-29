@@ -83,13 +83,13 @@ class OpenNebulaClientCloud(BaseCloudConnector):
     ]
 
     def _resize(self, node_instance):
-        raise Exceptions.ExecutionException('{} doesn\'t implement resize feature.'.format(self.__class__.__name__))
+        raise Exceptions.ExecutionException('{0} doesn\'t implement resize feature.'.format(self.__class__.__name__))
 
     def _detach_disk(self, node_instance):
-        raise Exceptions.ExecutionException('{} doesn\'t implement detach disk feature.'.format(self.__class__.__name__))
+        raise Exceptions.ExecutionException('{0} doesn\'t implement detach disk feature.'.format(self.__class__.__name__))
 
     def _attach_disk(self, node_instance):
-        raise Exceptions.ExecutionException('{} doesn\'t implement attach disk feature.'.format(self.__class__.__name__))
+        raise Exceptions.ExecutionException('{0} doesn\'t implement attach disk feature.'.format(self.__class__.__name__))
 
     cloudName = 'opennebula'
 
@@ -136,14 +136,14 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         return re.sub('[^a-zA-Z0-9-]', '', name)
 
     def _set_instance_name(self, vm_name):
-        return 'NAME = {}'.format(self.format_instance_name(vm_name))
+        return 'NAME = {0}'.format(self.format_instance_name(vm_name))
 
     def _set_disks(self, image_id):
         try:
             img_id = int(image_id)
         except:
-            raise 'Something wrong with image ID : {}!'.format(image_id)
-        return 'DISK = [ IMAGE_ID  = {:d} ]'.format(img_id)
+            raise 'Something wrong with image ID : {0}!'.format(image_id)
+        return 'DISK = [ IMAGE_ID  = {0:d} ]'.format(img_id)
 
     def _set_additionnal_disks(self, disk_size_gb):
         if disk_size_gb is None:
@@ -151,15 +151,15 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         try:
             disk_size_mb = int(float(disk_size_gb) * 1024)
         except:
-            raise 'Something wrong with additionnal disk size : {}!'.format(disk_size_gb)
-        return 'DISK = [ FORMAT = "ext4", SIZE="{:d}", TYPE="fs" ]'.format(disk_size_mb)
+            raise 'Something wrong with additionnal disk size : {0}!'.format(disk_size_gb)
+        return 'DISK = [ FORMAT = "ext4", SIZE="{0:d}", TYPE="fs" ]'.format(disk_size_mb)
 
     def _set_cpu(self, vm_vcpu):
         try:
             number_vcpu = int(vm_vcpu)
         except:
-            raise 'Something wrong with CPU size : {}!'.format(vm_vcpu)
-        vcpu = 'VCPU = {:d}'.format(number_vcpu)
+            raise 'Something wrong with CPU size : {0}!'.format(vm_vcpu)
+        vcpu = 'VCPU = {0:d}'.format(number_vcpu)
         # add real CPU ratio - quota 2 vms per cpu
         return ' '.join(['CPU = 0.5', vcpu])
 
@@ -167,8 +167,8 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         try:
             ram = int(float(vm_ram_gbytes) * 1024)
         except ValueError:
-            raise 'Something wrong with RAM size : {}!'.format(vm_ram_gbytes)
-        return 'MEMORY = {:d}'.format(ram)
+            raise 'Something wrong with RAM size : {0}!'.format(vm_ram_gbytes)
+        return 'MEMORY = {0:d}'.format(ram)
 
     def _set_nics(self, requested_network_type, public_network_id, private_network_id):
         # extract mappings for Public and Private networks from the connector instance
@@ -176,19 +176,19 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             try:
                 network_id = int(public_network_id)
             except ValueError:
-                raise 'Something wrong with specified Public Network ID : {}!'.format(public_network_id)
+                raise 'Something wrong with specified Public Network ID : {0}!'.format(public_network_id)
         elif requested_network_type == 'Private':
             try:
                 network_id = int(private_network_id)
             except ValueError:
-                raise 'Something wrong with specified Private Network ID : {}!'.format(private_network_id)
+                raise 'Something wrong with specified Private Network ID : {0}!'.format(private_network_id)
         else:
             return ''
-        return 'NIC = [ NETWORK_ID = {:d} ]'.format(network_id)
+        return 'NIC = [ NETWORK_ID = {0:d} ]'.format(network_id)
 
     def _set_contextualization(self, public_ssh_key, contextualization_script):
         return 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + public_ssh_key \
-               + '", START_SCRIPT_BASE64 = "{}"]'.format(base64.b64encode(contextualization_script))
+               + '", START_SCRIPT_BASE64 = "{0}"]'.format(base64.b64encode(contextualization_script))
 
     def _set_custom_vm_template(self, custom_vm_template):
         if custom_vm_template is None:
@@ -277,7 +277,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         while current_state != self.VM_STATE.index(state):
             if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
-                    'Timed out while waiting VM {} to enter in state {}'.format(vm_id, state))
+                    'Timed out while waiting VM {0} to enter in state {1}'.format(vm_id, state))
             time.sleep(time_sleep)
             current_state = self._get_vm_state(vm_id)
         return current_state
@@ -292,7 +292,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         while current_state != self.IMAGE_STATE.index(state):
             if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
-                    'Timed out while waiting for image {} to be in state {}'.format(image_id, state))
+                    'Timed out while waiting for image {0} to be in state {1}'.format(image_id, state))
             time.sleep(time_sleep)
             current_state = self._get_image_state(image_id)
         return current_state
@@ -303,7 +303,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         while current_state == self.IMAGE_STATE.index(state):
             if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
-                        'Timed out while waiting for image {} to be in state {}'.format(image_id, state))
+                        'Timed out while waiting for image {0} to be in state {1}'.format(image_id, state))
             time.sleep(time_sleep)
             current_state = self._get_image_state(image_id)
         return current_state
@@ -311,7 +311,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
     def _create_session_string(self):
         quoted_username = urllib.quote(self.user_info.get_cloud_username(), '')
         quoted_password = urllib.quote(self.user_info.get_cloud_password(), '')
-        return '{}:{}'.format(quoted_username, quoted_password)
+        return '{0}:{1}'.format(quoted_username, quoted_password)
 
     def _create_rpc_connection(self):
         protocol_separator = '://'
