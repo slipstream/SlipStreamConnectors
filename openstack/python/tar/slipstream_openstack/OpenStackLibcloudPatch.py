@@ -22,7 +22,8 @@ from libcloud.utils.networking import is_public_subnet
 from libcloud.common.openstack import OpenStackDriverMixin, \
                                       OpenStackBaseConnection
 from libcloud.compute.drivers.openstack import OpenStackComputeConnection, \
-                                               OpenStack_1_1_NodeDriver
+                                               OpenStack_1_1_NodeDriver, \
+                                               OpenStack_1_1_FloatingIpAddress
 from libcloud.common.openstack_identity import OpenStackServiceCatalog,\
                                                OpenStackServiceCatalogEntry, \
                                                OpenStackServiceCatalogEntryEndpoint, \
@@ -63,6 +64,7 @@ def _parse_service_catalog_auth_v3(self, service_catalog):
         entries.append(entry)
 
     return entries
+
 
 def _to_node(self, api_node):
     public_networks_labels = ['public', 'internet']
@@ -148,6 +150,7 @@ def _to_node(self, api_node):
 
 # -------------------------------------------------------------------------------- #
 
+
 def OpenStackDriverMixin__init__(self, *args, **kwargs):
     self._ex_force_base_url = kwargs.get('ex_force_base_url', None)
     self._ex_force_auth_url = kwargs.get('ex_force_auth_url', None)
@@ -160,6 +163,7 @@ def OpenStackDriverMixin__init__(self, *args, **kwargs):
     self._ex_force_service_name = kwargs.get('ex_force_service_name', None)
     self._ex_force_service_region = kwargs.get('ex_force_service_region',
                                                None)
+
 
 def openstack_connection_kwargs(self):
     """
@@ -203,6 +207,7 @@ is provided.
 """
 
 AUTH_API_VERSION = '1.1'
+
 
 def OpenStackBaseConnection__init__(self, user_id, key, secure=True,
                                     host=None, port=None, timeout=None,
@@ -252,6 +257,7 @@ def OpenStackBaseConnection__init__(self, user_id, key, secure=True,
         raise LibcloudError('OpenStack instance must ' +
                             'have auth_url set')
 
+
 def get_auth_class(self):
     """
     Retrieve identity / authentication class instance.
@@ -272,6 +278,7 @@ def get_auth_class(self):
                         parent_conn=self)
 
     return self._osa
+
 
 def OpenStackIdentityConnection__init__(self, auth_url, user_id, key, tenant_name=None,
                                         domain_name=None, token_scope=None,
@@ -301,6 +308,7 @@ def OpenStackIdentityConnection__init__(self, auth_url, user_id, key, tenant_nam
     self.auth_token = None
     self.auth_token_expires = None
     self.auth_user_info = None
+
 
 def OpenStackIdentity_3_0_Connection__init__(self, auth_url, user_id, key, tenant_name=None,
                                              domain_name=None, token_scope=None,
@@ -345,10 +353,39 @@ def OpenStackIdentity_3_0_Connection__init__(self, auth_url, user_id, key, tenan
     self.auth_user_roles = None
 
 
+def ex_create_floating_ip(self, ip_pool=None):
+    """
+    Create new floating IP. The ip_pool attribute is optional only if your
+    infrastructure has only one IP pool available.
+
+    :param      ip_pool: name of the floating IP pool
+    :type       ip_pool: ``str``
+
+    :rtype: :class:`OpenStack_1_1_FloatingIpAddress`
+    """
+    data = {'pool': ip_pool} if ip_pool is not None else {}
+    resp = self.connection.request('/os-floating-ips',
+                                   method='POST',
+                                   data=data)
+
+    data = resp.object['floating_ip']
+    id = data['id']
+    ip_pool_ = data.get('pool')
+    ip_address = data['ip']
+    return OpenStack_1_1_FloatingIpAddress(id=id,
+                                           ip_address=ip_address,
+                                           pool=ip_pool_,
+                                           node_id=None,
+                                           driver=self)
+
+
 def patch_libcloud():
     OpenStack_1_1_NodeDriver._to_node = _to_node
+    OpenStack_1_1_NodeDriver.ex_create_floating_ip = ex_create_floating_ip
+
     OpenStackComputeConnection.service_name = None
     OpenStackComputeConnection.service_name = None
+
     OpenStackServiceCatalog._parse_service_catalog_auth_v3 = _parse_service_catalog_auth_v3
 
     OpenStackDriverMixin.__init__ = OpenStackDriverMixin__init__
