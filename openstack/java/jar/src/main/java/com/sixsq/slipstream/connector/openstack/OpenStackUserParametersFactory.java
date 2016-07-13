@@ -30,10 +30,10 @@ public class OpenStackUserParametersFactory extends UserParametersFactoryBase {
 	public static final String DOMAIN_NAME = "domain.name";
 	public static final String SERVICE_TYPE_PARAMETER_NAME = "service.type";
 	public static final String SERVICE_NAME_PARAMETER_NAME = "service.name";
-    public static final String SERVICE_REGION_PARAMETER_NAME = "service.region";
+	public static final String SERVICE_REGION_PARAMETER_NAME = "service.region";
 	public static final String IDENTITY_VERSION_PARAMETER_NAME = "identity.version";
-    public static final String NETWORK_PUBLIC_NAME = "network.public";
-    public static final String NETWORK_PRIVATE_NAME = "network.private";
+	public static final String NETWORK_PUBLIC_NAME = "network.public";
+	public static final String NETWORK_PRIVATE_NAME = "network.private";
 	public static final String USE_FLOATING_IPS_NAME = "floating.ips";
 
 	public OpenStackUserParametersFactory(String connectorInstanceName)
