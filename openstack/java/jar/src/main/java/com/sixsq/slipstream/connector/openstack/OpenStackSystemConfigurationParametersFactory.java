@@ -65,6 +65,11 @@ public class OpenStackSystemConfigurationParametersFactory extends SystemConfigu
 					"It can be left empty if there is only one service of this type for the specified region.",
 				140);
 
+		putMandatoryBooleanParameter(constructKey(OpenStackUserParametersFactory.USE_FLOATING_IPS_NAME), false,
+				"Use Floating IPs for the Public network",
+				"If enabled the parameter 'Mapping for Public network' correspond to the name of the IP pool to use.",
+				145);
+
         putMandatoryParameter(constructKey(OpenStackUserParametersFactory.NETWORK_PUBLIC_NAME),
                 "Mapping for Public network",
 				"",
@@ -74,8 +79,6 @@ public class OpenStackSystemConfigurationParametersFactory extends SystemConfigu
                 "Mapping for Private network",
 				"",
 				160);
-
-
 
 		putMandatoryOrchestratorSecurityGroups();
 

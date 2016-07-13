@@ -26,6 +26,7 @@ from libcloud.utils.networking import is_private_subnet
 from libcloud.common.types import InvalidCredsError, LibcloudError
 from libcloud.compute.types import Provider, NodeState
 from libcloud.compute.providers import get_driver
+from libcloud.compute.drivers.openstack import OpenStack_1_1_FloatingIpAddress
 import libcloud.security
 
 import slipstream.util as util
@@ -161,6 +162,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         flavor = searchInObjectList(self.flavors, 'name', instance_type)
         image = searchInObjectList(self.images, 'id', image_id)
         contextualization_script = self._get_bootstrap_script_if_not_build_image(node_instance)
+        use_floating_ips = user_info.get_cloud('floating.ips', 'false').lower() in ('true', 'yes', 'y', '1', 't')
 
         if flavor is None:
             raise Exceptions.ParameterNotFoundException("Couldn't find the specified flavor: %s" % instance_type)
@@ -170,10 +172,10 @@ class OpenStackClientCloud(BaseCloudConnector):
         # extract mappings for Public and Private networks from the connector instance
         network = None
         network_type = node_instance.get_network_type()
-        if network_type == 'Public':
+        if network_type == 'Public' and not use_floating_ips:
             network_name = user_info.get_public_network_name()
             network = searchInObjectList(self.networks, 'name', network_name)
-        elif network_type == 'Private':
+        elif network_type == 'Private' or (network_type == 'Public' and use_floating_ips):
             network_name = user_info.get_private_network_name()
             network = searchInObjectList(self.networks, 'name', network_name)
 
@@ -187,7 +189,22 @@ class OpenStackClientCloud(BaseCloudConnector):
         if network is not None:
             kwargs["networks"] = [network]
 
-        instance = self._thread_local.driver.create_node(**kwargs)
+        floating_ip = None
+        if use_floating_ips and network_type == 'Public':
+            ip_pool = user_info.get_public_network_name() or None
+            floating_ip = self._thread_local.driver.ex_create_floating_ip(ip_pool)
+            kwargs['ex_metadata'] = {'floating_ip': floating_ip.id}
+
+        try:
+            instance = self._thread_local.driver.create_node(**kwargs)
+
+            if floating_ip:
+                self._wait_instance_in_running_state(instance.id)
+                self._thread_local.driver.ex_attach_floating_ip_to_node(instance, floating_ip)
+        except:
+            if floating_ip:
+                self._thread_local.driver.ex_delete_floating_ip(floating_ip)
+            raise
 
         vm = dict(networkType=node_instance.get_network_type(),
                   instance=instance,
@@ -239,13 +256,22 @@ class OpenStackClientCloud(BaseCloudConnector):
     @override
     def _stop_deployment(self):
         for _, vm in self.get_vms().items():
-            vm['instance'].destroy()
+            instance = vm['instance']
+            instance.destroy()
+            self._remove_floating_ip(instance)
 
     @override
     def _stop_vms_by_ids(self, ids):
         for node in self._thread_local.driver.list_nodes():
             if node.id in ids:
                 node.destroy()
+                self._remove_floating_ip(node)
+
+    def _remove_floating_ip(self, vm_instance):
+        ip = vm_instance.extra.get('metadata', {}).get('floating_ip')
+        if ip:
+            floating_ip = OpenStack_1_1_FloatingIpAddress(id=ip, ip_address=None, pool=None)
+            self._thread_local.driver.ex_delete_floating_ip(floating_ip)
 
     def _get_driver(self, user_info):
         driverOpenStack = get_driver(Provider.OPENSTACK)
@@ -382,7 +408,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         raise Exceptions.ExecutionException(
             'Timed out after %s sec, while waiting for IPs to be assigned to instances: %s' % (time_wait, vmId))
 
-    def _wait_instance_in_running_state(self, instanceId):
+    def _wait_instance_in_running_state(self, instance_id):
         time_wait = 300
         time_stop = time.time() + time_wait
 
@@ -391,10 +417,10 @@ class OpenStackClientCloud(BaseCloudConnector):
             if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
                     'Timed out while waiting for instance "%s" enter in running state'
-                    % instanceId)
+                    % instance_id)
             time.sleep(1)
             node = self._thread_local.driver.list_nodes()
-            state = searchInObjectList(node, 'id', instanceId).state
+            state = searchInObjectList(node, 'id', instance_id).state
 
     def _wait_image_creation_completed(self, imageId):
         time_wait = 600
