@@ -109,8 +109,8 @@
   "Gets an attribute certificate from a VOMS server for the given VO,
    FQANs (roles), and targets."
   [cred vo {:keys [fqans targets]
-            :or   {:fqans   []
-                   :targets []}}]
+            :or   {fqans   []
+                   targets []}}]
   (let [lifetime (get-lifetime cred)
         service (voms-service)
         request (voms-request (name vo) fqans targets lifetime)]
