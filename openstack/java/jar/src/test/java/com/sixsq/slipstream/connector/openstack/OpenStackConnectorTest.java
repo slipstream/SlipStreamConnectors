@@ -22,6 +22,7 @@ package com.sixsq.slipstream.connector.openstack;
 
 import com.sixsq.slipstream.connector.Connector;
 import com.sixsq.slipstream.connector.ConnectorFactory;
+import com.sixsq.slipstream.connector.ConnectorTestBase;
 import com.sixsq.slipstream.connector.SystemConfigurationParametersFactoryBase;
 import com.sixsq.slipstream.util.CommonTestUtil;
 import org.junit.Test;
@@ -37,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class OpenStackConnectorTest {
+public class OpenStackConnectorTest extends ConnectorTestBase {
 
     @Test
     public void ensureConnectorIsLoaded() throws Exception {

@@ -22,9 +22,11 @@ package com.sixsq.slipstream.connector.occi;
 
 
 import com.sixsq.slipstream.connector.ConnectorFactory;
+import com.sixsq.slipstream.connector.ConnectorTestBase;
 import com.sixsq.slipstream.connector.SystemConfigurationParametersFactoryBase;
 import com.sixsq.slipstream.util.CommonTestUtil;
 import com.sixsq.slipstream.util.ResourceTestBase;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
@@ -37,6 +39,11 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 public class OcciConnectorTest extends ResourceTestBase {
+
+    @BeforeClass
+    public static void setupClass() {
+       ConnectorTestBase.setupClass();
+    }
 
     @Test
     public void ensureConnectorIsLoaded() throws Exception {

@@ -22,6 +22,7 @@ package com.sixsq.slipstream.connector.cloudstack;
 
 import com.sixsq.slipstream.connector.ConnectorFactory;
 import com.sixsq.slipstream.connector.SystemConfigurationParametersFactoryBase;
+import com.sixsq.slipstream.connector.ConnectorTestBase;
 import com.sixsq.slipstream.util.CommonTestUtil;
 import org.junit.Test;
 
@@ -35,7 +36,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class CloudStackConnectorTest {
+public class CloudStackConnectorTest extends ConnectorTestBase {
 
     @Test
     public void ensureConnectorIsLoaded() throws Exception {
