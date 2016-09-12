@@ -19,6 +19,12 @@
       <version>${project.version}</version>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>com.sixsq.slipstream</groupId>
+      <artifactId>SlipStreamConnector-OpenStack-conf</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+    </dependency>
   </dependencies>
 
   <build>
