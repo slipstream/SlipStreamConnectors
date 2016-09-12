@@ -10,33 +10,18 @@
 
 (def ^:const cloud-service-type "openstack")
 
-(def ref-attrs-kw->name
-  {:orchestratorImageid "orchestrator.imageid"
-   :quotaVm             "quota.vm"
-   :maxIaasWorkers      "max.iaas.workers"})
+(def connector-kw->pname
+  {:orchestratorInstanceType "orchestrator.instance.type"
+   :identityVersion          "identity.version"
+   :serviceRegion            "service.region"
+   :serviceType              "service.type"
+   :serviceName              "service.name"
+   :floatingIPs              "floating.ips"
+   :networkPrivate           "network.private"
+   :networkPublic            "network.public"
+   })
 
-(def mandatory-atrrs-kw->name
-  {:endpoint                "endpoint"
-   :nativeContextualization "native-contextualization"
-   :orchestratorSSHUsername "orchestrator.ssh.username"
-   :orchestratorSSHPassword "orchestrator.ssh.password"
-   :securityGroups          "security.groups"
-   :updateClientURL         "update.clienturl"})
-
-(def kw->name
-  (merge ref-attrs-kw->name
-         mandatory-atrrs-kw->name
-         {:orchestratorInstanceType "orchestrator.instance.type"
-          :identityVersion          "identity.version"
-          :serviceRegion            "service.region"
-          :serviceType              "service.type"
-          :serviceName              "service.name"
-          :floatingIPs              "floating.ips"
-          :networkPrivate           "network.private"
-          :networkPublic            "network.public"
-          }))
-
-(def name->kw (set/map-invert kw->name))
+(def connector-pname->kw (set/map-invert connector-kw->pname))
 
 ;;
 ;; schemas
