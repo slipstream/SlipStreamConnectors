@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>SlipStreamConnector-OpenStack-conf</artifactId>
+  <artifactId>SlipStreamConnector-OpenStack-conf-dep</artifactId>
   <packaging>pom</packaging>
   <version>3.12-SNAPSHOT</version>
-  <name>SlipStream Connector OpenStack - Clojure (JAR)</name>
-  <description>SlipStreamConnectors OpenStack Configuration (JAR)</description>
+  <name>SlipStream Connector OpenStack - Clojure (POM)</name>
+  <description>SlipStreamConnectors OpenStack Configuration (POM)</description>
   <url>http://sixsq.com</url>
 
   <parent>

@@ -91,6 +91,15 @@
               </sources>
             </mapping>
 
+             <mapping>
+                 <directory>${slipstream.base.dir}/ssclj/lib/ext/</directory>
+                 <sources>
+                     <softlinkSource>
+                         <location>${jetty.connector.dir}/SlipStreamConnector-OpenStack-conf-${project.version}.jar</location>
+                     </softlinkSource>
+                 </sources>
+             </mapping>
+
           </mappings>
 
         </configuration>

@@ -73,10 +73,7 @@
 (def ^:const resource
   {:cloudServiceType         cloud-service-type
 
-   :orchestratorImageid      ""
-   :quotaVm                  ""
-   :maxIaasWorkers           20
-
+   ;; TODO: move those reference parameters to connector-template.
    :endpoint                 ""
    :nativeContextualization  "linux-only"
    :orchestratorSSHUsername  ""
@@ -91,7 +88,8 @@
    :serviceName              ""
    :floatingIPs              false
    :networkPrivate           ""
-   :networkPublic            ""})
+   :networkPublic            ""
+   })
 
 ;;
 ;; description
@@ -103,7 +101,7 @@
 ;;
 (defn initialize
   []
-  (ctpl/register resource desc))
+  (ctpl/register resource desc connector-pname->kw))
 
 ;;
 ;; multimethods for validation
