@@ -162,6 +162,12 @@ class StratusLabClientCloud(BaseCloudConnector):
     @override
     def _build_image(self, user_info, node_instance):
 
+        machine_name = node_instance.get_name()
+        vm = self._get_vm(machine_name)
+        vm_ip = self._vm_get_ip(vm)
+
+        self._build_image_increment(user_info, node_instance, vm_ip)
+
         self.creator.createStep2()
 
         image_id = self._search_storage_for_new_image(self.slConfigHolder)

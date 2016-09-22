@@ -17,6 +17,7 @@
  limitations under the License.
 """
 
+import os
 import unittest
 from mock import Mock
 
@@ -35,6 +36,9 @@ class TestStratusLabClientCloudLive(TestStratusLabLiveBase):
         self._start_stop_instances_by_ids()
 
     def xtest_3_build_image(self):
+
+        with open(os.path.expanduser('~/.ssh/id_rsa')) as fd:
+            self.user_info['stratuslab.private.key'] = fd.read()
 
         self.client.run_category = RUN_CATEGORY_IMAGE
         self.client._prepare_machine_for_build_image = Mock()

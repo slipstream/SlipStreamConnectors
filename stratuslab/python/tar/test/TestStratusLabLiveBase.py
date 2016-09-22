@@ -109,23 +109,33 @@ class TestStratusLabLiveBase(unittest.TestCase):
             'stratuslab.cpu': '',
             'stratuslab.ram': '',
             'network': 'public',
-            'image.prerecipe':
+            'image.prerecipe': [
+                {"name": "prerecipe",
+                 "order": 1,
+                 "module": "component",
+                 "module_uri": "path/to/component",
+                 "script":
 """#!/bin/sh
 set -e
 set -x
 
 ls -l /tmp
 dpkg -l | egrep "nano|lvm" || true
-""",
+"""}],
             'image.packages' : ['lvm2', 'nano'],
-            'image.recipe':
+            'image.recipe': [
+                {"name": "prerecipe",
+                 "order": 1,
+                 "module": "component",
+                 "module_uri": "path/to/component",
+                "script":
 """#!/bin/sh
 set -e
 set -x
 
 dpkg -l | egrep "nano|lvm" || true
 lvs
-"""
+"""}]
         })
 
     def tearDown(self):
