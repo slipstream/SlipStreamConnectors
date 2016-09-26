@@ -36,7 +36,7 @@
 (deftest lifecycle
 
   ;; Get all regististered connector templates.
-  ;; There should be only one - openstack.
+  ;; There should be only one connector of this type.
   (let [session (session (ring-app))
         entries (-> session
                     (content-type "application/json")
@@ -56,7 +56,7 @@
     (is (= #{(str ct/resource-url "/" ct-openstack/cloud-service-type)} ids))
     (is (= #{ct-openstack/cloud-service-type} types))
 
-    ;; Get openstack connector template and work with it.
+    ;; Get connector template and work with it.
     (let [entry        (first entries)
           ops          (ltu/operations->map entry)
           href         (get ops (c/action-uri :describe))
