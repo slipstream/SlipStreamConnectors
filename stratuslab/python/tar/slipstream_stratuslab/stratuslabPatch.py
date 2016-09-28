@@ -31,8 +31,6 @@ def createStep1(self):
 
 
 def createStep2(self):
-    self._checkIfCanConnectToMachine()
-    self.buildNodeIncrement()
     self._shutdownNode()
     self._printAction('Finished building image increment.')
     self._printAction('Please check %s for new image ID and instruction.' % \
