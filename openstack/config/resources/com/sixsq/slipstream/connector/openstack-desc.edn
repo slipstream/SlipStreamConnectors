@@ -121,7 +121,7 @@
   :order 140,
   :instructions
   "Usually the value is 'nova'. It can be left empty if there is only one service of this type for the specified region."},
- :floatingIPs
+ :floatingIps
  {:displayName "floating.ips",
   :type "boolean",
   :category "",

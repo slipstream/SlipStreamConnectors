@@ -16,7 +16,7 @@
    :serviceRegion            "service.region"
    :serviceType              "service.type"
    :serviceName              "service.name"
-   :floatingIPs              "floating.ips"
+   :floatingIps              "floating.ips"
    :networkPrivate           "network.private"
    :networkPublic            "network.public"
    })
@@ -44,7 +44,7 @@
           :serviceRegion            sch/NonBlankString      ;; "RegionOne"
           :serviceType              sch/NonBlankString      ;; "compute"
           :serviceName              s/Str                   ;; "nova"
-          :floatingIPs              s/Bool                  ;; false
+          :floatingIps              s/Bool                  ;; false
           :networkPrivate           s/Str                   ;; "private"
           :networkPublic            s/Str                   ;; "public"
           }))
@@ -86,7 +86,7 @@
    :serviceRegion            "RegionOne"
    :serviceType              "compute"
    :serviceName              ""
-   :floatingIPs              false
+   :floatingIps              false
    :networkPrivate           ""
    :networkPublic            ""
    })
