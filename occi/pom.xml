@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>SlipStreamConnector-Occi</artifactId>
-  <version>3.13-SNAPSHOT</version>
+  <version>3.13</version>
   <packaging>pom</packaging>
   <name>SlipStream Connector for Occi (POM)</name>
   <url>http://sixsq.com/</url>
@@ -10,7 +10,7 @@
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
     <artifactId>SlipStreamConnectors</artifactId>
-    <version>3.13-SNAPSHOT</version>
+    <version>3.13</version>
   </parent>
 
   <modules>
