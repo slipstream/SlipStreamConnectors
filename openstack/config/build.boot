@@ -1,4 +1,4 @@
-(def +version+ "3.13-SNAPSHOT")
+(def +version+ "3.14-SNAPSHOT")
 
 (set-env!
   :project 'com.sixsq.slipstream/SlipStreamConnector-OpenStack-conf
@@ -30,7 +30,7 @@
 
                     ;; test dependencies
                     [peridot nil :scope "test"]
-                    [commons-logging "1.1.3" :scope "test"]
+                    [commons-logging nil :scope "test"]
 
                     ;; boot tasks
                     [boot-environ]
