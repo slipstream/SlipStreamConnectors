@@ -108,7 +108,7 @@ class StratusLabClientCloud(BaseCloudConnector):
 
     def _start_image_for_build(self, user_info, node_instance):
 
-        self._prepare_machine_for_build_image()
+        self._prepare_machine_for_build_image(user_info)
 
         manifest_downloader = ManifestDownloader(self.slConfigHolder)
 
@@ -377,8 +377,10 @@ class StratusLabClientCloud(BaseCloudConnector):
     def _get_stratuslab_runner(image_id, slConfigHolder):
         return Runner(image_id, slConfigHolder)
 
-    def _prepare_machine_for_build_image(self):
+    def _prepare_machine_for_build_image(self, user_info):
         generate_ssh_keypair(self.sshPrivKeyFile)
+        user_info.set_private_key(open(self.sshPrivKeyFile).read())
+
         self._install_packages_local(['curl'])
 
     @staticmethod
