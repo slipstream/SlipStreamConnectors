@@ -18,8 +18,7 @@
    :serviceName              "service.name"
    :floatingIps              "floating.ips"
    :networkPrivate           "network.private"
-   :networkPublic            "network.public"
-   })
+   :networkPublic            "network.public"})
 
 (def connector-pname->kw (set/map-invert connector-kw->pname))
 
@@ -27,18 +26,8 @@
 ;; schemas
 ;;
 
-(def connector-madatory-attrs-schema
-  {; mandatory parameters
-   :endpoint                s/Str                           ;; ""
-   :nativeContextualization sch/NonBlankString              ;; "linux-only"
-   :orchestratorSSHUsername s/Str                           ;; ""
-   :orchestratorSSHPassword s/Str                           ;; ""
-   :securityGroups          s/Str                           ;; "slipstream_managed"
-   :updateClientURL         s/Str                           ;; "https://nuv.la/downloads/openstackclient.tgz"
-   })
-
-(def connector-attrs-schema
-  (merge connector-madatory-attrs-schema
+(def ConnectorAttrsSchema
+  (merge ctpl/ConnectorReferenceAttrs
          {:orchestratorInstanceType sch/NonBlankString      ;; "Basic"
           :identityVersion          sch/NonBlankString      ;; "v2"
           :serviceRegion            sch/NonBlankString      ;; "RegionOne"
@@ -49,47 +38,40 @@
           :networkPublic            s/Str                   ;; "public"
           }))
 
-(def ConnectorTemplateOpenstackAttrs
+(def ConnectorTemplateAttrs
   (merge ctpl/ConnectorTemplateAttrs
-         connector-attrs-schema))
+         ConnectorAttrsSchema))
 
 (def ConnectorTemplateOpenstack
   (merge ctpl/ConnectorTemplate
-         ConnectorTemplateOpenstackAttrs))
+         ConnectorTemplateAttrs))
 
 (def ConnectorTemplateOpenstackRef
   (s/constrained
-    (merge ConnectorTemplateOpenstackAttrs
+    (merge ConnectorTemplateAttrs
            {(s/optional-key :href) sch/NonBlankString})
     seq 'not-empty?))
 
 (def ConnectorTemplateOpenstackDescription
   (merge ctpl/ConnectorTemplateDescription
+         ctpl/connector-reference-attrs-description
          (uc/read-config "com/sixsq/slipstream/connector/openstack-desc.edn")))
 ;;
 ;; resource
 ;;
 ;; defautls for the template
 (def ^:const resource
-  {:cloudServiceType         cloud-service-type
+  (merge ctpl/connector-reference-attrs-defaults
+         {:cloudServiceType         cloud-service-type
 
-   ;; TODO: move those reference parameters to connector-template.
-   :endpoint                 ""
-   :nativeContextualization  "linux-only"
-   :orchestratorSSHUsername  ""
-   :orchestratorSSHPassword  ""
-   :securityGroups           "slipstream_managed"
-   :updateClientURL          ""
-
-   :orchestratorInstanceType "Basic"
-   :identityVersion          "v2"
-   :serviceRegion            "RegionOne"
-   :serviceType              "compute"
-   :serviceName              ""
-   :floatingIps              false
-   :networkPrivate           ""
-   :networkPublic            ""
-   })
+          :orchestratorInstanceType "Basic"
+          :identityVersion          "v2"
+          :serviceRegion            "RegionOne"
+          :serviceType              "compute"
+          :serviceName              ""
+          :floatingIps              false
+          :networkPrivate           ""
+          :networkPublic            ""}))
 
 ;;
 ;; description
