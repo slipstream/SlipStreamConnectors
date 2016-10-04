@@ -40,7 +40,7 @@ public class OpenNebulaImageParametersFactory extends ModuleParametersFactoryBas
 	protected void initReferenceParameters() throws ValidationException {
 		putMandatoryParameter(Run.CPU_PARAMETER_NAME, Run.CPU_PARAMETER_DESCRIPTION, "1", 10);
 		putMandatoryParameter(Run.RAM_PARAMETER_NAME, Run.RAM_PARAMETER_DESCRIPTION, "0.5", 11);
-        putMandatoryParameter(CUSTOM_VM_TEMPLATE_NAME, CUSTOM_VM_TEMPLATE_DESCRIPTION, ParameterType.RestrictedText,
+		putMandatoryParameter(CUSTOM_VM_TEMPLATE_NAME, CUSTOM_VM_TEMPLATE_DESCRIPTION, ParameterType.RestrictedText,
                 CUSTOM_VM_TEMPLATE_EXAMPLE, 100);
 	}
 }
