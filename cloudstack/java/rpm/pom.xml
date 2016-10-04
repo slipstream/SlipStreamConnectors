@@ -19,6 +19,12 @@
       <version>${project.version}</version>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>com.sixsq.slipstream</groupId>
+      <artifactId>SlipStreamConnector-CloudStack-conf</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+    </dependency>
   </dependencies>
 
   <build>
@@ -27,7 +33,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-	<executions>
+        <executions>
           <execution>
             <id>copy-jar</id>
             <goals>
@@ -39,7 +45,7 @@
           </execution>
         </executions>
       </plugin>
-      
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>rpm-maven-plugin</artifactId>
@@ -60,7 +66,7 @@
           <obsoletes>
             <obsolete>slipstream-connector-cloudstack</obsolete>
           </obsoletes>
-          
+
           <requires>
             <require>jre-headless &gt;= 1.8.0</require>
             <require>slipstream-connector-cloudstack-python${slipstream.edition}</require>
@@ -78,10 +84,20 @@
               <sources>
                 <source>
                   <location>${project.build.directory}/dependency/jars</location>
-		  <includes>
-		    <include>*.jar</include>
-		  </includes>
+                  <includes>
+                    <include>*.jar</include>
+                  </includes>
                 </source>
+              </sources>
+            </mapping>
+
+            <mapping>
+              <directory>${slipstream.base.dir}/ssclj/lib/ext/</directory>
+              <sources>
+                <softlinkSource>
+                  <location>${jetty.connector.dir}/SlipStreamConnector-CloudStack-conf-${project.version}.jar
+                  </location>
+                </softlinkSource>
               </sources>
             </mapping>
 
