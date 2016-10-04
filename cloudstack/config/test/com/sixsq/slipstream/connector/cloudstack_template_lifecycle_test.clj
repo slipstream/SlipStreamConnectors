@@ -1,13 +1,12 @@
 (ns com.sixsq.slipstream.connector.cloudstack-template-lifecycle-test
   (:require
     [clojure.test :refer :all]
-    [peridot.core :refer :all]
 
     [com.sixsq.slipstream.connector.cloudstack-template :as cit]
-    [com.sixsq.slipstream.connector.lifecycle-test-utils :as ltu]
-    [com.sixsq.slipstream.connector.test-utils :as tu]
-
-    [com.sixsq.slipstream.ssclj.resources.common.dynamic-load :as dyn]))
+    [com.sixsq.slipstream.ssclj.resources.common.dynamic-load :as dyn]
+    [com.sixsq.slipstream.ssclj.resources.connector-test-utils :as tu]
+    [com.sixsq.slipstream.ssclj.resources.lifecycle-test-utils :as ltu]
+    ))
 
 (use-fixtures :each ltu/with-test-client-fixture)
 
