@@ -56,8 +56,8 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
                                default='', metavar='RAM')
 
         self.parser.add_option('--' + self.CUSTOM_VM_TEMPLATE_KEY, dest=self.CUSTOM_VM_TEMPLATE_KEY,
-                               help='Additional VM template ex. ' +
-                                    '\'GRAPHICS = [ TYPE = "VNC", LISTEN = "0.0.0.0", PORT = "5900"]\'',
+                               help='Additional VM template e.g. ' +
+                                    '\'GRAPHICS = [ TYPE = VNC, LISTEN = 0.0.0.0, PORT = 5900 ]\'',
                                default='', metavar='CUSTOM_VM_TEMPLATE')
 
     def get_cloud_specific_user_cloud_params(self):
