@@ -23,16 +23,16 @@ package com.sixsq.slipstream.connector.stratuslab;
 import com.sixsq.slipstream.connector.SystemConfigurationParametersFactoryBase;
 import com.sixsq.slipstream.exceptions.ValidationException;
 
-public class StratusLabSystemConfigurationParametersFactory extends
+public class StratusLabIterSystemConfigurationParametersFactory extends
 		SystemConfigurationParametersFactoryBase {
 
-	public StratusLabSystemConfigurationParametersFactory(
+	public StratusLabIterSystemConfigurationParametersFactory(
 			String connectorInstanceName) throws ValidationException {
 		super(connectorInstanceName);
 	}
 
 	protected void initReferenceParameters() throws ValidationException {
-		initConnectorParameters(StratusLabConnector.CLOUD_SERVICE_NAME);
+		initConnectorParameters(StratusLabIterConnector.CLOUD_SERVICE_NAME);
 	}
 
 }

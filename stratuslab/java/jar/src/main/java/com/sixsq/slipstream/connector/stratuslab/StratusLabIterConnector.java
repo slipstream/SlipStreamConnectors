@@ -21,6 +21,10 @@ package com.sixsq.slipstream.connector.stratuslab;
  */
 
 import com.sixsq.slipstream.connector.Connector;
+import com.sixsq.slipstream.exceptions.ValidationException;
+import com.sixsq.slipstream.persistence.ServiceConfigurationParameter;
+
+import java.util.Map;
 
 public class StratusLabIterConnector extends StratusLabConnector {
 
@@ -47,6 +51,13 @@ public class StratusLabIterConnector extends StratusLabConnector {
 	@Override
 	public String getCloudConnectorPythonModule() {
 		return CLOUDCONNECTOR_PYTHON_MODULENAME;
+	}
+
+	@Override
+	public Map<String, ServiceConfigurationParameter> getServiceConfigurationParametersTemplate()
+			throws ValidationException {
+		return new StratusLabIterSystemConfigurationParametersFactory(
+				getConnectorInstanceName()).getParameters();
 	}
 
 }
