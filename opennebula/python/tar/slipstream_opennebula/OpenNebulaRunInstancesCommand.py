@@ -76,8 +76,8 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
     def get_cloud_specific_node_inst_cloud_params(self):
         return {'cpu': self.get_option(self.CPU_KEY),
                 'ram': self.get_option(self.RAM_KEY),
-                'custom.vm.template': self.get_option(self.CUSTOM_VM_TEMPLATE_KEY) or '',
-                'network.specific.name': self.get_option(self.NETWORK_SPECIFIC_NAME_KEY) or ''}
+                'custom.vm.template': self.get_option(self.CUSTOM_VM_TEMPLATE_KEY),
+                'network.specific.name': self.get_option(self.NETWORK_SPECIFIC_NAME_KEY)}
 
     def get_cloud_specific_mandatory_options(self):
         return OpenNebulaCommand.get_cloud_specific_mandatory_options(self)

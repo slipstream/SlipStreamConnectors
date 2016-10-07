@@ -32,7 +32,7 @@ public class OpenNebulaImageParametersFactory extends ModuleParametersFactoryBas
 	public static final String CUSTOM_VM_TEMPLATE_DESCRIPTION = "Additional custom textual VM template";
 	public static final String CUSTOM_VM_TEMPLATE_EXAMPLE = "Example: " +
 			"GRAPHICS = [ TYPE = VNC, LISTEN = 0.0.0.0, PORT = 5900 ]";
-    public static final String NETWORK_SPECIFIC_NAME = "network.specific.name";
+	public static final String NETWORK_SPECIFIC_NAME = "network.specific.name";
 	public static final String NETWORK_SPECIFIC_DESCRIPTION = "Network name";
 	public static final String NETWORK_SPECIFIC_EXAMPLE = "Override network in Cloud configuration section! " +
 			"Connect VM network interface on specified virtual network name. " +

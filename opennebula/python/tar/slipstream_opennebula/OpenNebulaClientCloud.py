@@ -172,12 +172,12 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
     def _set_nics(self, requested_network_type, public_network_id, private_network_id):
         # extract mappings for Public and Private networks from the connector instance
-        if requested_network_type == 'Public':
+        if requested_network_type.upper() == 'PUBLIC':
             try:
                 network_id = int(public_network_id)
             except ValueError:
                 raise 'Something wrong with specified Public Network ID : {0}!'.format(public_network_id)
-        elif requested_network_type == 'Private':
+        elif requested_network_type.upper() == 'PRIVATE':
             try:
                 network_id = int(private_network_id)
             except ValueError:
@@ -221,9 +221,13 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
         additionnal_disks = self._set_additionnal_disks(node_instance.get_volatile_extra_disk_size())
 
-        network_specific_name = node_instance.get_cloud_parameter('network.specific.name') or ''
+        try:
+            network_specific_name = node_instance.get_cloud_parameter('network.specific.name').strip()
+        except:
+            network_specific_name = ''
+
         if network_specific_name:
-            nics = self._set_specific_nic(network_specific_name.strip())
+            nics = self._set_specific_nic(network_specific_name)
         else:
             nics = self._set_nics(node_instance.get_network_type(),
                           user_info.get_public_network_name(),
