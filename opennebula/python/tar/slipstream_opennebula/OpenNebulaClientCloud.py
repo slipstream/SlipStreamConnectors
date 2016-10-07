@@ -186,6 +186,16 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             return ''
         return 'NIC = [ NETWORK_ID = {0:d} ]'.format(network_id)
 
+    def _set_specific_nic(self, network_specific_name):
+        network_infos = network_specific_name.split(';')
+        if len(network_infos) == 1:
+            return 'NIC = [ NETWORK = {0} ]'.format(network_infos[0])
+        elif len(network_infos) == 2:
+            return 'NIC = [ NETWORK = {0}, NETWORK_UNAME = {1} ]'.format(network_infos[0], network_infos[1])
+        else:
+            raise 'Something wrong with specified Network name : {0}!'.format(network_specific_name)
+
+
     def _set_contextualization(self, public_ssh_key, contextualization_script):
         return 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + public_ssh_key \
                + '", START_SCRIPT_BASE64 = "{0}"]'.format(base64.b64encode(contextualization_script))
@@ -211,16 +221,20 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
         additionnal_disks = self._set_additionnal_disks(node_instance.get_volatile_extra_disk_size())
 
-        nics = self._set_nics(node_instance.get_network_type(),
-                      user_info.get_public_network_name(),
-                      user_info.get_private_network_name())
+        network_specific_name = node_instance.get_cloud_parameter('network.specific.name').strip()
+        if network_specific_name:
+            nics = self._set_specific_nic(network_specific_name)
+        else:
+            nics = self._set_nics(node_instance.get_network_type(),
+                          user_info.get_public_network_name(),
+                          user_info.get_private_network_name())
 
         if self.is_build_image():
             context = self._set_contextualization(self.tmp_public_key, '')
         else:
             context = self._set_contextualization(self.user_info.get_public_keys(),
                                                   self._get_bootstrap_script(node_instance))
-        custom_vm_template = self._set_custom_vm_template(node_instance.get_cloud_parameter('custom.vm.template'))
+        custom_vm_template = node_instance.get_cloud_parameter('custom.vm.template')
 
         template = ' '.join([instance_name, cpu, ram, disks, additionnal_disks, nics, context, custom_vm_template])
         vm_id = self._rpc_execute('one.vm.allocate', template, False)

@@ -32,6 +32,7 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
     CPU_KEY = 'cpu'
     RAM_KEY = 'ram'
     CUSTOM_VM_TEMPLATE_KEY = 'custom-vm-template'
+    NETWORK_SPECIFIC_NAME_KEY = 'network-specific-name'
 
     def __init__(self):
         super(OpenNebulaRunInstances, self).__init__()
@@ -60,6 +61,12 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
                                     '\'GRAPHICS = [ TYPE = VNC, LISTEN = 0.0.0.0, PORT = 5900 ]\'',
                                default='', metavar='CUSTOM_VM_TEMPLATE')
 
+        self.parser.add_option('--' + self.NETWORK_SPECIFIC_NAME_KEY, dest=self.NETWORK_SPECIFIC_NAME_KEY,
+                               help='Override network in Cloud configuration section! ' +
+                                    'Connect VM network interface on specified virtual network name. ' +
+                                    'Format: <NETWORK_NAME> or <NETWORK_NAME;NETWORK_UNAME>',
+                               default='', metavar='NETWORK_NAME')
+
     def get_cloud_specific_user_cloud_params(self):
         user_params = OpenNebulaCommand.get_cloud_specific_user_cloud_params(self)
         user_params['network.public'] = self.get_option(self.NETWORK_PUBLIC_KEY)
@@ -69,7 +76,8 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
     def get_cloud_specific_node_inst_cloud_params(self):
         return {'cpu': self.get_option(self.CPU_KEY),
                 'ram': self.get_option(self.RAM_KEY),
-                'custom.vm.template': self.get_option(self.CUSTOM_VM_TEMPLATE_KEY)}
+                'custom.vm.template': self.get_option(self.CUSTOM_VM_TEMPLATE_KEY) or '',
+                'network.specific.name': self.get_option(self.NETWORK_SPECIFIC_NAME_KEY) or ''}
 
     def get_cloud_specific_mandatory_options(self):
         return OpenNebulaCommand.get_cloud_specific_mandatory_options(self)

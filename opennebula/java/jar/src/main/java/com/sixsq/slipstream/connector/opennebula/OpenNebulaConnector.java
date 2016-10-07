@@ -79,6 +79,7 @@ public class OpenNebulaConnector extends CliConnectorBase {
 		launchParams.put("network-public", getNetworkPublic());
 		launchParams.put("network-private", getNetworkPrivate());
 		launchParams.put("custom-vm-template", getCustomVMTemplate(run));
+		launchParams.put("network-specific-name", getNetworkSpecificName(run));
 		return launchParams;
 	}
 
@@ -109,6 +110,21 @@ public class OpenNebulaConnector extends CliConnectorBase {
 				return "";
 			} else {
 				return vm_additional_template;
+			}
+		}
+	}
+
+	private String getNetworkSpecificName(Run run) throws ValidationException {
+		if (isInOrchestrationContext(run)) {
+			return "";
+		} else {
+			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
+			String network_specific_name = this.getParameterValue(
+					OpenNebulaImageParametersFactory.NETWORK_SPECIFIC_NAME, image);
+			if (network_specific_name == null || network_specific_name.isEmpty()) {
+				return "";
+			} else {
+				return network_specific_name;
 			}
 		}
 	}
