@@ -221,9 +221,9 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
         additionnal_disks = self._set_additionnal_disks(node_instance.get_volatile_extra_disk_size())
 
-        network_specific_name = node_instance.get_cloud_parameter('network.specific.name').strip()
+        network_specific_name = node_instance.get_cloud_parameter('network.specific.name') or ''
         if network_specific_name:
-            nics = self._set_specific_nic(network_specific_name)
+            nics = self._set_specific_nic(network_specific_name.strip())
         else:
             nics = self._set_nics(node_instance.get_network_type(),
                           user_info.get_public_network_name(),
@@ -234,7 +234,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         else:
             context = self._set_contextualization(self.user_info.get_public_keys(),
                                                   self._get_bootstrap_script(node_instance))
-        custom_vm_template = node_instance.get_cloud_parameter('custom.vm.template')
+        custom_vm_template = node_instance.get_cloud_parameter('custom.vm.template') or ''
 
         template = ' '.join([instance_name, cpu, ram, disks, additionnal_disks, nics, context, custom_vm_template])
         vm_id = self._rpc_execute('one.vm.allocate', template, False)
