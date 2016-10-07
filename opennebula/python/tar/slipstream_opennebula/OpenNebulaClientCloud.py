@@ -200,12 +200,6 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         return 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + public_ssh_key \
                + '", START_SCRIPT_BASE64 = "{0}"]'.format(base64.b64encode(contextualization_script))
 
-    def _set_custom_vm_template(self, custom_vm_template):
-        if custom_vm_template is None:
-            return ''
-        return custom_vm_template
-
-
     @override
     def _start_image(self, user_info, node_instance, vm_name):
         return self._start_image_on_opennebula(user_info, node_instance, vm_name)
