@@ -1,0 +1,26 @@
+{
+ :marketplaceEndpoint
+ {:displayName "marketplace.endpoint",
+  :type        "string",
+  :category    "",
+  :description "Marketplace endpoint",
+  :mandatory   true,
+  :readOnly    false,
+  :order       0},
+ :pdiskEndpoint
+ {:displayName "pdisk.endpoint",
+  :type        "string",
+  :category    "",
+  :description "PDisk endpoint",
+  :mandatory   true,
+  :readOnly    false,
+  :order       0},
+ :orchestratorInstanceType
+ {:displayName "orchestrator.instance.type",
+  :type        "string",
+  :category    "",
+  :description "Orchestrator instance type",
+  :mandatory   true,
+  :readOnly    false,
+  :order       0},
+ }

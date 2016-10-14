@@ -14,11 +14,7 @@ public class CloudStackAdvancedZoneSystemConfigurationParametersFactory extends
 
 	@Override
 	protected void initReferenceParameters() throws ValidationException {
-
-		super.initReferenceParameters();
-		
-		putMandatoryParameter(constructKey(ORCHESTRATOR_NETWORKS),
-				"List of networks for the Orchestrator (comma separated)");
+		initConnectorParameters(CloudStackAdvancedZoneConnector.CLOUD_SERVICE_NAME);
 	}
 	
 }

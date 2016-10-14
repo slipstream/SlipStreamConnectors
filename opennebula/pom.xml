@@ -13,6 +13,7 @@
   </parent>
 
   <modules>
+    <module>config</module>
     <module>java</module>
     <module>python</module>
   </modules>

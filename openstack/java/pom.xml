@@ -21,7 +21,7 @@
       <id>build-connector-rpm</id>
       <activation>
         <file>
-          <exists>/usr/bin/rpmbuild</exists>
+            <exists>/usr/bin/rpmbuild</exists>
         </file>
       </activation>
       <modules>

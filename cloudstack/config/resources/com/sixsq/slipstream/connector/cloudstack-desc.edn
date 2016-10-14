@@ -1,0 +1,18 @@
+{
+ :orchestratorInstanceType
+ {:displayName "orchestrator.instance.type",
+  :type        "string",
+  :category    "",
+  :description "Orchestrator instance type",
+  :mandatory   true,
+  :readOnly    false,
+  :order       0},
+ :zone
+ {:displayName "zone",
+  :type        "string",
+  :category    "",
+  :description "Zone",
+  :mandatory   true,
+  :readOnly    false,
+  :order       0}
+ }

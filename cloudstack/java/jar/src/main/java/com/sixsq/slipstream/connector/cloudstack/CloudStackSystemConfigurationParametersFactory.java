@@ -11,21 +11,7 @@ public class CloudStackSystemConfigurationParametersFactory extends SystemConfig
 
 	@Override
 	protected void initReferenceParameters() throws ValidationException {
-
-		super.initReferenceParameters();
-		super.putMandatoryContextualizationType();
-		super.putMandatoryOrchestratorUsernameAndPassword();
-
-		putMandatoryEndpoint();
-
-		putMandatoryParameter(constructKey(CloudStackUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME),
-				"Orchestrator instance type");
-		
-		putMandatoryParameter(constructKey(CloudStackUserParametersFactory.ZONE_PARAMETER_NAME), "Zone");
-
-		putMandatoryOrchestratorSecurityGroups();
-
-		putMandatoryUpdateUrl();
+		initConnectorParameters(CloudStackConnector.CLOUD_SERVICE_NAME);
 	}
 	
 }

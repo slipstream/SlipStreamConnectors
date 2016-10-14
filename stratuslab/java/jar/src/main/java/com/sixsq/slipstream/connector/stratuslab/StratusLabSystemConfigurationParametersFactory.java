@@ -32,21 +32,7 @@ public class StratusLabSystemConfigurationParametersFactory extends
 	}
 
 	protected void initReferenceParameters() throws ValidationException {
-
-		super.initReferenceParameters();
-
-		putMandatoryEndpoint();
-
-		putMandatoryParameter(constructKey(StratusLabUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME),
-				"Orchestrator instance type");
-
-		putMandatoryParameter(constructKey(StratusLabUserParametersFactory.MARKETPLACE_ENDPOINT_PARAMETER_NAME),
-				"Marketplace endpoint");
-
-		putMandatoryParameter(constructKey(StratusLabUserParametersFactory.PDISK_ENDPOINT_PARAMETER_NAME),
-				"PDisk endpoint");
-
-		putMandatoryUpdateUrl();
+		initConnectorParameters(StratusLabConnector.CLOUD_SERVICE_NAME);
 	}
 
 }

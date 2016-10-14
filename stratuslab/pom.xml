@@ -14,8 +14,9 @@
   </parent>
 
   <modules>
-    <module>python</module>
+    <module>config</module>
     <module>java</module>
+    <module>python</module>
   </modules>
 
 </project>

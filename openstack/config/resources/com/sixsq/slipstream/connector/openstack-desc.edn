@@ -1,0 +1,76 @@
+{
+ :networkPublic
+ {:displayName "network.public",
+  :type        "string",
+  :category    "",
+  :description "Mapping for Public network",
+  :mandatory   true,
+  :readOnly    false,
+  :order       150},
+ :identityVersion
+ {:displayName "identity.version",
+  :type        "enum",
+  :category    "",
+  :description "Identity API version",
+  :mandatory   true,
+  :readOnly    false,
+  :order       110,
+  :enum        ["v2" "v3"],
+  :instructions
+               "If the 'domain' feature is enable, you have to select 'v3'."},
+ :networkPrivate
+ {:displayName "network.private",
+  :type        "string",
+  :category    "",
+  :description "Mapping for Private network",
+  :mandatory   true,
+  :readOnly    false,
+  :order       160},
+ :serviceType
+ {:displayName "service.type",
+  :type        "string",
+  :category    "",
+  :description
+               "Type-name of the service which provides the instances functionality",
+  :mandatory   true,
+  :readOnly    false,
+  :order       130},
+ :serviceRegion
+ {:displayName "service.region",
+  :type        "string",
+  :category    "",
+  :description "Region used by this cloud connector",
+  :mandatory   true,
+  :readOnly    false,
+  :order       120},
+ :orchestratorInstanceType
+ {:displayName "orchestrator.instance.type",
+  :type        "string",
+  :category    "",
+  :description
+               "OpenStack Flavor for the orchestrator. The actual image should support the desired Flavor",
+  :mandatory   true,
+  :readOnly    false,
+  :order       100},
+ :serviceName
+ {:displayName "service.name",
+  :type        "string",
+  :category    "",
+  :description
+               "Name of the service which provides the instances functionality",
+  :mandatory   true,
+  :readOnly    false,
+  :order       140,
+  :instructions
+               "Usually the value is 'nova'. It can be left empty if there is only one service of this type for the specified region."},
+ :floatingIps
+ {:displayName "floating.ips",
+  :type        "boolean",
+  :category    "",
+  :description "Use Floating IPs for the Public network",
+  :mandatory   true,
+  :readOnly    false,
+  :order       145,
+  :instructions
+               "If enabled the parameter 'Mapping for Public network' correspond to the name of the IP pool to use."}
+ }

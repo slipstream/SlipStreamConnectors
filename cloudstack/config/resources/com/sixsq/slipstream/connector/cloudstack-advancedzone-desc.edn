@@ -1,0 +1,10 @@
+{
+ :orchestratorNetworks
+ {:displayName "orchestrator.networks",
+  :type        "string",
+  :category    "",
+  :description "List of networks for the Orchestrator (comma separated)",
+  :mandatory   true,
+  :readOnly    false,
+  :order       0}
+ }
