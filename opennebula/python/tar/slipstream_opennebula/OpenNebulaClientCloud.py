@@ -152,7 +152,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             disk_size_mb = int(float(disk_size_gb) * 1024)
         except:
             raise 'Something wrong with additionnal disk size : {0}!'.format(disk_size_gb)
-        return 'DISK = [ FORMAT = "ext4", SIZE="{0:d}", TYPE="fs" ]'.format(disk_size_mb)
+        return 'DISK = [ FORMAT = "ext4", SIZE="{0:d}", TYPE="fs", IO="native" ]'.format(disk_size_mb)
 
     def _set_cpu(self, vm_vcpu):
         try:
