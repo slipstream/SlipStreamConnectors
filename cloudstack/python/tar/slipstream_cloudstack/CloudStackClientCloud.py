@@ -178,7 +178,7 @@ class CloudStackClientCloud(BaseCloudConnector):
 
     def _stop_instances(self, instances):
         max_workers = self._get_max_workers(self.configHolder)
-        tasksRunnner = TasksRunner(self.__stop_instance,
+        tasksRunnner = TasksRunner(self._stop_instance,
                                    max_workers=max_workers,
                                    verbose=self.verboseLevel)
         for instance in instances:
@@ -187,7 +187,7 @@ class CloudStackClientCloud(BaseCloudConnector):
         tasksRunnner.run_tasks()
         tasksRunnner.wait_tasks_processed()
 
-    def __stop_instance(self, instance):
+    def _stop_instance(self, instance):
         driver = self._get_driver(self.user_info)
         driver.destroy_node(instance)
 
