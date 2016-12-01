@@ -21,62 +21,8 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from slipstream.command.CloudClientCommand import main
-from slipstream.command.RunInstancesCommand import RunInstancesCommand
-from slipstream_openstack.OpenStackCommand import OpenStackCommand
-from slipstream_openstack.OpenStackClientCloud import OpenStackClientCloud
-
-
-class OpenStackRunInstances(RunInstancesCommand, OpenStackCommand):
-
-    INSTANCE_TYPE_KEY = 'instance-type'
-    SECURITY_GROUPS_KEY = 'security-groups'
-    NETWORK_PUBLIC_KEY = 'network-public'
-    NETWORK_PRIVATE_KEY = 'network-private'
-    USE_FLOATING_IP = 'use-floating-ips'
-
-    def __init__(self):
-        super(OpenStackRunInstances, self).__init__()
-
-    def set_cloud_specific_options(self, parser):
-        OpenStackCommand.set_cloud_specific_options(self, parser)
-
-        self.parser.add_option('--' + self.INSTANCE_TYPE_KEY, dest=self.INSTANCE_TYPE_KEY,
-                               help='Instance Type (Flavor)',
-                               default=None, metavar='TYPE')
-
-        self.parser.add_option('--' + self.SECURITY_GROUPS_KEY, dest=self.SECURITY_GROUPS_KEY,
-                               help='Comma separated list of security groups',
-                               default='', metavar='SECGROUPS')
-
-        self.parser.add_option('--' + self.NETWORK_PUBLIC_KEY, dest=self.NETWORK_PUBLIC_KEY,
-                          help='Mapping for Public network (default: "")',
-                          default='', metavar='NAME')
-
-        self.parser.add_option('--' + self.NETWORK_PRIVATE_KEY, dest=self.NETWORK_PRIVATE_KEY,
-                          help='Mapping for Private network (default: "")',
-                          default='', metavar='NAME')
-
-        self.parser.add_option('--' + self.USE_FLOATING_IP, dest=self.USE_FLOATING_IP,
-                               help='Use Floating IPs for the public network. '
-                                    'Use --' + self.NETWORK_PUBLIC_KEY + 'to define the ip-pool',
-                               action='store_true', default=False)
-
-    def get_cloud_specific_user_cloud_params(self):
-        user_params = OpenStackCommand.get_cloud_specific_user_cloud_params(self)
-        user_params['network.public'] = self.get_option(self.NETWORK_PUBLIC_KEY)
-        user_params['network.private'] = self.get_option(self.NETWORK_PRIVATE_KEY)
-        user_params['floating.ips']= 'true' if self.get_option(self.USE_FLOATING_IP) else 'false'
-        return user_params
-
-    def get_cloud_specific_node_inst_cloud_params(self):
-        return {'security.groups': self.get_option(self.SECURITY_GROUPS_KEY),
-                'instance.type': self.get_option(self.INSTANCE_TYPE_KEY)}
-
-    def get_cloud_specific_mandatory_options(self):
-        return OpenStackCommand.get_cloud_specific_mandatory_options(self) + \
-               [self.INSTANCE_TYPE_KEY,
-                self.SECURITY_GROUPS_KEY]
-
+from slipstream_openstack.OpenStackRunInstancesCommand import OpenStackRunInstances
 
 if __name__ == "__main__":
     main(OpenStackRunInstances)
+

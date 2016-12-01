@@ -17,10 +17,12 @@
  limitations under the License.
 """
 
-from slipstream.command.CloudClientCommand import main
-from slipstream_openstack.OpenStackTerminateInstancesCommand import OpenStackTerminateInstances
+from slipstream.command.TerminateInstancesCommand import TerminateInstancesCommand
+from slipstream_openstack.OpenStackCommand import OpenStackCommand
 
 
-if __name__ == "__main__":
-    main(OpenStackTerminateInstances)
+class OpenStackTerminateInstances(TerminateInstancesCommand, OpenStackCommand):
+
+    def __init__(self):
+        super(OpenStackTerminateInstances, self).__init__()
 
