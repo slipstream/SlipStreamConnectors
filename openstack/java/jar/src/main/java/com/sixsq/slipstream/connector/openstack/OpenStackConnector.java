@@ -20,9 +20,6 @@ package com.sixsq.slipstream.connector.openstack;
  * -=================================================================-
  */
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.sixsq.slipstream.configuration.Configuration;
 import com.sixsq.slipstream.connector.CliConnectorBase;
 import com.sixsq.slipstream.connector.Connector;
@@ -32,9 +29,13 @@ import com.sixsq.slipstream.exceptions.ValidationException;
 import com.sixsq.slipstream.persistence.ImageModule;
 import com.sixsq.slipstream.persistence.ModuleParameter;
 import com.sixsq.slipstream.persistence.Run;
+import com.sixsq.slipstream.persistence.RuntimeParameter;
 import com.sixsq.slipstream.persistence.ServiceConfigurationParameter;
 import com.sixsq.slipstream.persistence.User;
 import com.sixsq.slipstream.persistence.UserParameter;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class OpenStackConnector extends CliConnectorBase {
@@ -81,8 +82,9 @@ public class OpenStackConnector extends CliConnectorBase {
 	protected Map<String, String> getConnectorSpecificLaunchParams(Run run, User user)
 			throws ConfigurationException, ValidationException {
 		Map<String, String> launchParams = new HashMap<String, String>();
+
 		launchParams.put("instance-type", getInstanceType(run));
-        launchParams.put("network-public", getNetworkPublic());
+		launchParams.put("network-public", getNetworkPublic());
         launchParams.put("network-private", getNetworkPrivate());
 		putLaunchParamSecurityGroups(launchParams, run, user);
 		putLaunchParamUseFloatingIp(launchParams);
@@ -143,9 +145,18 @@ public class OpenStackConnector extends CliConnectorBase {
 	}
 
 	protected String getInstanceType(Run run) throws ConfigurationException, ValidationException {
-		return (isInOrchestrationContext(run)) ? Configuration.getInstance()
-				.getRequiredProperty(constructKey(OpenStackUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME))
-				: getInstanceType(ImageModule.load(run.getModuleResourceUrl()));
+		String orchestratorInstanceType = Configuration.getInstance()
+				.getRequiredProperty(constructKey(OpenStackUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME));
+
+		String imageInstanceType = getInstanceType(ImageModule.load(run.getModuleResourceUrl()));
+		String machineInstanceType = imageInstanceType;
+		try {
+			machineInstanceType = run.getParameter("machine:" + RuntimeParameter.INSTANCE_TYPE_KEY).getValue();
+		} catch (Exception e) {
+			getLog().info("unable to get instance type : " + e.getMessage() +", defaulting to image instance type");
+		}
+
+		return (isInOrchestrationContext(run)) ? orchestratorInstanceType : machineInstanceType;
 	}
 
 	protected String getIdentityVersion() throws ValidationException {
