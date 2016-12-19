@@ -319,7 +319,7 @@ class OpenStackClientCloud(BaseCloudConnector):
 
     @override
     def _vm_get_ip_from_list_instances(self, vm_instance):
-        return self._get_instance_ip_address(vm_instance)
+        return self._get_instance_ip_address(vm_instance, strict=False)
 
     @override
     def _vm_get_cpu(self, vm_instance):
@@ -359,8 +359,8 @@ class OpenStackClientCloud(BaseCloudConnector):
         type = ip_type.strip().lower() if ip_type is not None else 'public'
 
         # The OpenStack driver of libcloud doesn't detect correctly the type of the IP. So we do it ourself.
-        private_ips, public_ips = self._extract_public_private_ips(instance.private_ips + instance.public_ips)
-        # private_ips = instance.private_ips, public_ips = instance.public_ips
+        # private_ips, public_ips = self._extract_public_private_ips(instance.private_ips + instance.public_ips)
+        private_ips, public_ips = instance.private_ips, instance.public_ips
 
         if type == 'private' and len(private_ips) > 0:
             return private_ips[0]
