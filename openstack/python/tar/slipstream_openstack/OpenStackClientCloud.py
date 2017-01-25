@@ -197,7 +197,9 @@ class OpenStackClientCloud(BaseCloudConnector):
 
         additional_disk = None
         if node_instance.get_volatile_extra_disk_size():
-            additional_disk = self._thread_local.driver.create_volume(node_instance.get_volatile_extra_disk_size(), 'ss-disk-%i' % int(time.time()), location=self._get_service_name(user_info), ex_volume_type='no_volume_type')
+            additional_disk = self._thread_local.driver.create_volume(node_instance.get_volatile_extra_disk_size(), \
+                                                                      'ss-disk-%i' % int(time.time()), \
+                                                                      location=self._get_service_name(user_info))
             kwargs['ex_metadata'].update({'additional_disk_id': additional_disk.id})
 
         try:
