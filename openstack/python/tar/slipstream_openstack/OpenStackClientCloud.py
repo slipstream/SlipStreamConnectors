@@ -198,7 +198,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         additional_disk = None
         if node_instance.get_volatile_extra_disk_size():
             additional_disk = self._thread_local.driver.create_volume(node_instance.get_volatile_extra_disk_size(), 'ss-disk-%i' % int(time.time()), location=self._get_service_name(user_info), ex_volume_type='no_volume_type')
-            kwargs['ex_metadata'] = {'additional_disk_id': additional_disk.id}
+            kwargs['ex_metadata'].update({'additional_disk_id': additional_disk.id})
 
         try:
             instance = self._thread_local.driver.create_node(**kwargs)
@@ -473,5 +473,18 @@ class OpenStackClientCloud(BaseCloudConnector):
     def _remove_additional_disk(self, vm_instance):
         additional_disk_id = vm_instance.extra.get('metadata', {}).get('additional_disk_id')
         if additional_disk_id:
+            DISK_STATE_AVAILABLE = 0
+            time_wait = 60
+            time_stop = time.time() + time_wait
+
             additional_disk = self._thread_local.driver.ex_get_volume(additional_disk_id)
+            diskState = additional_disk.state
+
+            while diskState != DISK_STATE_AVAILABLE:
+                if time.time() > time_stop:
+                    raise Exceptions.ExecutionException(
+                        'Timed out while waiting for disk "%s" to be deleted' % additional_disk_id)
+                time.sleep(5)
+                diskState = self._thread_local.driver.ex_get_volume(additional_disk_id).state
+
             self._thread_local.driver.destroy_volume(additional_disk)
