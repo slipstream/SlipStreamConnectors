@@ -188,12 +188,13 @@ class OpenStackClientCloud(BaseCloudConnector):
 
         if network is not None:
             kwargs["networks"] = [network]
-
+        
+        kwargs['ex_metadata'] = {}
         floating_ip = None
         if use_floating_ips and network_type == 'Public':
             ip_pool = user_info.get_public_network_name() or None
             floating_ip = self._thread_local.driver.ex_create_floating_ip(ip_pool)
-            kwargs['ex_metadata'] = {'floating_ip': floating_ip.id}
+            kwargs['ex_metadata'].update({'floating_ip': floating_ip.id})
 
         additional_disk = None
         if node_instance.get_volatile_extra_disk_size():
