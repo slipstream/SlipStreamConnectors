@@ -23,7 +23,8 @@ from libcloud.common.openstack import OpenStackDriverMixin, \
                                       OpenStackBaseConnection
 from libcloud.compute.drivers.openstack import OpenStackComputeConnection, \
                                                OpenStack_1_1_NodeDriver, \
-                                               OpenStack_1_1_FloatingIpAddress
+                                               OpenStack_1_1_FloatingIpAddress, \
+                                               OpenStackNodeDriver
 from libcloud.common.openstack_identity import OpenStackServiceCatalog,\
                                                OpenStackServiceCatalogEntry, \
                                                OpenStackServiceCatalogEntryEndpoint, \
@@ -378,14 +379,61 @@ def ex_create_floating_ip(self, ip_pool=None):
                                            node_id=None,
                                            driver=self)
 
+def create_volume(self, size, name, location=None, snapshot=None,
+                  ex_volume_type=None):
+    """
+    Create a new volume.
 
+    :param size: Size of volume in gigabytes (required)
+    :type size: ``int``
+
+    :param name: Name of the volume to be created
+    :type name: ``str``
+
+    :param location: Which data center to create a volume in. If
+                           empty, undefined behavior will be selected.
+                           (optional)
+    :type location: :class:`.NodeLocation`
+
+    :param snapshot:  Snapshot from which to create the new
+                      volume.  (optional)
+    :type snapshot:  :class:`.VolumeSnapshot`
+
+    :param ex_volume_type: What kind of volume to create.
+                        (optional)
+    :type ex_volume_type: ``str``
+
+    :return: The newly created volume.
+    :rtype: :class:`StorageVolume`
+    """
+    volume = {
+        'display_name': name,
+        'display_description': name,
+        'size': size,
+        'metadata': {
+            'contents': name,
+        },
+        'availability_zone': location
+    }
+
+    if snapshot:
+        volume['snapshot_id'] = snapshot.id
+    if ex_volume_type:
+        volume['volume_type'] = ex_volume_type
+
+    resp = self.connection.request('/os-volumes',
+                                   method='POST',
+                                   data={'volume': volume})
+    return self._to_volume(resp.object)
+  
 def patch_libcloud():
     OpenStack_1_1_NodeDriver._to_node = _to_node
     OpenStack_1_1_NodeDriver.ex_create_floating_ip = ex_create_floating_ip
 
     OpenStackComputeConnection.service_name = None
-    OpenStackComputeConnection.service_name = None
 
+    OpenStackNodeDriver.create_volume = create_volume
+    
     OpenStackServiceCatalog._parse_service_catalog_auth_v3 = _parse_service_catalog_auth_v3
 
     OpenStackDriverMixin.__init__ = OpenStackDriverMixin__init__

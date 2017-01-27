@@ -22,6 +22,7 @@ import unittest
 
 from slipstream_openstack.OpenStackClientCloud import \
     OpenStackClientCloud
+from slipstream_openstack.OpenStackClientCloud import searchInObjectList
 from slipstream.ConfigHolder import ConfigHolder
 from slipstream.SlipStreamHttpClient import UserInfo
 from slipstream.NodeDecorator import (NodeDecorator, RUN_CATEGORY_IMAGE,
@@ -134,6 +135,18 @@ lvs
 """
         })
 
+        self.node_instance_with_additional_disk = NodeInstance({
+            NodeDecorator.NODE_NAME_KEY: NodeDecorator.MACHINE_NAME,
+            NodeDecorator.NODE_INSTANCE_NAME_KEY: NodeDecorator.MACHINE_NAME,
+            'cloudservice': self.connector_instance_name,
+            'image.platform': 'Ubuntu',
+            'image.imageId': image_id,
+            'image.id': image_id,
+            self.constructKey('instance.type'): instance_type,
+            'network': network_type,
+            'extra.disk.volatile': '20'
+        })
+
     def tearDown(self):
         os.environ.pop('SLIPSTREAM_CONNECTOR_INSTANCE')
         os.environ.pop('SLIPSTREAM_BOOTSTRAP_BIN')
@@ -168,6 +181,18 @@ lvs
         self.client._initialization(self.user_info)
         assert isinstance(self.client.list_instances(), list)
 
+    def xtest_4_startImageWithAdditionalDisk(self):
+        self.client.run_category = RUN_CATEGORY_IMAGE
+
+        self.client.start_nodes_and_clients(self.user_info,
+                                            {NodeDecorator.MACHINE_NAME: self.node_instance_with_additional_disk})
+
+        vm_id = self.client.get_vms()[NodeDecorator.MACHINE_NAME]['id']
+        nodes = self.client.list_instances()
+
+        assert searchInObjectList(nodes, 'id', vm_id).extra['volumes_attached']
+
+        self.client.stop_deployment()
 
 if __name__ == '__main__':
     unittest.main()

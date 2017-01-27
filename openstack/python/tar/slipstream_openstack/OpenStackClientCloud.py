@@ -188,22 +188,35 @@ class OpenStackClientCloud(BaseCloudConnector):
 
         if network is not None:
             kwargs["networks"] = [network]
-
+        
+        kwargs['ex_metadata'] = {}
         floating_ip = None
         if use_floating_ips and network_type == 'Public':
             ip_pool = user_info.get_public_network_name() or None
             floating_ip = self._thread_local.driver.ex_create_floating_ip(ip_pool)
-            kwargs['ex_metadata'] = {'floating_ip': floating_ip.id}
+            kwargs['ex_metadata'].update({'floating_ip': floating_ip.id})
+
+        additional_disk = None
+        if node_instance.get_volatile_extra_disk_size():
+            additional_disk = self._thread_local.driver.create_volume(node_instance.get_volatile_extra_disk_size(), \
+                                                                      'ss-disk-%i' % int(time.time()), \
+                                                                      location=self._get_service_name(user_info))
+            kwargs['ex_metadata'].update({'additional_disk_id': additional_disk.id})
 
         try:
             instance = self._thread_local.driver.create_node(**kwargs)
 
-            if floating_ip:
+            if floating_ip or additional_disk:
                 self._wait_instance_in_running_state(instance.id)
-                self._thread_local.driver.ex_attach_floating_ip_to_node(instance, floating_ip)
+                if floating_ip:
+                    self._thread_local.driver.ex_attach_floating_ip_to_node(instance, floating_ip)
+                if additional_disk:
+                    self._thread_local.driver.attach_volume(instance, additional_disk, device='/dev/vdb')
         except:
             if floating_ip:
                 self._thread_local.driver.ex_delete_floating_ip(floating_ip)
+            if additional_disk:
+                self._thread_local.driver.destroy_volume(additional_disk)
             raise
 
         vm = dict(networkType=node_instance.get_network_type(),
@@ -259,6 +272,7 @@ class OpenStackClientCloud(BaseCloudConnector):
             instance = vm['instance']
             instance.destroy()
             self._remove_floating_ip(instance)
+            self._remove_additional_disk(instance)
 
     @override
     def _stop_vms_by_ids(self, ids):
@@ -266,6 +280,7 @@ class OpenStackClientCloud(BaseCloudConnector):
             if node.id in ids:
                 node.destroy()
                 self._remove_floating_ip(node)
+                self._remove_additional_disk(node)
 
     def _remove_floating_ip(self, vm_instance):
         ip = vm_instance.extra.get('metadata', {}).get('floating_ip')
@@ -458,3 +473,21 @@ class OpenStackClientCloud(BaseCloudConnector):
         kp = searchInObjectList(self._thread_local.driver.list_key_pairs(), 'name', kp_name)
         self._thread_local.driver.delete_key_pair(kp)
 
+    def _remove_additional_disk(self, vm_instance):
+        additional_disk_id = vm_instance.extra.get('metadata', {}).get('additional_disk_id')
+        if additional_disk_id:
+            DISK_STATE_AVAILABLE = 0
+            time_wait = 60
+            time_stop = time.time() + time_wait
+
+            additional_disk = self._thread_local.driver.ex_get_volume(additional_disk_id)
+            diskState = additional_disk.state
+
+            while diskState != DISK_STATE_AVAILABLE:
+                if time.time() > time_stop:
+                    raise Exceptions.ExecutionException(
+                        'Timed out while waiting for disk "%s" to be deleted' % additional_disk_id)
+                time.sleep(5)
+                diskState = self._thread_local.driver.ex_get_volume(additional_disk_id).state
+
+            self._thread_local.driver.destroy_volume(additional_disk)
