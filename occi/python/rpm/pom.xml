@@ -118,7 +118,7 @@
 					<summary>SlipStream Connector for Occi - Python
 %include %{_rpmconfigdir}/macros.python
 </summary>
-					<name>slipstream-connector-occi-python</name>
+					<name>slipstream-connector-occi-python${slipstream.edition}</name>
 					<group>Applications/Engineering</group>
 					<vendor>SixSq</vendor>
 					<packager>SixSq</packager>
@@ -130,13 +130,12 @@
 					</description>
 
 					<obsoletes>
-                                          <obsolete>slipstream-connector-occi-python-community</obsolete>
-                                          <obsolete>slipstream-connector-occi-python-enterprise</obsolete>
+                                          <obsolete>slipstream-connector-occi-python</obsolete>
                                         </obsoletes>
 
 					<requires>
 					  <require>python &gt;= 2.6</require>
-					  <require>slipstream-client</require>
+					  <require>slipstream-client${slipstream.edition}</require>
 					  <require>occi-cli</require> <!-- http://repository.egi.eu/community/software/rocci.cli/4.3.x/releases/sl/6/x86_64/RPMS/ -->
 					  <require>lcg-CA</require> <!-- http://repository.egi.eu/sw/production/umd/ -->
 					</requires>

@@ -54,7 +54,7 @@
           <classifier>${package.os}</classifier>
           <release>${BUILD_NUMBER}.${package.os}</release>
           <summary>SlipStream Connector for OpenStack</summary>
-          <name>slipstream-connector-openstack</name>
+          <name>slipstream-connector-openstack${slipstream.edition}</name>
           <group>Applications/Engineering</group>
           <vendor>SixSq</vendor>
           <packager>SixSq</packager>
@@ -64,14 +64,13 @@
           <description>SlipStream connector for OpenStack clouds</description>
 
           <obsoletes>
-            <obsolete>slipstream-connector-openstack-community</obsolete>
-            <obsolete>slipstream-connector-openstack-enterprise</obsolete>
+            <obsolete>slipstream-connector-openstack</obsolete>
           </obsoletes>
 
           <requires>
             <require>jre-headless &gt;= 1.8.0</require>
-            <require>slipstream-connector-openstack-python</require>
-            <require>libcloud-slipstream-downloads</require>
+            <require>slipstream-connector-openstack-python${slipstream.edition}</require>
+            <require>libcloud-slipstream-downloads${slipstream.edition}</require>
           </requires>
 
           <mappings>

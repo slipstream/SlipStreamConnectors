@@ -28,17 +28,6 @@
         <module>rpm</module>
       </modules>
     </profile>
-    <profile>
-      <id>build-connector-rpm-local</id>
-      <activation>
-        <file>
-          <exists>/usr/local/bin/rpmbuild</exists>
-        </file>
-      </activation>
-      <modules>
-        <module>rpm</module>
-      </modules>
-    </profile>
   </profiles>
 
 </project>
