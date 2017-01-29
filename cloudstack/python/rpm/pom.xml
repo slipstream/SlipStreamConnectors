@@ -115,7 +115,7 @@
 				<configuration>
 					<classifier>${package.os}</classifier>
 					<release>${BUILD_NUMBER}.${package.os}</release>
-					<name>slipstream-connector-cloudstack-python${slipstream.edition}</name>
+					<name>slipstream-connector-cloudstack-python</name>
 					<summary>SlipStream Connector for CloudStack - Python
 %include %{_rpmconfigdir}/macros.python
 					</summary>
@@ -127,8 +127,12 @@
 					<needarch>noarch</needarch>
 					<description>SlipStream Connector for CloudStack - Python</description>
 
+                                        <obsoletes>
+                                          <obsolete>slipstream-connector-cloudstack-python-community</obsolete>
+                                          <obsolete>slipstream-connector-cloudstack-python-enterprise</obsolete>
+                                        </obsoletes>
                     <requires>
-                      <require>slipstream-useradd${slipstream.edition}</require>
+                      <require>slipstream-useradd</require>
                     </requires>
 
                     <mappings>

@@ -77,7 +77,7 @@
           <classifier>${package.os}</classifier>
           <release>${BUILD_NUMBER}.${package.os}</release>
           <summary>SlipStream Connector Occi</summary>
-          <name>slipstream-connector-occi${slipstream.edition}</name>
+          <name>slipstream-connector-occi</name>
           <group>Applications/Engineering</group>
           <vendor>SixSq</vendor>
           <packager>SixSq</packager>
@@ -89,12 +89,13 @@
           </description>
 
           <obsoletes>
-            <obsolete>slipstream-connector-occi</obsolete>
+            <obsolete>slipstream-connector-occi-community</obsolete>
+            <obsolete>slipstream-connector-occi-enterprise</obsolete>
           </obsoletes>
 
           <requires>
             <require>jre-headless &gt;= 1.8.0</require>
-            <require>slipstream-connector-occi-python${slipstream.edition}</require>
+            <require>slipstream-connector-occi-python</require>
           </requires>
           <mappings>
 

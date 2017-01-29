@@ -48,7 +48,7 @@
           <classifier>${package.os}</classifier>
           <release>${BUILD_NUMBER}.${package.os}</release>
           <summary>SlipStream Connector for PhysicalHost</summary>
-          <name>slipstream-connector-physicalhost${slipstream.edition}</name>
+          <name>slipstream-connector-physicalhost</name>
           <group>Applications/Engineering</group>
           <vendor>SixSq</vendor>
           <packager>SixSq</packager>
@@ -58,7 +58,8 @@
           <description>SlipStream connector for PhysicalHost clouds</description>
 
           <obsoletes>
-            <obsolete>slipstream-connector-physicalhost</obsolete>
+            <obsolete>slipstream-connector-physicalhost-community</obsolete>
+            <obsolete>slipstream-connector-physicalhost-enterprise</obsolete>
           </obsoletes>
 
           <requires>

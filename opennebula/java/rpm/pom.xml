@@ -54,7 +54,7 @@
           <classifier>${package.os}</classifier>
           <release>${BUILD_NUMBER}.${package.os}</release>
           <summary>SlipStream Connector for OpenNebula</summary>
-          <name>slipstream-connector-opennebula${slipstream.edition}</name>
+          <name>slipstream-connector-opennebula</name>
           <group>Applications/Engineering</group>
           <vendor>SixSq</vendor>
           <packager>SixSq</packager>
@@ -64,12 +64,13 @@
           <description>SlipStream connector for OpenNebula clouds</description>
 
           <obsoletes>
-            <obsolete>slipstream-connector-opennebula</obsolete>
+            <obsolete>slipstream-connector-opennebula-community</obsolete>
+            <obsolete>slipstream-connector-opennebula-enterprise</obsolete>
           </obsoletes>
 
           <requires>
             <require>jre-headless &gt;= 1.8.0</require>
-            <require>slipstream-connector-opennebula-python${slipstream.edition}</require>
+            <require>slipstream-connector-opennebula-python</require>
           </requires>
 
           <mappings>

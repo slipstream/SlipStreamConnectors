@@ -54,7 +54,7 @@
           <classifier>${package.os}</classifier>
           <release>${BUILD_NUMBER}.${package.os}</release>
           <summary>SlipStream Connector for CloudStack</summary>
-          <name>slipstream-connector-cloudstack${slipstream.edition}</name>
+          <name>slipstream-connector-cloudstack</name>
           <group>Applications/Engineering</group>
           <vendor>SixSq</vendor>
           <packager>SixSq</packager>
@@ -64,13 +64,14 @@
           <description>SlipStream connector for CloudStack clouds</description>
 
           <obsoletes>
-            <obsolete>slipstream-connector-cloudstack</obsolete>
+            <obsolete>slipstream-connector-cloudstack-community</obsolete>
+            <obsolete>slipstream-connector-cloudstack-enterprise</obsolete>
           </obsoletes>
 
           <requires>
             <require>jre-headless &gt;= 1.8.0</require>
-            <require>slipstream-connector-cloudstack-python${slipstream.edition}</require>
-            <require>libcloud-slipstream-downloads${slipstream.edition}</require>
+            <require>slipstream-connector-cloudstack-python</require>
+            <require>libcloud-slipstream-downloads</require>
           </requires>
 
           <mappings>
