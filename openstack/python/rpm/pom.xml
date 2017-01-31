@@ -115,7 +115,7 @@
 				<configuration>
 					<classifier>${package.os}</classifier>
 					<release>${BUILD_NUMBER}.${package.os}</release>
-					<name>slipstream-connector-openstack-python${slipstream.edition}</name>
+					<name>slipstream-connector-openstack-python</name>
 					<summary>SlipStream Connector for OpenStack - Python
 %include %{_rpmconfigdir}/macros.python
 					</summary>
@@ -125,10 +125,15 @@
 					<license>Apache 2.0</license>
 					<url>http://sixsq.com</url>
 					<needarch>noarch</needarch>
-					<description>SlipStream Connector for OpenStack - Python</description>
+                                        <description>SlipStream Connector for OpenStack - Python</description>
+
+                                        <obsoletes>
+                                          <obsolete>slipstream-connector-openstack-python-community</obsolete>
+                                          <obsolete>slipstream-connector-openstack-python-enterprise</obsolete>
+                                        </obsoletes>
 
                     <requires>
-                      <require>slipstream-useradd${slipstream.edition}</require>
+                      <require>slipstream-useradd</require>
                     </requires>
 
                     <mappings>

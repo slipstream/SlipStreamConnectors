@@ -118,7 +118,7 @@
 					<summary>StratusLab ${stratuslab.version.zip} API
 %include %{_rpmconfigdir}/macros.python
 </summary>
-					<name>slipstream-connector-stratuslab-python${slipstream.edition}</name>
+					<name>slipstream-connector-stratuslab-python</name>
 					<group>Applications/Engineering</group>
 					<vendor>SixSq</vendor>
 					<packager>SixSq</packager>
@@ -128,11 +128,12 @@
 					<description />
                     <obsoletes>
                       <obsolete>stratuslab-slipstream-downloads</obsolete>
-                      <obsolete>slipstream-connector-stratuslab-python</obsolete>
+                      <obsolete>slipstream-connector-stratuslab-python-community</obsolete>
+                      <obsolete>slipstream-connector-stratuslab-python-enterprise</obsolete>
                     </obsoletes>
 
                     <requires>
-                      <require>slipstream-useradd${slipstream.edition}</require>
+                      <require>slipstream-useradd</require>
                       <require>stratuslab-api = ${stratuslab.version.rpm}</require>
                       <require>stratuslab-cli-user = ${stratuslab.version.rpm}</require>
                     </requires>
