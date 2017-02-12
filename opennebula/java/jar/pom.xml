@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-OpenNebula-jar</artifactId>
   <packaging>jar</packaging>
-  <name>SlipStream Connector OpenNebula - Java (JAR)</name>
+  <name>SlipStreamConnectors/opennebula/java/jar</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

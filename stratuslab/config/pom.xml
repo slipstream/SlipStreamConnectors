@@ -3,8 +3,7 @@
 
   <artifactId>SlipStreamConnector-StratusLab-conf-dep</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector StratusLab - Clojure (POM)</name>
-  <description>SlipStreamConnectors StratusLab Configuration (POM)</description>
+  <name>SlipStreamConnectors/stratuslab/config</name>
   <url>http://sixsq.com</url>
 
   <parent>

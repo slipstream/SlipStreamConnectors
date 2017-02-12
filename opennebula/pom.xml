@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-OpenNebula</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector OpenNebula (POM)</name>
+  <name>SlipStreamConnectors/opennebula</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

@@ -3,7 +3,7 @@
 
   <artifactId>SlipStreamConnector-OpenNebula-python-bundle</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector OpenNebula - Python (ZIP)</name>
+  <name>SlipStreamConnectors/opennebula/python/tar</name>
   <url>http://sixsq.com/</url>
 
   <parent>

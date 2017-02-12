@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-OpenNebula-rpm</artifactId>
   <packaging>rpm</packaging>
-  <name>SlipStream Connector OpenNebula - Java (RPM)</name>
+  <name>SlipStreamConnectors/opennebula/java/rpm</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

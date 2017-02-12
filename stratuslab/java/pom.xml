@@ -4,7 +4,7 @@
   <artifactId>SlipStreamConnector-StratusLab-java</artifactId>
   <version>3.22-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>SlipStream Connector StratusLab - Java (POM)</name>
+  <name>SlipStreamConnectors/stratuslab/java</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

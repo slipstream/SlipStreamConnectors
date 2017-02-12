@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-OpenStack-rpm</artifactId>
   <packaging>rpm</packaging>
-  <name>SlipStream Connector OpenStack - Java (RPM)</name>
+  <name>SlipStreamConnectors/openstack/java/rpm</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

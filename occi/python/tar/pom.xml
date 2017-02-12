@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>SlipStreamConnector-Occi-python-bundle</artifactId>
-	<name>SlipStream Connector for Occi - Python (ZIP)</name>
+	<name>SlipStreamConnectors/occi/python/tar</name>
 	<packaging>pom</packaging>
 
 	<parent>

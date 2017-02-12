@@ -3,8 +3,7 @@
 
   <artifactId>SlipStreamConnector-CloudStack-conf-dep</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector CloudStack - Clojure (POM)</name>
-  <description>SlipStreamConnectors CloudStack Configuration (POM)</description>
+  <name>SlipStreamConnectors/cloudstack/config</name>
   <url>http://sixsq.com</url>
 
   <parent>

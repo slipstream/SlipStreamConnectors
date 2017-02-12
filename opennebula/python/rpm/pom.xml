@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>SlipStreamConnector-OpenNebula-python-rpm</artifactId>
-	<name>SlipStream Connector OpenNebula - Python (RPM)</name>
+	<name>SlipStreamConnectors/opennebula/python/rpm</name>
 
 	<packaging>pom</packaging>
 

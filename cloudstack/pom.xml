@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-CloudStack</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector CloudStack (POM)</name>
+  <name>SlipStreamConnectors/cloudstack</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-StratusLab</artifactId>
   <version>3.22-SNAPSHOT</version>
-  <name>SlipStream Connector StratusLab (POM)</name>
+  <name>SlipStreamConnectors/stratuslab</name>
   <packaging>pom</packaging>
 
   <parent>

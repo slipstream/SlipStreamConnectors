@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-CloudStack-rpm</artifactId>
   <packaging>rpm</packaging>
-  <name>SlipStream Connector CloudStack - Java (RPM)</name>
+  <name>SlipStreamConnectors/cloudstack/java/rpm</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

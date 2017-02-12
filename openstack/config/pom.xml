@@ -3,8 +3,7 @@
 
   <artifactId>SlipStreamConnector-OpenStack-conf-dep</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector OpenStack - Clojure (POM)</name>
-  <description>SlipStreamConnectors OpenStack Configuration (POM)</description>
+  <name>SlipStreamConnectors/openstack/config</name>
   <url>http://sixsq.com</url>
 
   <parent>

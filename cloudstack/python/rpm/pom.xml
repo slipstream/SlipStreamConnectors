@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>SlipStreamConnector-CloudStack-python-rpm</artifactId>
-	<name>SlipStream Connector CloudStack - Python (RPM)</name>
+	<name>SlipStreamConnectors/cloudstack/python/rpm</name>
 
 	<packaging>pom</packaging>
 

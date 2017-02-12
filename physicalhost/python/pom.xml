@@ -3,7 +3,7 @@
 
   <artifactId>SlipStreamConnector-PhysicalHost-python</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector PhysicalHost - Python (POM)</name>
+  <name>SlipStreamConnectors/physicalhost/python</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

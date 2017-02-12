@@ -5,7 +5,7 @@
   <artifactId>SlipStreamConnectors</artifactId>
   <packaging>pom</packaging>
   <version>3.22-SNAPSHOT</version>
-  <name>SlipStream Cloud Connectors (POM)</name>
+  <name>SlipStreamConnectors</name>
 
   <url>http://sixsq.com/</url>
 

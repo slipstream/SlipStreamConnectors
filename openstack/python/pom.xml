@@ -3,7 +3,7 @@
 
   <artifactId>SlipStreamConnector-OpenStack-python</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector OpenStack - Python (POM)</name>
+  <name>SlipStreamConnectors/openstack/python</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

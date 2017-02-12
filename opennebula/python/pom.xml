@@ -3,7 +3,7 @@
 
   <artifactId>SlipStreamConnector-OpenNebula-python</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector OpenNebula - Python (POM)</name>
+  <name>SlipStreamConnectors/opennebula/python</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

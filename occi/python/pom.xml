@@ -4,7 +4,7 @@
   <artifactId>SlipStreamConnector-Occi-python</artifactId>
   <version>3.19-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>SlipStream Connector for Occi - Python (POM)</name>
+  <name>SlipStreamConnectors/occi/python</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

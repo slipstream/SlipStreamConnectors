@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-PhysicalHost</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector PhysicalHost (POM)</name>
+  <name>SlipStreamConnectors/physicalhost</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

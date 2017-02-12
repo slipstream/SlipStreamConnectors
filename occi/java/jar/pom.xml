@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-Occi-java-jar</artifactId>
   <packaging>jar</packaging>
-  <name>SlipStream Connector for Occi - Java (JAR)</name>
+  <name>SlipStreamConnectors/occi/java/jar</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

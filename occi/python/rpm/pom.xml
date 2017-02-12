@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>SlipStreamConnector-Occi-python-rpm</artifactId>
-	<name>SlipStream Connector for Occi - Python (RPM)</name>
+	<name>SlipStreamConnectors/occi/python/rpm</name>
 	<packaging>pom</packaging>
 
 	<parent>

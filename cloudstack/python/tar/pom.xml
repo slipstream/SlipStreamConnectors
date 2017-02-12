@@ -3,7 +3,7 @@
 
   <artifactId>SlipStreamConnector-CloudStack-python-bundle</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector CloudStack - Python (ZIP)</name>
+  <name>SlipStreamConnectors/cloudstack/python/tar</name>
   <url>http://sixsq.com/</url>
 
   <parent>

@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-PhysicalHost-rpm</artifactId>
   <packaging>rpm</packaging>
-  <name>SlipStream Connector PhysicalHost - Java (RPM)</name>
+  <name>SlipStreamConnectors/physicalhost/java/rpm</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

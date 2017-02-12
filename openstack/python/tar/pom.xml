@@ -3,7 +3,7 @@
 
   <artifactId>SlipStreamConnector-OpenStack-python-bundle</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector OpenStack - Python (ZIP)</name>
+  <name>SlipStreamConnectors/openstack/python/tar</name>
   <url>http://sixsq.com/</url>
 
   <parent>

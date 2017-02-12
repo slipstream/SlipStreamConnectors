@@ -3,7 +3,7 @@
 
   <artifactId>SlipStreamConnector-PhysicalHost-python-bundle</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector PhysicalHost - Python (ZIP)</name>
+  <name>SlipStreamConnectors/physicalhost/python/tar</name>
   <url>http://sixsq.com/</url>
 
   <parent>

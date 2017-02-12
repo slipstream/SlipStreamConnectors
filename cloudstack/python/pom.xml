@@ -3,7 +3,7 @@
 
   <artifactId>SlipStreamConnector-CloudStack-python</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector CloudStack - Python (POM)</name>
+  <name>SlipStreamConnectors/cloudstack/python</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

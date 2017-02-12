@@ -3,7 +3,7 @@
 
   <artifactId>SlipStreamConnector-StratusLab-python</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector StratusLab - Python (POM)</name>
+  <name>SlipStreamConnectors/stratuslab/python</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>

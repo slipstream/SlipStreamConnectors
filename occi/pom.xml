@@ -4,7 +4,7 @@
   <artifactId>SlipStreamConnector-Occi</artifactId>
   <version>3.19-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>SlipStream Connector for Occi (POM)</name>
+  <name>SlipStreamConnectors/occi</name>
   <url>http://sixsq.com/</url>
 
   <parent>

@@ -3,8 +3,7 @@
 
   <artifactId>SlipStreamConnector-OpenNebula-conf-dep</artifactId>
   <packaging>pom</packaging>
-  <name>SlipStream Connector OpenNebula - Clojure (POM)</name>
-  <description>SlipStreamConnectors OpenNebula Configuration (POM)</description>
+  <name>SlipStreamConnectors/opennebula/config</name>
   <url>http://sixsq.com</url>
 
   <parent>

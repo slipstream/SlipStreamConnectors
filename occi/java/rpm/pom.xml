@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>SlipStreamConnector-Occi-java-rpm</artifactId>
-  <name>SlipStream Connector for Occi - Java (RPM)</name>
+  <name>SlipStreamConnectors/occi/java/rpm</name>
 
   <packaging>pom</packaging>
 

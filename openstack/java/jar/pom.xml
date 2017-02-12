@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnector-OpenStack-jar</artifactId>
   <packaging>jar</packaging>
-  <name>SlipStream Connector OpenStack - Java (JAR)</name>
+  <name>SlipStreamConnectors/openstack/java/jar</name>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
