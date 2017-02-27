@@ -198,7 +198,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
     def _set_contextualization(self, public_ssh_key, contextualization_script):
         return 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + public_ssh_key \
-               + '", START_SCRIPT_BASE64 = "{0}"]'.format(base64.b64encode(contextualization_script))
+               + '", START_SCRIPT_BASE64 = "{0}", USERDATA_ENCODING = "base64", USER_DATA = "{0}"]'.format(base64.b64encode(contextualization_script))
 
     @override
     def _start_image(self, user_info, node_instance, vm_name):
