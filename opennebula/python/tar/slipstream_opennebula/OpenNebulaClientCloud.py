@@ -138,7 +138,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
     def _set_instance_name(self, vm_name):
         return 'NAME = {0}'.format(self.format_instance_name(vm_name))
 
-    def set_disks(self, image_id, disk_size_gb):
+    def _set_disks(self, image_id, disk_size_gb):
         try:
             img_id = int(image_id)
         except:
@@ -151,7 +151,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
                 print(disk_size_mb)
             except:
                 raise Exception('Something is wrong with disk size : {0}!'.format(disk_size_gb))
-            return 'DISK = [ IMAGE_ID  = {0}, SIZE={1}]'.format(img_id, disk_size_mb)
+            return 'DISK = [ IMAGE_ID  = {0:d}, SIZE={1:d} ]'.format(img_id, disk_size_mb)
 
     def _set_additionnal_disks(self, disk_size_gb):
         if disk_size_gb is None:
@@ -219,7 +219,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
         cpu = self._set_cpu(node_instance.get_cpu())
 
-        disks = self._set_disks(node_instance.get_image_id())
+        disks = self._set_disks(node_instance.get_image_id(), node_instance.get_cloud_parameter('parameter-disk.GB').strip())
 
         additionnal_disks = self._set_additionnal_disks(node_instance.get_volatile_extra_disk_size())
 
