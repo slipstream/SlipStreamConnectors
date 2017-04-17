@@ -32,6 +32,7 @@
                     ;; test dependencies
                     [peridot nil :scope "test"]
                     [commons-logging nil :scope "test"]
+                    [org.clojure/test.check]
 
                     ;; boot tasks
                     [boot-environ]

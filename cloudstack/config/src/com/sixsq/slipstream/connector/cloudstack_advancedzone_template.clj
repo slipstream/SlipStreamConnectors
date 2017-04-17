@@ -1,14 +1,15 @@
 (ns com.sixsq.slipstream.connector.cloudstack-advancedzone-template
   (:require
     [clojure.set :as set]
-    [schema.core :as s]
+    [clojure.spec :as s]
 
     [com.sixsq.slipstream.connector.cloudstack-template :as cst]
     [com.sixsq.slipstream.ssclj.resources.common.schema :as sch]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.connector-template :as ctpl]
     [com.sixsq.slipstream.ssclj.util.config :as uc]
-    ))
+    [com.sixsq.slipstream.ssclj.resources.spec.connector-template :as ps]
+    [com.sixsq.slipstream.ssclj.util.spec :as su]))
 
 (def ^:const cloud-service-type "cloudstackadvancedzone")
 
@@ -21,24 +22,32 @@
 ;;
 ;; schemas
 ;;
-(def ConnectorAttrsSchema
-  (merge cst/ConnectorAttrsSchema
-         {:orchestratorNetworks s/Str                       ;; "n1,n2" or ""
-          }))
 
-(def ConnectorTemplateAttrs
-  (merge ctpl/ConnectorTemplateAttrs
-         ConnectorAttrsSchema))
+(s/def :cimi.connector-template.cloudstackadvancedzone/orchestratorNetworks string?)
 
-(def ConnectorTemplateCloudstackAdvancedZone
-  (merge ctpl/ConnectorTemplate
-         ConnectorTemplateAttrs))
+(def keys-spec {:req-un [:cimi.connector-template/endpoint
+                         :cimi.connector-template/nativeContextualization
+                         :cimi.connector-template/orchestratorSSHUsername
+                         :cimi.connector-template/orchestratorSSHPassword
+                         :cimi.connector-template/securityGroups
+                         :cimi.connector-template/updateClientURL
 
-(def ConnectorTemplateCloudstackAdvancedZoneRef
-  (s/constrained
-    (merge ConnectorTemplateAttrs
-           {(s/optional-key :href) sch/NonBlankString})
-    seq 'not-empty?))
+                         :cimi.connector-template.cloudstackadvancedzone/orchestratorNetworks]})
+
+(def opt-keys-spec {:opt-un (:req-un keys-spec)})
+
+;; Defines the contents of the cloudstackadvancedzone ConnectorTemplate resource itself.
+(s/def :cimi/connector-template.cloudstackadvancedzone
+  (su/only-keys-maps ps/resource-keys-spec keys-spec))
+
+;; Defines the contents of the cloudstackadvancedzone template used in a create resource.
+;; NOTE: The name must match the key defined by the resource, :connectorTemplate here.
+(s/def :cimi.connector-template.cloudstackadvancedzone/connectorTemplate
+  (su/only-keys-maps ps/template-keys-spec opt-keys-spec))
+
+(s/def :cimi/connector-template.cloudstackadvancedzone-create
+  (su/only-keys-maps ps/create-keys-spec
+                     {:opt-un [:cimi.connector-template.cloudstackadvancedzone/connectorTemplate]}))
 
 (def ConnectorTemplateCloudstackAdvancedZoneDescription
   (merge cst/ConnectorTemplateCloudstackDescription
@@ -46,11 +55,10 @@
 ;;
 ;; resource
 ;;
-;; defautls for the template
+;; defaults for the template
 (def ^:const resource
   (merge cst/resource
          {:cloudServiceType     cloud-service-type
-
           :orchestratorNetworks ""}))
 
 ;;
@@ -69,7 +77,7 @@
 ;; multimethods for validation
 ;;
 
-(def validate-fn (u/create-validation-fn ConnectorTemplateCloudstackAdvancedZone))
+(def validate-fn (u/create-spec-validation-fn :cimi/connector-template.cloudstackadvancedzone))
 (defmethod ctpl/validate-subtype cloud-service-type
   [resource]
   (validate-fn resource))

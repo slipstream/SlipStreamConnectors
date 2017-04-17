@@ -1,12 +1,13 @@
 (ns com.sixsq.slipstream.connector.openstack-template
   (:require
     [clojure.set :as set]
-    [schema.core :as s]
+    [clojure.spec :as s]
     [com.sixsq.slipstream.ssclj.resources.common.schema :as sch]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.connector-template :as ctpl]
     [com.sixsq.slipstream.ssclj.util.config :as uc]
-    ))
+    [com.sixsq.slipstream.ssclj.resources.spec.connector-template :as ps]
+    [com.sixsq.slipstream.ssclj.util.spec :as su]))
 
 (def ^:const cloud-service-type "openstack")
 
@@ -26,31 +27,45 @@
 ;; schemas
 ;;
 
-(def ConnectorAttrsSchema
-  (merge ctpl/ConnectorReferenceAttrs
-         {:orchestratorInstanceType sch/NonBlankString      ;; "Basic"
-          :identityVersion          sch/NonBlankString      ;; "v2"
-          :serviceRegion            sch/NonBlankString      ;; "RegionOne"
-          :serviceType              sch/NonBlankString      ;; "compute"
-          :serviceName              s/Str                   ;; "nova"
-          :floatingIps              s/Bool                  ;; false
-          :networkPrivate           s/Str                   ;; "private"
-          :networkPublic            s/Str                   ;; "public"
-          }))
+(s/def :cimi.connector-template.openstack/orchestratorInstanceType :cimi.core/nonblank-string)
+(s/def :cimi.connector-template.openstack/identityVersion :cimi.core/nonblank-string)
+(s/def :cimi.connector-template.openstack/serviceRegion :cimi.core/nonblank-string)
+(s/def :cimi.connector-template.openstack/serviceType :cimi.core/nonblank-string)
+(s/def :cimi.connector-template.openstack/serviceName string?)
+(s/def :cimi.connector-template.openstack/floatingIps boolean?)
+(s/def :cimi.connector-template.openstack/networkPrivate string?)
+(s/def :cimi.connector-template.openstack/networkPublic string?)
 
-(def ConnectorTemplateAttrs
-  (merge ctpl/ConnectorTemplateAttrs
-         ConnectorAttrsSchema))
+(def keys-spec {:req-un [:cimi.connector-template/endpoint
+                         :cimi.connector-template/nativeContextualization
+                         :cimi.connector-template/orchestratorSSHUsername
+                         :cimi.connector-template/orchestratorSSHPassword
+                         :cimi.connector-template/securityGroups
+                         :cimi.connector-template/updateClientURL
 
-(def ConnectorTemplateOpenstack
-  (merge ctpl/ConnectorTemplate
-         ConnectorTemplateAttrs))
+                         :cimi.connector-template.openstack/orchestratorInstanceType
+                         :cimi.connector-template.openstack/identityVersion
+                         :cimi.connector-template.openstack/serviceRegion
+                         :cimi.connector-template.openstack/serviceType
+                         :cimi.connector-template.openstack/serviceName
+                         :cimi.connector-template.openstack/floatingIps
+                         :cimi.connector-template.openstack/networkPrivate
+                         :cimi.connector-template.openstack/networkPublic]})
 
-(def ConnectorTemplateOpenstackRef
-  (s/constrained
-    (merge ConnectorTemplateAttrs
-           {(s/optional-key :href) sch/NonBlankString})
-    seq 'not-empty?))
+(def opt-keys-spec {:opt-un (:req-un keys-spec)})
+
+;; Defines the contents of the openstack ConnectorTemplate resource itself.
+(s/def :cimi/connector-template.openstack
+  (su/only-keys-maps ps/resource-keys-spec keys-spec))
+
+;; Defines the contents of the openstack template used in a create resource.
+;; NOTE: The name must match the key defined by the resource, :connectorTemplate here.
+(s/def :cimi.connector-template.openstack/connectorTemplate
+  (su/only-keys-maps ps/template-keys-spec opt-keys-spec))
+
+(s/def :cimi/connector-template.openstack-create
+  (su/only-keys-maps ps/create-keys-spec
+                     {:opt-un [:cimi.connector-template.openstack/connectorTemplate]}))
 
 (def ConnectorTemplateOpenstackDescription
   (merge ctpl/ConnectorTemplateDescription
@@ -59,7 +74,7 @@
 ;;
 ;; resource
 ;;
-;; defautls for the template
+;; defaults for the template
 (def ^:const resource
   (merge ctpl/connector-reference-attrs-defaults
          {:cloudServiceType         cloud-service-type
@@ -89,7 +104,7 @@
 ;; multimethods for validation
 ;;
 
-(def validate-fn (u/create-validation-fn ConnectorTemplateOpenstack))
+(def validate-fn (u/create-spec-validation-fn :cimi/connector-template.openstack))
 (defmethod ctpl/validate-subtype cloud-service-type
   [resource]
   (validate-fn resource))
