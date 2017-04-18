@@ -39,3 +39,5 @@ nosetests.xml
 
 logs
 /bin
+
+project.clj

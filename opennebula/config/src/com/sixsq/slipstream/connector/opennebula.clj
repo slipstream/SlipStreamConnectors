@@ -3,18 +3,11 @@
     [com.sixsq.slipstream.connector.opennebula-template :as tpl]
     [com.sixsq.slipstream.ssclj.resources.common.schema :as sch]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
-    [com.sixsq.slipstream.ssclj.resources.connector :as cr]
-    ))
+    [com.sixsq.slipstream.ssclj.resources.connector :as cr]))
 
 ;;
 ;; schemas
 ;;
-
-(def ConnectorOpenNebula tpl/ConnectorTemplateOpenNebula)
-
-(def ConnectorOpenNebulaCreate
-  (merge sch/CreateAttrs
-         {:connectorTemplate tpl/ConnectorTemplateOpenNebulaRef}))
 
 (def ConnectorOpenNebulaDescription tpl/ConnectorTemplateOpenNebulaDescription)
 
@@ -27,12 +20,12 @@
 ;; multimethods for validation
 ;;
 
-(def validate-fn (u/create-validation-fn ConnectorOpenNebula))
+(def validate-fn (u/create-spec-validation-fn :cimi/connector-template.opennebula))
 (defmethod cr/validate-subtype tpl/cloud-service-type
   [resource]
   (validate-fn resource))
 
-(def create-validate-fn (u/create-validation-fn ConnectorOpenNebulaCreate))
+(def create-validate-fn (u/create-spec-validation-fn :cimi/connector-template.opennebula-create))
 (defmethod cr/create-validate-subtype tpl/cloud-service-type
   [resource]
   (create-validate-fn resource))
