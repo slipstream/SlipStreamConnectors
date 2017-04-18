@@ -3,8 +3,7 @@
     [com.sixsq.slipstream.connector.opennebula-template :as tpl]
     [com.sixsq.slipstream.ssclj.resources.common.schema :as sch]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
-    [com.sixsq.slipstream.ssclj.resources.connector :as cr]
-    ))
+    [com.sixsq.slipstream.ssclj.resources.connector :as cr]))
 
 ;;
 ;; schemas
