@@ -11,10 +11,11 @@
 (def ^:const cloud-service-type "opennebula")
 
 (def connector-kw->pname
-  {:networkPublic       "network.public"
-   :networkPrivate      "network.private"
-   :orchestratorCpuSize "orchestrator.cpu.size"
-   :orchestratorRamSize "orchestrator.ram.size"
+  {:networkPublic                     "network.public"
+   :networkPrivate                    "network.private"
+   :orchestratorCpuSize               "orchestrator.cpu.size"
+   :orchestratorRamSize               "orchestrator.ram.size"
+   :orchestratorContextualizationType "orchestrator.contextualization.type"
    })
 
 (def connector-pname->kw (set/map-invert connector-kw->pname))
@@ -29,10 +30,11 @@
 
 (def ConnectorAttrsSchema
   (merge (select-keys ctpl/ConnectorReferenceAttrs ref-attrs)
-         {:networkPublic       sch/NonBlankString           ;; "1"
-          :networkPrivate      sch/NonBlankString           ;; "2"
-          :orchestratorCpuSize sch/NonBlankString           ;; "1"
-          :orchestratorRamSize sch/NonBlankString           ;; "0.5"
+         {:networkPublic                     sch/NonBlankString           ;; "1"
+          :networkPrivate                    sch/NonBlankString           ;; "2"
+          :orchestratorCpuSize               sch/NonBlankString           ;; "1"
+          :orchestratorRamSize               sch/NonBlankString           ;; "0.5"
+          :orchestratorContextualizationType sch/NonBlankString           ;; one-context
           }))
 
 (def ConnectorTemplateAttrs
@@ -61,14 +63,15 @@
   (merge (select-keys ctpl/connector-reference-attrs-defaults ref-attrs)
          {:cloudServiceType        cloud-service-type
 
-          :endpoint                "http://<HOSTNAME>:2633/RPC2"
-          :nativeContextualization "linux-only"
-          :updateClientURL         "https://<IP>/downloads/opennebulaclient.tgz"
+          :endpoint                          "http://<HOSTNAME>:2633/RPC2"
+          :nativeContextualization           "linux-only"
+          :updateClientURL                   "https://<IP>/downloads/opennebulaclient.tgz"
 
-          :networkPublic           "1"
-          :networkPrivate          "2"
-          :orchestratorCpuSize     "1"
-          :orchestratorRamSize     "0.5"
+          :networkPublic                     "1"
+          :networkPrivate                    "2"
+          :orchestratorCpuSize               "1"
+          :orchestratorRamSize               "0.5"
+          :orchestratorContextualizationType "one-context"
           }))
 
 ;;

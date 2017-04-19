@@ -33,6 +33,7 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
     RAM_KEY = 'ram'
     CUSTOM_VM_TEMPLATE_KEY = 'custom-vm-template'
     NETWORK_SPECIFIC_NAME_KEY = 'network-specific-name'
+    CONTEXTUALIZATION_TYPE_KEY = 'contextualization-type'
 
     def __init__(self):
         super(OpenNebulaRunInstances, self).__init__()
@@ -67,6 +68,10 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
                                     'Format: <NETWORK_NAME> or <NETWORK_NAME;NETWORK_UNAME>',
                                default='', metavar='NETWORK_NAME')
 
+        self.parser.add_option('--' + self.CONTEXTUALIZATION_TYPE_KEY, dest=self.CONTEXTUALIZATION_TYPE_KEY,
+                               help='Contextualization type (default: "one-context")',
+                               default='one-context', metavar='CONTEXTUALIZATION_TYPE')
+
     def get_cloud_specific_user_cloud_params(self):
         user_params = OpenNebulaCommand.get_cloud_specific_user_cloud_params(self)
         user_params['network.public'] = self.get_option(self.NETWORK_PUBLIC_KEY)
@@ -77,6 +82,7 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
         return {'cpu': self.get_option(self.CPU_KEY),
                 'ram': self.get_option(self.RAM_KEY),
                 'custom.vm.template': self.get_option(self.CUSTOM_VM_TEMPLATE_KEY),
+                'contextualization.type': self.get_option(self.CONTEXTUALIZATION_TYPE_KEY),
                 'network.specific.name': self.get_option(self.NETWORK_SPECIFIC_NAME_KEY)}
 
     def get_cloud_specific_mandatory_options(self):

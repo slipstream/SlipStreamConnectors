@@ -26,6 +26,7 @@ import java.util.Map;
 import com.sixsq.slipstream.configuration.Configuration;
 import com.sixsq.slipstream.connector.CliConnectorBase;
 import com.sixsq.slipstream.connector.Connector;
+import com.sixsq.slipstream.connector.UserParametersFactoryBase;
 import com.sixsq.slipstream.credentials.Credentials;
 import com.sixsq.slipstream.exceptions.ConfigurationException;
 import com.sixsq.slipstream.exceptions.ValidationException;
@@ -35,6 +36,7 @@ import com.sixsq.slipstream.persistence.Run;
 import com.sixsq.slipstream.persistence.ServiceConfigurationParameter;
 import com.sixsq.slipstream.persistence.User;
 import com.sixsq.slipstream.persistence.UserParameter;
+import jdk.nashorn.internal.runtime.regexp.joni.Config;
 
 
 public class OpenNebulaConnector extends CliConnectorBase {
@@ -80,6 +82,7 @@ public class OpenNebulaConnector extends CliConnectorBase {
 		launchParams.put("network-private", getNetworkPrivate());
 		launchParams.put("custom-vm-template", getCustomVMTemplate(run));
 		launchParams.put("network-specific-name", getNetworkSpecificName(run));
+		launchParams.put("contextualization-type", getContextualizationType(run));
 		return launchParams;
 	}
 
@@ -111,6 +114,24 @@ public class OpenNebulaConnector extends CliConnectorBase {
 			} else {
 				return vm_additional_template;
 			}
+		}
+	}
+
+	private String getContextualizationType(Run run) throws ValidationException {
+		String type;
+		if (isInOrchestrationContext(run)) {
+			type = Configuration
+					.getInstance()
+					.getRequiredProperty(
+							constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_CONTEXTUALIZATION_TYPE_NAME));
+		} else {
+			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
+			type = this.getParameterValue(OpenNebulaImageParametersFactory.CONTEXTUALIZATION_TYPE_NAME, image);
+		}
+		if (type == null || type.isEmpty()) {
+			return OpenNebulaImageParametersFactory.ContextualizationType.ONECONTEXT.getValue();
+		} else {
+			return type;
 		}
 	}
 

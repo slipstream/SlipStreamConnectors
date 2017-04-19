@@ -203,9 +203,13 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             raise 'Something wrong with specified Network name : {0}!'.format(network_specific_name)
 
 
-    def _set_contextualization(self, public_ssh_key, contextualization_script):
-        return 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "' + public_ssh_key \
-               + '", START_SCRIPT_BASE64 = "{0}", USERDATA_ENCODING = "base64", USER_DATA = "{0}"]'.format(base64.b64encode(contextualization_script))
+    def _set_contextualization(self, contextualization_type, public_ssh_key, contextualization_script):
+        if contextualization_type != 'cloud-init':
+            return 'CONTEXT = [ NETWORK = "YES", SSH_PUBLIC_KEY = "{0}", ' \
+                   'START_SCRIPT_BASE64 = "{1}"]'.format(public_ssh_key, base64.b64encode(contextualization_script))
+        else:
+            return 'CONTEXT = [ PUBLIC_IP = "$NIC[IP]", SSH_PUBLIC_KEY = "{0}", USERDATA_ENCODING = "base64", ' \
+                   'USER_DATA = "{1}"]'.format(public_ssh_key, base64.b64encode(contextualization_script))
 
     @override
     def _start_image(self, user_info, node_instance, vm_name):
@@ -235,9 +239,11 @@ class OpenNebulaClientCloud(BaseCloudConnector):
                           user_info.get_private_network_name())
 
         if self.is_build_image():
-            context = self._set_contextualization(self.tmp_public_key, '')
+            context = self._set_contextualization(node_instance.get_cloud_parameter('contextualization.type'),
+                                                  self.tmp_public_key, '')
         else:
-            context = self._set_contextualization(self.user_info.get_public_keys(),
+            context = self._set_contextualization(node_instance.get_cloud_parameter('contextualization.type'),
+                                                  self.user_info.get_public_keys(),
                                                   self._get_bootstrap_script(node_instance))
         custom_vm_template = node_instance.get_cloud_parameter('custom.vm.template') or ''
 

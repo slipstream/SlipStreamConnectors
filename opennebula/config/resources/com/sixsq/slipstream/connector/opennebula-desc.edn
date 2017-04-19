@@ -44,4 +44,13 @@
   :readOnly     false,
   :order        17,
   :instructions "Ram size in GB"}
+ :orchestratorContextualizationType
+ {:displayName  "orchestrator.contextualization.type",
+  :type         "enum",
+  :category     "",
+  :description  "Orchestrator Contextualization type",
+  :mandatory    true,
+  :readOnly     false,
+  :order        18,
+  :enum        ["one-context" "cloud-init"]}
  }
