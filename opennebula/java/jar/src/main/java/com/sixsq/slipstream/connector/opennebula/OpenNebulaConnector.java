@@ -26,7 +26,6 @@ import java.util.Map;
 import com.sixsq.slipstream.configuration.Configuration;
 import com.sixsq.slipstream.connector.CliConnectorBase;
 import com.sixsq.slipstream.connector.Connector;
-import com.sixsq.slipstream.connector.UserParametersFactoryBase;
 import com.sixsq.slipstream.credentials.Credentials;
 import com.sixsq.slipstream.exceptions.ConfigurationException;
 import com.sixsq.slipstream.exceptions.ValidationException;
@@ -36,7 +35,6 @@ import com.sixsq.slipstream.persistence.Run;
 import com.sixsq.slipstream.persistence.ServiceConfigurationParameter;
 import com.sixsq.slipstream.persistence.User;
 import com.sixsq.slipstream.persistence.UserParameter;
-import jdk.nashorn.internal.runtime.regexp.joni.Config;
 
 
 public class OpenNebulaConnector extends CliConnectorBase {

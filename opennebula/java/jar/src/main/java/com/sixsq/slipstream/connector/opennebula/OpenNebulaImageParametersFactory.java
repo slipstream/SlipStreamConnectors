@@ -22,7 +22,6 @@ package com.sixsq.slipstream.connector.opennebula;
 
 import com.sixsq.slipstream.exceptions.ValidationException;
 import com.sixsq.slipstream.factory.ModuleParametersFactoryBase;
-import com.sixsq.slipstream.persistence.ImageModule;
 import com.sixsq.slipstream.persistence.Run;
 import com.sixsq.slipstream.persistence.ParameterType;
 
