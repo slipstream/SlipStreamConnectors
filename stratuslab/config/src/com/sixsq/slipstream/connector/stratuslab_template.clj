@@ -1,12 +1,13 @@
 (ns com.sixsq.slipstream.connector.stratuslab-template
   (:require
     [clojure.set :as set]
-    [schema.core :as s]
+    [clojure.spec :as s]
     [com.sixsq.slipstream.ssclj.resources.common.schema :as sch]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.connector-template :as ctpl]
     [com.sixsq.slipstream.ssclj.util.config :as uc]
-    ))
+    [com.sixsq.slipstream.ssclj.resources.spec.connector-template :as ps]
+    [com.sixsq.slipstream.ssclj.util.spec :as su]))
 
 (def ^:const cloud-service-type "stratuslab")
 
@@ -25,26 +26,30 @@
 ;; schemas
 ;;
 
-(def ConnectorAttrsSchema
-  (merge (select-keys ctpl/ConnectorReferenceAttrs ref-attrs)
-         {:orchestratorInstanceType sch/NonBlankString      ;; "m1.small"
-          :marketplaceEndpoint      sch/NonBlankString      ;; "http://192.168.41.1:8080/marketplace/"
-          :pdiskEndpoint            sch/NonBlankString      ;; "154.48.152.10:8445"
-          }))
+(s/def :cimi.connector-template.stratuslab/orchestratorInstanceType :cimi.core/nonblank-string)
+(s/def :cimi.connector-template.stratuslab/marketplaceEndpoint :cimi.core/nonblank-string)
+(s/def :cimi.connector-template.stratuslab/pdiskEndpoint :cimi.core/nonblank-string)
 
-(def ConnectorTemplateAttrs
-  (merge ctpl/ConnectorTemplateAttrs
-         ConnectorAttrsSchema))
+(def keys-spec {:req-un [:cimi.connector-template/endpoint
+                         :cimi.connector-template/updateClientURL
+                         :cimi.connector-template.stratuslab/orchestratorInstanceType
+                         :cimi.connector-template.stratuslab/marketplaceEndpoint
+                         :cimi.connector-template.stratuslab/pdiskEndpoint]})
 
-(def ConnectorTemplateStratusLab
-  (merge ctpl/ConnectorTemplate
-         ConnectorTemplateAttrs))
+(def opt-keys-spec {:opt-un (:req-un keys-spec)})
 
-(def ConnectorTemplateStratusLabRef
-  (s/constrained
-    (merge ConnectorTemplateAttrs
-           {(s/optional-key :href) sch/NonBlankString})
-    seq 'not-empty?))
+;; Defines the contents of the stratuslab ConnectorTemplate resource itself.
+(s/def :cimi/connector-template.stratuslab
+  (su/only-keys-maps ps/resource-keys-spec keys-spec))
+
+;; Defines the contents of the stratuslab template used in a create resource.
+;; NOTE: The name must match the key defined by the resource, :connectorTemplate here.
+(s/def :cimi.connector-template.stratuslab/connectorTemplate
+  (su/only-keys-maps ps/template-keys-spec opt-keys-spec))
+
+(s/def :cimi/connector-template.stratuslab-create
+  (su/only-keys-maps ps/create-keys-spec
+                     {:opt-un [:cimi.connector-template.stratuslab/connectorTemplate]}))
 
 (def ConnectorTemplateStratusLabDescription
   (merge ctpl/ConnectorTemplateDescription
@@ -53,7 +58,7 @@
 ;;
 ;; resource
 ;;
-;; defautls for the template
+;; defaults for the template
 (def ^:const resource
   (merge (select-keys ctpl/connector-reference-attrs-defaults ref-attrs)
          {:cloudServiceType         cloud-service-type
@@ -82,7 +87,7 @@
 ;; multimethods for validation
 ;;
 
-(def validate-fn (u/create-validation-fn ConnectorTemplateStratusLab))
+(def validate-fn (u/create-spec-validation-fn :cimi/connector-template.stratuslab))
 (defmethod ctpl/validate-subtype cloud-service-type
   [resource]
   (validate-fn resource))

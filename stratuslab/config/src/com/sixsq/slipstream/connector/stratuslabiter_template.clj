@@ -19,7 +19,7 @@
 ;; multimethods for validation
 ;;
 
-(def validate-fn (u/create-validation-fn slt/ConnectorTemplateStratusLab))
+(def validate-fn (u/create-spec-validation-fn :cimi/connector-template.stratuslab))
 (defmethod ctpl/validate-subtype cloud-service-type
   [resource]
   (validate-fn resource))
