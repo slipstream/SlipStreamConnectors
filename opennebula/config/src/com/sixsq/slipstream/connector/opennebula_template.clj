@@ -12,10 +12,11 @@
 (def ^:const cloud-service-type "opennebula")
 
 (def connector-kw->pname
-  {:networkPublic       "network.public"
-   :networkPrivate      "network.private"
-   :orchestratorCpuSize "orchestrator.cpu.size"
-   :orchestratorRamSize "orchestrator.ram.size"
+  {:networkPublic                     "network.public"
+   :networkPrivate                    "network.private"
+   :orchestratorCpuSize               "orchestrator.cpu.size"
+   :orchestratorRamSize               "orchestrator.ram.size"
+   :orchestratorContextualizationType "orchestrator.contextualization.type"
    })
 
 (def connector-pname->kw (set/map-invert connector-kw->pname))
@@ -32,6 +33,7 @@
 (s/def :cimi.connector-template.opennebula/networkPrivate :cimi.core/nonblank-string)
 (s/def :cimi.connector-template.opennebula/orchestratorCpuSize :cimi.core/nonblank-string)
 (s/def :cimi.connector-template.opennebula/orchestratorRamSize :cimi.core/nonblank-string)
+(s/def :cimi.connector-template.opennebula/orchestratorContextualizationType :cimi.core/nonblank-string)
 
 (def keys-spec {:req-un [:cimi.connector-template/endpoint
                          :cimi.connector-template/nativeContextualization
@@ -40,7 +42,8 @@
                          :cimi.connector-template.opennebula/networkPublic
                          :cimi.connector-template.opennebula/networkPrivate
                          :cimi.connector-template.opennebula/orchestratorCpuSize
-                         :cimi.connector-template.opennebula/orchestratorRamSize]})
+                         :cimi.connector-template.opennebula/orchestratorRamSize
+                         :cimi.connector-template.opennebula/orchestratorContextualizationType]})
 
 (def opt-keys-spec {:opt-un (:req-un keys-spec)})
 
@@ -67,16 +70,17 @@
 ;; defaults for the template
 (def ^:const resource
   (merge (select-keys ctpl/connector-reference-attrs-defaults ref-attrs)
-         {:cloudServiceType        cloud-service-type
+         {:cloudServiceType                  cloud-service-type
 
-          :endpoint                "http://<HOSTNAME>:2633/RPC2"
-          :nativeContextualization "linux-only"
-          :updateClientURL         "https://<IP>/downloads/opennebulaclient.tgz"
+          :endpoint                          "http://<HOSTNAME>:2633/RPC2"
+          :nativeContextualization           "linux-only"
+          :updateClientURL                   "https://<IP>/downloads/opennebulaclient.tgz"
 
-          :networkPublic           "1"
-          :networkPrivate          "2"
-          :orchestratorCpuSize     "1"
-          :orchestratorRamSize     "0.5"
+          :networkPublic                     "1"
+          :networkPrivate                    "2"
+          :orchestratorCpuSize               "1"
+          :orchestratorRamSize               "0.5"
+          :orchestratorContextualizationType "one-context"
           }))
 
 ;;
