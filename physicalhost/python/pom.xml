@@ -8,7 +8,7 @@
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
     <artifactId>SlipStreamConnector-PhysicalHost</artifactId>
-    <version>3.26-SNAPSHOT</version>
+    <version>3.26</version>
   </parent>
 
   <modules>
