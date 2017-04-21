@@ -70,7 +70,7 @@
 ;; defaults for the template
 (def ^:const resource
   (merge (select-keys ctpl/connector-reference-attrs-defaults ref-attrs)
-         {:cloudServiceType        cloud-service-type
+         {:cloudServiceType                  cloud-service-type
 
           :endpoint                          "http://<HOSTNAME>:2633/RPC2"
           :nativeContextualization           "linux-only"
