@@ -1,7 +1,7 @@
 (ns com.sixsq.slipstream.connector.cloudstack-advancedzone-template
   (:require
     [clojure.set :as set]
-    [clojure.spec :as s]
+    [clojure.spec.alpha :as s]
 
     [com.sixsq.slipstream.connector.cloudstack-template :as cst]
     [com.sixsq.slipstream.ssclj.resources.common.schema :as sch]
