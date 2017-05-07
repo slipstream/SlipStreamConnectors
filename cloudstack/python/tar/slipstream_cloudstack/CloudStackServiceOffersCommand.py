@@ -35,15 +35,31 @@ from slipstream.NodeDecorator import KEY_RUN_CATEGORY
 from slipstream.ConfigHolder import ConfigHolder
 from slipstream.util import nostdouterr
 
+
+import requests
+
 class ServiceOffersInstancesCommand(CloudClientCommand):
 
     DEFAULT_TIMEOUT = 30
+    prices = requests.get('https://portal.exoscale.ch/api/pricing/opencompute').json()
+    rates = requests.get('https://portal.exoscale.ch/api/currency').json()
 
     def __init__(self):
         super(ServiceOffersInstancesCommand, self).__init__()
 
     def _get_default_timeout(self):
         return self.DEFAULT_TIMEOUT
+
+    def _get_currency_exchange_rate(self, exchangeCode):
+        for x in self.rates:
+            if x['id'] == exchangeCode:
+              return float(x['Rate'])
+        return None
+
+    def _get_price(self, instanceType):
+        priceChf = float(self.prices['running_' + instanceType.lower().replace("-", "_")])
+        priceEur = priceChf * self._get_currency_exchange_rate('CHFEUR')
+        return priceEur 
 
     def do_work(self):
         ch = ConfigHolder(options={'verboseLevel': 0,
@@ -52,9 +68,9 @@ class ServiceOffersInstancesCommand(CloudClientCommand):
                                    context={'foo': 'bar'})
         cc = self.get_connector_class()(ch)
         cc._initialization(self.user_info, **self.get_initialization_extra_kwargs())
-        from pprint import pprint
+
         for instanceType in cc.sizes:
-            print "name:{} cpu:{:d} ram:{:d} disk:{:d}".format(instanceType.name, instanceType.extra['cpu'], instanceType.ram, instanceType.disk)
+            print "name:{} cpu:{:d} ram:{:d} disk:{:d}, price:{:f}".format(instanceType.name, instanceType.extra['cpu'], instanceType.ram, instanceType.disk, self._get_price(instanceType.name))
 
 class CloudStackServiceOffers(ServiceOffersInstancesCommand, CloudStackCommand):
 
