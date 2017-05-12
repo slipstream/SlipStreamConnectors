@@ -38,9 +38,12 @@ from slipstream.util import nostdouterr
 
 import requests
 
+#TODO add depency to the package
+from slipstream.api import Api
+
 class ServiceOffersInstancesCommand(CloudClientCommand):
 
-    DEFAULT_TIMEOUT = 30
+    DEFAULT_TIMEOUT = 600
     prices = requests.get('https://portal.exoscale.ch/api/pricing/opencompute').json()
     rates = requests.get('https://portal.exoscale.ch/api/currency').json()
 
@@ -83,13 +86,14 @@ class ServiceOffersInstancesCommand(CloudClientCommand):
                      "GPU-huge": [100, 200, 400, 800, 1600, 2000, 8000]}
         return diskSizes.get(instanceType, defaultDiskSizes)   
     
-    def generateServiceOffer(self, instanceTypeName, zone, cpuSize, ramSizeMiB, diskSizeGiB, os, price):
+    def generateServiceOffer(self, connectorName, instanceTypeName, cpuSize, ramSizeMiB, diskSizeGiB, os, price):
         country = 'CH'
         resourceType = 'VM'
         resourceClass = 'standard'
-        return {"name": "{:d}/{:d}/{:d} [{}] ({})".format(cpuSize,ramSizeMiB, diskSizeGiB, country, instanceTypeName),
-                "description": "{} ({}) with {:d} vCPU, {:d} MiB RAM, {:d} GiB disk [{}, {}] ({})"
-                                   .format(resourceType, resourceClass, cpuSize, ramSizeMiB, diskSizeGiB, zone, country, instanceTypeName),
+        zone = self.get_option(self.ZONE_KEY)
+        return {"name": "{:d}/{:d}/{:d} {} [{}] ({})".format(cpuSize,ramSizeMiB, diskSizeGiB, os, country, instanceTypeName),
+                "description": "{} ({}) with {:d} vCPU, {:d} MiB RAM, {:d} GiB disk, {} [{}, {}] ({})"
+                                   .format(resourceType, resourceClass, cpuSize, ramSizeMiB, diskSizeGiB, os, zone, country, instanceTypeName),
                 "resource:vcpu": cpuSize,
                 "resource:ram": ramSizeMiB,
                 "resource:disk": diskSizeGiB,
@@ -106,7 +110,9 @@ class ServiceOffersInstancesCommand(CloudClientCommand):
                 "price:billingUnitCode": "HUR",
                 "price:billingPeriodCode": "MIN",
                 "exoscale:instanceType": instanceTypeName,
-                "exoscale:zone": zone}
+                "exoscale:zone": zone,
+                "connector": {"href": connectorName}
+                }
 
     def do_work(self):
         ch = ConfigHolder(options={'verboseLevel': 0,
@@ -115,6 +121,13 @@ class ServiceOffersInstancesCommand(CloudClientCommand):
                                    context={'foo': 'bar'})
         cc = self.get_connector_class()(ch)
         cc._initialization(self.user_info, **self.get_initialization_extra_kwargs())
+        
+        dryrun = self.get_option(self.DRY_RUN_KEY)
+        ss_endpoint = self.get_option(self.SS_ENDPOINT_KEY)
+        connectorName = self.get_option(self.CONNECTOR_NAME_KEY)
+        ssapi = Api(endpoint=ss_endpoint, cookie_file=None, insecure=True)
+        if (not dryrun):
+            ssapi.login(self.get_option(self.SS_USERNAME_KEY), self.get_option(self.SS_PASSWORD_KEY))
 
         for instanceType in cc.sizes:
             instanceTypeName = instanceType.name
@@ -123,15 +136,33 @@ class ServiceOffersInstancesCommand(CloudClientCommand):
                     price = self._get_price(instanceType.name, os, diskSizeGiB)
                     if (price is None or (os == "windows" and diskSizeGiB < 50)):
                         continue
-                    zone = self.get_option(self.ZONE_KEY)
                     cpuSize = int(instanceType.extra['cpu'])
                     ramSizeMiB = int(instanceType.ram)
-                    serviceOffer = self.generateServiceOffer(instanceTypeName, zone, cpuSize, ramSizeMiB, diskSizeGiB, os, price)
-                    print serviceOffer
-
+                    serviceOffer = self.generateServiceOffer(connectorName, instanceTypeName, cpuSize, ramSizeMiB, diskSizeGiB, os, price)
+                    
+                    cimiFilter = 'connector/href="{}" and description="{}"'.format(connectorName, serviceOffer['description'])
+                    searchResult = ssapi.cimi_search('serviceOffers', filter=cimiFilter)
+                    resultCount = len(searchResult.service_offers)
+                    
+                    if resultCount == 0:
+                        print('\nAddinging following service offer {} to {}...\n{}'.format(serviceOffer['name'], ss_endpoint, serviceOffer))
+                        if (not dryrun):
+                            ssapi.cimi_add('serviceOffers', serviceOffer)
+                    elif resultCount == 1:
+                        print('\nUpdating following service offer {} to {}...\n{}'.format(serviceOffer['name'], ss_endpoint, serviceOffer))
+                        if (not dryrun):
+                            ssapi.cimi_edit('serviceOffers', serviceOffer)
+                    else:
+                        print('\n!!! Warning duplicates find of following service offer on {} !!!/n{}'.format(ss_endpoint, serviceOffer['name']))
+        print('Congratulation, executon completed.')
+ 
 class CloudStackServiceOffers(ServiceOffersInstancesCommand, CloudStackCommand):
 
     CONNECTOR_NAME_KEY = 'connector-name'
+    SS_ENDPOINT_KEY = 'ss-url'
+    SS_USERNAME_KEY = 'ss-user'
+    SS_PASSWORD_KEY = 'ss-pass'
+    DRY_RUN_KEY = 'dry-run'
 
     def __init__(self):
         super(CloudStackServiceOffers, self).__init__()
@@ -140,8 +171,24 @@ class CloudStackServiceOffers(ServiceOffersInstancesCommand, CloudStackCommand):
         CloudStackCommand.set_cloud_specific_options(self, parser)
 
         self.parser.add_option('--' + self.CONNECTOR_NAME_KEY, dest=self.CONNECTOR_NAME_KEY,
-                               help='Connector name to be used as a connector href for service offers)',
-                               default=None, metavar='exoscale-ch-gva')
+                               help='Connector name to be used as a connector href for service offers',
+                               default=None, metavar='CONNECTOR_NAME')
+
+        self.parser.add_option('--' + self.SS_ENDPOINT_KEY, dest=self.SS_ENDPOINT_KEY,
+                               help='SlipStream endpoint used where the service offers are pushed to. (default: https://nuv.la)',
+                               default='https://nuv.la', metavar='URL')
+
+        self.parser.add_option('--' + self.SS_USERNAME_KEY, dest=self.SS_USERNAME_KEY,
+                               help='Username to be used on SlipStream Endpoint',
+                               default=None, metavar='USERNAME')
+
+        self.parser.add_option('--' + self.SS_PASSWORD_KEY, dest=self.SS_PASSWORD_KEY,
+                               help='Password to be used on SlipStream Endpoint',
+                               default=None, metavar='PASSWORD')
+
+        self.parser.add_option('--' + self.DRY_RUN_KEY, dest=self.DRY_RUN_KEY,
+                               help='Just print service offers to stdout and exit',
+                               action='store_true')
 
     def get_cloud_specific_mandatory_options(self):
         return CloudStackCommand.get_cloud_specific_mandatory_options(self) + \
