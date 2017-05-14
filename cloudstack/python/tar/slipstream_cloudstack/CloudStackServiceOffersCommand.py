@@ -142,7 +142,7 @@ class ServiceOffersInstancesCommand(CloudClientCommand):
                     
                     cimiFilter = 'connector/href="{}" and description="{}"'.format(connectorName, serviceOffer['description'])
                     searchResult = ssapi.cimi_search('serviceOffers', filter=cimiFilter)
-                    resultCount = len(searchResult.service_offers)
+                    resultCount = len(searchResult.resources_list)
                     
                     if resultCount == 0:
                         print('\nAddinging following service offer {} to {}...\n{}'.format(serviceOffer['name'], ss_endpoint, serviceOffer))
@@ -151,10 +151,10 @@ class ServiceOffersInstancesCommand(CloudClientCommand):
                     elif resultCount == 1:
                         print('\nUpdating following service offer {} to {}...\n{}'.format(serviceOffer['name'], ss_endpoint, serviceOffer))
                         if (not dryrun):
-                            ssapi.cimi_edit('serviceOffers', serviceOffer)
+                            ssapi.cimi_edit(searchResult.resources_list[0].id, serviceOffer)
                     else:
                         print('\n!!! Warning duplicates find of following service offer on {} !!!/n{}'.format(ss_endpoint, serviceOffer['name']))
-        print('Congratulation, executon completed.')
+        print('\n\nCongratulation, executon completed.')
  
 class CloudStackServiceOffers(ServiceOffersInstancesCommand, CloudStackCommand):
 
