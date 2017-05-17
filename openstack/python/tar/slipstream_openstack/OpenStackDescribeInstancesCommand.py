@@ -23,16 +23,6 @@ from slipstream_openstack.OpenStackCommand import OpenStackCommand
 
 class OpenStackDescribeInstances(DescribeInstancesCommand, OpenStackCommand):
 
-    STATE_MAP = {0: 'Running',
-                 1: 'Rebooting',
-                 2: 'Terminated',
-                 3: 'Pending',
-                 4: 'Unknown',
-                 5: 'Stopped',
-                 6: 'Suspended',
-                 7: 'Error',
-                 8: 'Paused'}
-
     def _vm_get_state(self, cc, vm):
         return self.STATE_MAP[vm.state]
 
