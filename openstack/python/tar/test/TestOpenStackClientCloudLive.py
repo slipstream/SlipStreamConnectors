@@ -18,13 +18,16 @@
 """
 
 import os
+import sys
 import unittest
+import traceback
+from mock import Mock
+from pprint import pprint as pp
 
+from slipstream_openstack.TestBaseLive import TestBaseLive
 from slipstream_openstack.OpenStackClientCloud import \
     OpenStackClientCloud
 from slipstream_openstack.OpenStackClientCloud import searchInObjectList
-from slipstream.ConfigHolder import ConfigHolder
-from slipstream.SlipStreamHttpClient import UserInfo
 from slipstream.NodeDecorator import (NodeDecorator, RUN_CATEGORY_IMAGE,
                                       RUN_CATEGORY_DEPLOYMENT, KEY_RUN_CATEGORY)
 from slipstream import util
@@ -44,51 +47,32 @@ openstack.ssh.password = yyy
 """  # pylint: disable=pointless-string-statement
 
 
-def publish_vm_info(self, vm, node_instance):
-    # pylint: disable=unused-argument, protected-access
-    print '%s, %s' % (self._vm_get_id(vm), self._vm_get_ip(vm))
+class TestOpenStackClientCloudLive(TestBaseLive):
 
+    cin = 'openstack'
 
-class TestOpenStackClientCloudLive(unittest.TestCase):
-
-    connector_instance_name = 'openstack'
-
-    def constructKey(self, name):
-        return self.connector_instance_name + '.' + name
+    conf_keys = ['endpoint',
+                 'tenant.name',
+                 'username',
+                 'password',
+                 'domain.name',
+                 'identity.version',
+                 'service.type',
+                 'service.name',
+                 'service.region',
+                 'floating.ips',
+                 'network.type',
+                 'network.private',
+                 'network.public']
 
     def setUp(self):
-        os.environ['SLIPSTREAM_CONNECTOR_INSTANCE'] = self.connector_instance_name
-        os.environ['SLIPSTREAM_BOOTSTRAP_BIN'] = 'http://example.com/bootstrap'
-        os.environ['SLIPSTREAM_DIID'] = '00000000-0000-0000-0000-000000000000'
+        self._setUp(OpenStackClientCloud, CONFIG_FILE, self.conf_keys)
 
-        if not os.path.exists(CONFIG_FILE):
-            raise Exception('Configuration file %s not found.' % CONFIG_FILE)
-
-        self.ch = ConfigHolder(configFile=CONFIG_FILE, context={'foo': 'bar'})
-        self.ch.set(KEY_RUN_CATEGORY, '')
-
-        OpenStackClientCloud._publish_vm_info = publish_vm_info  # pylint: disable=protected-access
-        self.client = OpenStackClientCloud(self.ch)
-
-        self.user_info = UserInfo(self.connector_instance_name)
-        self.user_info['General.ssh.public.key'] = self.ch.config['General.ssh.public.key']
-        self.user_info[self.constructKey('endpoint')] = self.ch.config['openstack.endpoint']
-        self.user_info[self.constructKey('tenant.name')] = self.ch.config['openstack.tenant.name']
-        self.user_info[self.constructKey('username')] = self.ch.config['openstack.username']
-        self.user_info[self.constructKey('password')] = self.ch.config['openstack.password']
-
-        self.user_info[self.constructKey('service.type')] = self.ch.config['openstack.service.type']
-        self.user_info[self.constructKey('service.name')] = self.ch.config['openstack.service.name']
-        self.user_info[self.constructKey('service.region')] = self.ch.config['openstack.service.region']
-        self.user_info[self.constructKey('network.private')] = self.ch.config['openstack.network.private']
-
-        security_groups = self.ch.config['openstack.security.groups']
-        image_id = self.ch.config['openstack.imageid']
-        instance_type = self.ch.config.get('openstack.intance.type', 'm1.tiny')
-        network_type = self.ch.config['openstack.network.type']
+        security_groups = self._conf_val('security.groups')
+        image_id = self._conf_val('imageid')
+        instance_type = self._conf_val('intance.type', 'm1.tiny')
+        network_type = self._conf_val('network.type')
         node_name = 'test_node'
-
-        self.multiplicity = 2
 
         self.node_instances = {}
         for i in range(1, self.multiplicity + 1):
@@ -96,25 +80,24 @@ class TestOpenStackClientCloudLive(unittest.TestCase):
             self.node_instances[node_instance_name] = NodeInstance({
                 NodeDecorator.NODE_NAME_KEY: node_name,
                 NodeDecorator.NODE_INSTANCE_NAME_KEY: node_instance_name,
-                'cloudservice': self.connector_instance_name,
-                # 'index': i,
+                'cloudservice': self.cin,
                 'image.platform': 'Ubuntu',
                 'image.imageId': image_id,
                 'image.id': image_id,
-                self.constructKey('instance.type'): instance_type,
-                self.constructKey('security.groups'): security_groups,
+                self.construct_key('instance.type'): instance_type,
+                self.construct_key('security.groups'): security_groups,
                 'network': network_type
             })
 
         self.node_instance = NodeInstance({
             NodeDecorator.NODE_NAME_KEY: NodeDecorator.MACHINE_NAME,
             NodeDecorator.NODE_INSTANCE_NAME_KEY: NodeDecorator.MACHINE_NAME,
-            'cloudservice': self.connector_instance_name,
+            'cloudservice': self.cin,
             'image.platform': 'Ubuntu',
             'image.imageId': image_id,
             'image.id': image_id,
-            self.constructKey('instance.type'): instance_type,
-            self.constructKey('security.groups'): security_groups,
+            self.construct_key('instance.type'): instance_type,
+            self.construct_key('security.groups'): security_groups,
             'network': network_type,
             'image.prerecipe':
 """#!/bin/sh
@@ -138,11 +121,11 @@ lvs
         self.node_instance_with_additional_disk = NodeInstance({
             NodeDecorator.NODE_NAME_KEY: NodeDecorator.MACHINE_NAME,
             NodeDecorator.NODE_INSTANCE_NAME_KEY: NodeDecorator.MACHINE_NAME,
-            'cloudservice': self.connector_instance_name,
+            'cloudservice': self.cin,
             'image.platform': 'Ubuntu',
             'image.imageId': image_id,
             'image.id': image_id,
-            self.constructKey('instance.type'): instance_type,
+            self.construct_key('instance.type'): instance_type,
             'network': network_type,
             'extra.disk.volatile': '20'
         })
@@ -153,17 +136,8 @@ lvs
         self.client = None
         self.ch = None
 
-    def xtest_1_startStopImages(self):
-        self.client.run_category = RUN_CATEGORY_DEPLOYMENT
-
-        self.client.start_nodes_and_clients(self.user_info, self.node_instances)
-
-        util.printAndFlush('Instances started')
-
-        vms = self.client.get_vms()
-        assert len(vms) == self.multiplicity
-
-        self.client.stop_deployment()
+    def test_1_startStopImages(self):
+        self._test_startStopImages()
 
     def xtest_2_buildImage(self):
         self.client.run_category = RUN_CATEGORY_IMAGE
