@@ -414,7 +414,7 @@ class OpenStackClientCloud(BaseCloudConnector):
     def _raise_on_failed_instance(self, instance):
         if is_instance_failed(instance):
             raise Exceptions.ExecutionException("VM %s failed with: %s" % (
-                instance.id, instance.extra['fault']['message']))
+                instance.id, instance.extra.get('fault', {}).get('message')))
 
     @override
     def _wait_and_get_instance_ip_address(self, vm):
