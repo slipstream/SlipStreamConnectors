@@ -129,7 +129,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         self.networks = self._thread_local.driver.ex_list_networks()
         self.security_groups = self._thread_local.driver.ex_list_security_groups()
 
-    def _get_is_floating_ip(self, user_info):
+    def _is_floating_ip(self, user_info):
         return util.str2bool(user_info.get_cloud('floating.ips', 'false'))
 
     def _build_image(self, user_info, node_instance):
@@ -180,7 +180,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         flavor = searchInObjectList(self.flavors, 'name', instance_type)
         image = searchInObjectList(self.images, 'id', image_id)
         contextualization_script = self._get_bootstrap_script_if_not_build_image(node_instance)
-        use_floating_ips = self._get_is_floating_ip(user_info)
+        use_floating_ips = self._is_floating_ip(user_info)
 
         if flavor is None:
             raise Exceptions.ParameterNotFoundException("Couldn't find the specified flavor: %s" % instance_type)
@@ -241,7 +241,7 @@ class OpenStackClientCloud(BaseCloudConnector):
 
         vm = dict(networkType=node_instance.get_network_type(),
                   instance=instance,
-                  ip=ip if ip is not None else '',
+                  ip=ip or '',
                   id=instance.id,
                   strict_ip_retrival=network is None)
         return vm
