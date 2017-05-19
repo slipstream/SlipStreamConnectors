@@ -17,10 +17,13 @@
 """
 
 from slipstream.command.CloudClientCommand import CloudClientCommand
-from slipstream_openstack.OpenStackClientCloud import OpenStackClientCloud
+from slipstream_openstack.OpenStackClientCloud import OpenStackClientCloud, \
+    STATE_MAP
 
 
 class OpenStackCommand(CloudClientCommand):
+
+    STATE_MAP = STATE_MAP
 
     DOMAIN_KEY = 'domain'
     REGION_KEY = 'region'

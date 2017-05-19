@@ -32,7 +32,7 @@ import libcloud.security
 import slipstream.util as util
 import slipstream.exceptions.Exceptions as Exceptions
 
-from slipstream.util import override
+from slipstream.util import override, retry
 from slipstream.NodeDecorator import NodeDecorator
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 
@@ -53,6 +53,21 @@ def searchInObjectList(list_, propertyName, propertyValue):
             if getattr(element, propertyName) == propertyValue:
                 return element
     return None
+
+
+STATE_MAP = {0: 'Running',
+             1: 'Rebooting',
+             2: 'Terminated',
+             3: 'Pending',
+             4: 'Unknown',
+             5: 'Stopped',
+             6: 'Suspended',
+             7: 'Error',
+             8: 'Paused'}
+
+
+def is_instance_failed(instance):
+    return STATE_MAP.get(instance.state, '') in ['Error']
 
 
 class OpenStackClientCloud(BaseCloudConnector):
@@ -219,7 +234,7 @@ class OpenStackClientCloud(BaseCloudConnector):
                     self._thread_local.driver.attach_volume(instance, additional_disk, device='/dev/vdb')
         except:
             if floating_ip:
-                self._thread_local.driver.ex_delete_floating_ip(floating_ip)
+                self._delete_floating_ip(floating_ip)
             if additional_disk:
                 self._thread_local.driver.destroy_volume(additional_disk)
             raise
@@ -272,27 +287,33 @@ class OpenStackClientCloud(BaseCloudConnector):
         # Update the cached list of available security groups
         self.security_groups = driver.ex_list_security_groups()
 
+    def _node_destroy_cleanup(self, node):
+        node.destroy()
+        self._remove_floating_ip(node)
+        self._remove_additional_disk(node)
+
     @override
     def _stop_deployment(self):
         for _, vm in self.get_vms().items():
-            instance = vm['instance']
-            instance.destroy()
-            self._remove_floating_ip(instance)
-            self._remove_additional_disk(instance)
+            self._node_destroy_cleanup(vm['instance'])
 
     @override
     def _stop_vms_by_ids(self, ids):
         for node in self._thread_local.driver.list_nodes():
             if node.id in ids:
-                node.destroy()
-                self._remove_floating_ip(node)
-                self._remove_additional_disk(node)
+                self._node_destroy_cleanup(node)
 
-    def _remove_floating_ip(self, vm_instance):
-        ip = vm_instance.extra.get('metadata', {}).get('floating_ip')
-        if ip:
-            floating_ip = OpenStack_1_1_FloatingIpAddress(id=ip, ip_address=None, pool=None)
-            self._thread_local.driver.ex_delete_floating_ip(floating_ip)
+    @retry(Exceptions.CloudError, tries=5, delay=1, backoff=2)
+    def _delete_floating_ip(self, floating_ip):
+        self._thread_local.driver.ex_delete_floating_ip(floating_ip)
+
+    def _remove_floating_ip(self, node):
+        ip_id = node.extra.get('metadata', {}).get('floating_ip')
+        if ip_id:
+            floating_ip = OpenStack_1_1_FloatingIpAddress(id=ip_id,
+                                                          ip_address=None,
+                                                          pool=None)
+            self._delete_floating_ip(floating_ip)
 
     def _get_driver(self, user_info):
         driverOpenStack = get_driver(Provider.OPENSTACK)
@@ -396,6 +417,11 @@ class OpenStackClientCloud(BaseCloudConnector):
             except IndexError:
                 return ''
 
+    def _raise_on_failed_instance(self, instance):
+        if is_instance_failed(instance):
+            raise Exceptions.ExecutionException("VM %s failed with: %s" % (
+                instance.id, instance.extra.get('fault', {}).get('message')))
+
     @override
     def _wait_and_get_instance_ip_address(self, vm):
         if vm.get('ip'):
@@ -415,7 +441,10 @@ class OpenStackClientCloud(BaseCloudConnector):
 
             instances = self._thread_local.driver.list_nodes()
             instance = searchInObjectList(instances, 'id', vmId)
+
+            self._raise_on_failed_instance(instance)
             ip = self._get_instance_ip_address(instance, ipType or '', strict)
+
             if ip:
                 vm['ip'] = ip
                 return vm
@@ -444,21 +473,23 @@ class OpenStackClientCloud(BaseCloudConnector):
                     'Timed out while waiting for instance "%s" enter in running state'
                     % instance_id)
             time.sleep(1)
-            node = self._thread_local.driver.list_nodes()
-            state = searchInObjectList(node, 'id', instance_id).state
+            nodes = self._thread_local.driver.list_nodes()
+            node = searchInObjectList(nodes, 'id', instance_id)
+            self._raise_on_failed_instance(node)
+            state = node.state
 
-    def _wait_image_creation_completed(self, imageId):
+    def _wait_image_creation_completed(self, image_id):
         time_wait = 600
         time_stop = time.time() + time_wait
 
-        imgState = None
-        while imgState == None:
+        img = None
+        while not img:
             if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
-                    'Timed out while waiting for image "%s" to be created' % imageId)
+                    'Timed out while waiting for image "%s" to be created' % image_id)
             time.sleep(1)
             images = self._thread_local.driver.list_images()
-            imgState = searchInObjectList(images, 'id', imageId)
+            img = searchInObjectList(images, 'id', image_id)
 
     def _import_keypair(self, user_info):
         kp_name = 'ss-key-%i' % int(time.time())
