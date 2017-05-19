@@ -129,6 +129,9 @@ class OpenStackClientCloud(BaseCloudConnector):
         self.networks = self._thread_local.driver.ex_list_networks()
         self.security_groups = self._thread_local.driver.ex_list_security_groups()
 
+    def _is_floating_ip(self, user_info):
+        return util.str2bool(user_info.get_cloud('floating.ips', 'false'))
+
     def _build_image(self, user_info, node_instance):
         return self._build_image_on_openstack(user_info, node_instance)
 
@@ -177,7 +180,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         flavor = searchInObjectList(self.flavors, 'name', instance_type)
         image = searchInObjectList(self.images, 'id', image_id)
         contextualization_script = self._get_bootstrap_script_if_not_build_image(node_instance)
-        use_floating_ips = user_info.get_cloud('floating.ips', 'false').lower() in ('true', 'yes', 'y', '1', 't')
+        use_floating_ips = self._is_floating_ip(user_info)
 
         if flavor is None:
             raise Exceptions.ParameterNotFoundException("Couldn't find the specified flavor: %s" % instance_type)
@@ -206,9 +209,11 @@ class OpenStackClientCloud(BaseCloudConnector):
         
         kwargs['ex_metadata'] = {}
         floating_ip = None
+        ip = None
         if use_floating_ips and network_type == 'Public':
             ip_pool = user_info.get_public_network_name() or None
             floating_ip = self._thread_local.driver.ex_create_floating_ip(ip_pool)
+            ip = floating_ip.ip_address
             kwargs['ex_metadata'].update({'floating_ip': floating_ip.id})
 
         additional_disk = None
@@ -236,8 +241,9 @@ class OpenStackClientCloud(BaseCloudConnector):
 
         vm = dict(networkType=node_instance.get_network_type(),
                   instance=instance,
-                  ip='',
-                  id=instance.id)
+                  ip=ip or '',
+                  id=instance.id,
+                  strict_ip_retrival=network is None)
         return vm
 
     @override
@@ -418,11 +424,15 @@ class OpenStackClientCloud(BaseCloudConnector):
 
     @override
     def _wait_and_get_instance_ip_address(self, vm):
+        if vm.get('ip'):
+            return vm
+
         time_wait = 180
         time_stop = time.time() + time_wait
 
         instance = vm['instance']
         ipType = vm['networkType']
+        strict = vm['strict_ip_retrival']
         vmId = vm['id']
         ip = vm['ip']
 
@@ -431,8 +441,10 @@ class OpenStackClientCloud(BaseCloudConnector):
 
             instances = self._thread_local.driver.list_nodes()
             instance = searchInObjectList(instances, 'id', vmId)
+
             self._raise_on_failed_instance(instance)
-            ip = self._get_instance_ip_address(instance, ipType or '')
+            ip = self._get_instance_ip_address(instance, ipType or '', strict)
+
             if ip:
                 vm['ip'] = ip
                 return vm
