@@ -111,8 +111,23 @@ class ServiceOffersInstancesCommand(CloudClientCommand):
                 "price:billingPeriodCode": "MIN",
                 "exoscale:instanceType": instanceTypeName,
                 "exoscale:zone": zone,
-                "connector": {"href": connectorName}
-                }
+                "connector": {"href": connectorName},
+		"acl" : {
+			"owner" : {
+				"type" : "ROLE",
+				"principal" : "ADMIN"
+			},
+			"rules" : [ {
+				"principal" : "USER",
+				"right" : "VIEW",
+				"type" : "ROLE"
+			}, {
+				"principal" : "ADMIN",
+				"right" : "ALL",
+				"type" : "ROLE"
+			} ]
+		},
+	}
 
     def do_work(self):
         ch = ConfigHolder(options={'verboseLevel': 0,
