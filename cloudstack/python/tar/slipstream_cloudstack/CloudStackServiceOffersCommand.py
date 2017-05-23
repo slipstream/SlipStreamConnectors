@@ -109,6 +109,7 @@ class ServiceOffersInstancesCommand(CloudClientCommand):
                 "price:currency": "EUR",
                 "price:billingUnitCode": "HUR",
                 "price:billingPeriodCode": "MIN",
+                "schema-org:name": instanceTypeName,
                 "exoscale:instanceType": instanceTypeName,
                 "exoscale:zone": zone,
                 "connector": {"href": connectorName},
