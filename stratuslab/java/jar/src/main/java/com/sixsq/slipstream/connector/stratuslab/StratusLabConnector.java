@@ -105,11 +105,10 @@ public class StratusLabConnector extends CliConnectorBase {
 			instanceSize.put("instance-type", instanceType);
 			return instanceSize;
 		} else {
-			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
-			String cpu = getCpu(image);
-			String ram = getRam(image);
+			String cpu = getCpu(run);
+			String ram = getRam(run);
 			if (cpu == null || cpu.isEmpty() || ram == null || ram.isEmpty()) {
-				instanceSize.put("instance-type", getInstanceType(image));
+				instanceSize.put("instance-type", getInstanceType(run));
 				return instanceSize;
 			} else {
 				instanceSize.put("cpu", cpu);
@@ -120,8 +119,8 @@ public class StratusLabConnector extends CliConnectorBase {
 	}
 
 	@Override
-	protected String getCpu(ImageModule image) throws ValidationException {
-		String cpu = super.getCpu(image);
+	protected String getCpu(Run run) throws ValidationException {
+		String cpu = super.getCpu(run);
 		if (cpu == null || cpu.isEmpty()) {
 			return "";
 		} else {
@@ -131,8 +130,8 @@ public class StratusLabConnector extends CliConnectorBase {
 	}
 
 	@Override
-	protected String getRam(ImageModule image) throws ValidationException {
-		String ramGb = super.getRam(image);
+	protected String getRam(Run run) throws ValidationException {
+		String ramGb = super.getRam(run);
 		if (ramGb == null || ramGb.isEmpty()) {
 			return "";
 		} else {
@@ -162,16 +161,7 @@ public class StratusLabConnector extends CliConnectorBase {
 	protected void validateLaunch(Run run, User user) throws ValidationException {
 		super.validateLaunch(run, user);
 
-		if (run.getCategory() == ModuleCategory.Image) {
-			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
-			validateImageModule(image, user);
-		}
-		if (run.getCategory() == ModuleCategory.Deployment) {
-			for (Node node : DeploymentModule.load(run.getModuleResourceUrl()).getNodes().values()) {
-				validateImageModule(node.getImage(), user);
-			}
-		}
-
+		validateImageModule(run, user);
 		validateMarketplaceEndpoint(user);
 		validatePDiskEndpoint();
 	}
@@ -194,28 +184,29 @@ public class StratusLabConnector extends CliConnectorBase {
 	    }
     }
 
-	private void validateImageModule(ImageModule image, User user)
+	private void validateImageModule(Run run, User user)
 			throws ValidationException {
-		validateParameters(image, user);
+		validateParameters(run, user);
 	}
 
-	private void validateParameters(ImageModule image, User user)
+	private void validateParameters(Run run, User user)
 			throws ValidationException {
-		validateInstanceType(image, user);
+		validateInstanceType(run, user);
 	}
 
-	private void validateInstanceType(ImageModule image, User user)
+	private void validateInstanceType(Run run, User user)
 			throws ValidationException {
 
-		String instanceType = getInstanceType(image);
+		String instanceType = getInstanceType(run);
 
+		ImageModule image = ImageModule.load(run.getModuleResourceUrl());
 		if (image.isBase() && ImageModule.INSTANCE_TYPE_INHERITED.equals(instanceType)) {
 			throw (new ValidationException(
 					"Base image cannot have inherited instance type. Please review the instance type under Parameters -> "
 							+ getConnectorInstanceName()));
 		}
 
-		if (instanceType == null && (getRam(image) == null && getCpu(image) == null)) {
+		if (instanceType == null && (getRam(run) == null && getCpu(run) == null)) {
 			throw new ValidationException(
 					"Missing instance type or ram/cpu information. Please review the instance type under Parameters -> "
 							+ getConnectorInstanceName() + " or it's parents.");

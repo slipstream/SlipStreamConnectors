@@ -98,7 +98,7 @@ public class CloudStackConnector extends CliConnectorBase {
 	protected String getInstanceType(Run run, User user) throws ValidationException {
 		return (isInOrchestrationContext(run)) ? user.getParameter(
 				constructKey(CloudStackUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME)).getValue()
-				: getInstanceType(ImageModule.load(run.getModuleResourceUrl()));
+				: getInstanceType(run);
 	}
 
 	protected String getZone(User user) throws ValidationException {

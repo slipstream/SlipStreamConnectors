@@ -145,7 +145,7 @@ public class OpenStackConnector extends CliConnectorBase {
 	protected String getInstanceType(Run run) throws ConfigurationException, ValidationException {
 		return (isInOrchestrationContext(run)) ? Configuration.getInstance()
 				.getRequiredProperty(constructKey(OpenStackUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME))
-				: getInstanceType(ImageModule.load(run.getModuleResourceUrl()));
+				: getInstanceType(run);
 	}
 
 	protected String getIdentityVersion() throws ValidationException {

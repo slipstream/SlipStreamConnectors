@@ -91,9 +91,8 @@ public class OpenNebulaConnector extends CliConnectorBase {
 			cpu = getCpuSizeOrchestrator();
 			ram = getRamSizeOrchestrator();
 		} else {
-			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
-			cpu = getCpu(image);
-			ram = getRam(image);
+			cpu = getCpu(run);
+			ram = getRam(run);
 		}
 		instanceSize.put("cpu", cpu);
 		instanceSize.put("ram", ram);
@@ -104,9 +103,8 @@ public class OpenNebulaConnector extends CliConnectorBase {
 		if (isInOrchestrationContext(run)) {
 			return "";
 		} else {
-			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
 			String vm_additional_template = this.getParameterValue(
-					OpenNebulaImageParametersFactory.CUSTOM_VM_TEMPLATE_NAME, image);
+					OpenNebulaImageParametersFactory.CUSTOM_VM_TEMPLATE_NAME, run);
 			if (vm_additional_template == null || vm_additional_template.isEmpty()) {
 				return "";
 			} else {
@@ -123,8 +121,7 @@ public class OpenNebulaConnector extends CliConnectorBase {
 					.getRequiredProperty(
 							constructKey(OpenNebulaUserParametersFactory.ORCHESTRATOR_CONTEXTUALIZATION_TYPE_NAME));
 		} else {
-			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
-			type = this.getParameterValue(OpenNebulaImageParametersFactory.CONTEXTUALIZATION_TYPE_NAME, image);
+			type = this.getParameterValue(OpenNebulaImageParametersFactory.CONTEXTUALIZATION_TYPE_NAME, run);
 		}
 		if (type == null || type.isEmpty()) {
 			return OpenNebulaImageParametersFactory.ContextualizationType.ONECONTEXT.getValue();
@@ -137,9 +134,8 @@ public class OpenNebulaConnector extends CliConnectorBase {
 		if (isInOrchestrationContext(run)) {
 			return "";
 		} else {
-			ImageModule image = ImageModule.load(run.getModuleResourceUrl());
 			String network_specific_name = this.getParameterValue(
-					OpenNebulaImageParametersFactory.NETWORK_SPECIFIC_NAME, image);
+					OpenNebulaImageParametersFactory.NETWORK_SPECIFIC_NAME, run);
 			if (network_specific_name == null || network_specific_name.isEmpty()) {
 				return "";
 			} else {
@@ -175,8 +171,8 @@ public class OpenNebulaConnector extends CliConnectorBase {
 	}
 
 	@Override
-	protected String getCpu(ImageModule image) throws ValidationException {
-		String cpu = super.getCpu(image);
+	protected String getCpu(Run run) throws ValidationException {
+		String cpu = super.getCpu(run);
 		if (cpu == null || cpu.isEmpty()) {
 			throw new ValidationException("CPU value should not be empty.");
 		} else {
@@ -186,8 +182,8 @@ public class OpenNebulaConnector extends CliConnectorBase {
 	}
 
 	@Override
-	protected String getRam(ImageModule image) throws ValidationException {
-		String ramGB = super.getRam(image);
+	protected String getRam(Run run) throws ValidationException {
+		String ramGB = super.getRam(run);
 		if (ramGB == null || ramGB.isEmpty()) {
 			throw new ValidationException("RAM value should not be empty.");
 		} else {
