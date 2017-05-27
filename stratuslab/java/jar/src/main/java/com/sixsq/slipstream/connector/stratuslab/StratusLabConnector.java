@@ -31,11 +31,9 @@ import com.sixsq.slipstream.connector.Connector;
 import com.sixsq.slipstream.credentials.Credentials;
 import com.sixsq.slipstream.exceptions.ConfigurationException;
 import com.sixsq.slipstream.exceptions.ValidationException;
-import com.sixsq.slipstream.persistence.DeploymentModule;
 import com.sixsq.slipstream.persistence.ImageModule;
 import com.sixsq.slipstream.persistence.ModuleCategory;
 import com.sixsq.slipstream.persistence.ModuleParameter;
-import com.sixsq.slipstream.persistence.Node;
 import com.sixsq.slipstream.persistence.Run;
 import com.sixsq.slipstream.persistence.ServiceConfigurationParameter;
 import com.sixsq.slipstream.persistence.User;
@@ -161,7 +159,10 @@ public class StratusLabConnector extends CliConnectorBase {
 	protected void validateLaunch(Run run, User user) throws ValidationException {
 		super.validateLaunch(run, user);
 
-		validateImageModule(run, user);
+		if (run.getCategory() == ModuleCategory.Image) {
+			validateInstanceType(run, user);
+		}
+
 		validateMarketplaceEndpoint(user);
 		validatePDiskEndpoint();
 	}
@@ -183,16 +184,6 @@ public class StratusLabConnector extends CliConnectorBase {
 	    	throw new ValidationException("Missing PDisk endpoint. Please contact your SlipStream administrator");
 	    }
     }
-
-	private void validateImageModule(Run run, User user)
-			throws ValidationException {
-		validateParameters(run, user);
-	}
-
-	private void validateParameters(Run run, User user)
-			throws ValidationException {
-		validateInstanceType(run, user);
-	}
 
 	private void validateInstanceType(Run run, User user)
 			throws ValidationException {
