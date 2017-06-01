@@ -31,9 +31,11 @@ import com.sixsq.slipstream.connector.Connector;
 import com.sixsq.slipstream.credentials.Credentials;
 import com.sixsq.slipstream.exceptions.ConfigurationException;
 import com.sixsq.slipstream.exceptions.ValidationException;
+import com.sixsq.slipstream.persistence.DeploymentModule;
 import com.sixsq.slipstream.persistence.ImageModule;
 import com.sixsq.slipstream.persistence.ModuleCategory;
 import com.sixsq.slipstream.persistence.ModuleParameter;
+import com.sixsq.slipstream.persistence.Node;
 import com.sixsq.slipstream.persistence.Run;
 import com.sixsq.slipstream.persistence.ServiceConfigurationParameter;
 import com.sixsq.slipstream.persistence.User;
@@ -160,7 +162,17 @@ public class StratusLabConnector extends CliConnectorBase {
 		super.validateLaunch(run, user);
 
 		if (run.getCategory() == ModuleCategory.Image) {
-			validateInstanceType(run, user);
+			validateInstanceType(
+					getCpu(run), getRam(run), getInstanceType(run),
+					ImageModule.load(run.getModuleResourceUrl()).isBase());
+		}
+
+		if (run.getCategory() == ModuleCategory.Deployment) {
+			for (Node node : DeploymentModule.load(run.getModuleResourceUrl()).getNodes().values()) {
+				ImageModule nodeImage = node.getImage();
+				validateInstanceType(
+						getCpu(nodeImage), getRam(nodeImage), getInstanceType(nodeImage), nodeImage.isBase());
+			}
 		}
 
 		validateMarketplaceEndpoint(user);
@@ -185,19 +197,15 @@ public class StratusLabConnector extends CliConnectorBase {
 	    }
     }
 
-	private void validateInstanceType(Run run, User user)
+	private void validateInstanceType(String cpu, String ram, String instanceType, Boolean isBase)
 			throws ValidationException {
-
-		String instanceType = getInstanceType(run);
-
-		ImageModule image = ImageModule.load(run.getModuleResourceUrl());
-		if (image.isBase() && ImageModule.INSTANCE_TYPE_INHERITED.equals(instanceType)) {
+		if (isBase && ImageModule.INSTANCE_TYPE_INHERITED.equals(instanceType)) {
 			throw (new ValidationException(
 					"Base image cannot have inherited instance type. Please review the instance type under Parameters -> "
 							+ getConnectorInstanceName()));
 		}
 
-		if (instanceType == null && (getRam(run) == null && getCpu(run) == null)) {
+		if (instanceType == null && (ram == null && cpu == null)) {
 			throw new ValidationException(
 					"Missing instance type or ram/cpu information. Please review the instance type under Parameters -> "
 							+ getConnectorInstanceName() + " or it's parents.");
