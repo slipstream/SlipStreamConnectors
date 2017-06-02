@@ -205,7 +205,7 @@ public class StratusLabConnector extends CliConnectorBase {
 							+ getConnectorInstanceName()));
 		}
 
-		if (instanceType == null && (ram == null && cpu == null)) {
+                if ( (instanceType == null || instanceType.isEmpty()) && (ram == null || ram.isEmpty() || cpu == null || cpu.isEmpty()) ) {
 			throw new ValidationException(
 					"Missing instance type or ram/cpu information. Please review the instance type under Parameters -> "
 							+ getConnectorInstanceName() + " or it's parents.");
