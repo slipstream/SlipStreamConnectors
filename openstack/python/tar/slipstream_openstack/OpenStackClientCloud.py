@@ -463,7 +463,7 @@ class OpenStackClientCloud(BaseCloudConnector):
             'Timed out after %s sec, while waiting for IPs to be assigned to instances: %s' % (time_wait, vmId))
 
     def _wait_instance_in_running_state(self, instance_id):
-        time_wait = 300
+        time_wait = 600
         time_stop = time.time() + time_wait
 
         state = ''
