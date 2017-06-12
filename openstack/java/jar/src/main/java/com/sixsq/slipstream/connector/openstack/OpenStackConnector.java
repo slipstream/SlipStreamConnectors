@@ -142,10 +142,11 @@ public class OpenStackConnector extends CliConnectorBase {
 		return user.getParameterValue(constructKey(OpenStackUserParametersFactory.DOMAIN_NAME), null);
 	}
 
+	@Override
 	protected String getInstanceType(Run run) throws ConfigurationException, ValidationException {
 		return (isInOrchestrationContext(run)) ? Configuration.getInstance()
 				.getRequiredProperty(constructKey(OpenStackUserParametersFactory.ORCHESTRATOR_INSTANCE_TYPE_PARAMETER_NAME))
-				: getInstanceType(run);
+				: super.getInstanceType(run);
 	}
 
 	protected String getIdentityVersion() throws ValidationException {
