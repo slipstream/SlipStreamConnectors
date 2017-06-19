@@ -115,7 +115,6 @@ class OpenStackClientCloud(BaseCloudConnector):
             self._get_iaas_attributes()
             self._create_keypair_and_set_on_user_info(user_info)
 
-
     @override
     def _finalization(self, user_info):
         try:
