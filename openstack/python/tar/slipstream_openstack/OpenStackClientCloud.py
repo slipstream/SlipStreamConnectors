@@ -365,7 +365,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         return self._get_instance_ip_address(vm_instance, strict=False)
 
     @override
-    def _get_vm_sizes(self):
+    def _list_vm_sizes(self):
         return self.flavors
 
     @override
