@@ -263,6 +263,22 @@ class CloudStackClientCloud(BaseCloudConnector):
     def _vm_get_instance_type(self, vm_instance):
         return vm_instance.extra.get('size_name')
 
+    @override
+    def _get_vm_sizes(self):
+        return self.sizes
+
+    @override
+    def _size_get_cpu(self, vm_size):
+        return vm_size.extra.get('cpu')
+
+    @override
+    def _size_get_ram(self, vm_size):
+        return vm_size.ram
+
+    @override
+    def _size_get_instance_type(self, vm_size):
+        return vm_size.name
+
     def _get_instance_ip_address(self, instance, ipType='public'):
         if ipType.lower() == 'private':
             return (len(instance.private_ips) != 0) and instance.private_ips[0] or (len(instance.public_ips) != 0) and instance.public_ips[0] or ''
