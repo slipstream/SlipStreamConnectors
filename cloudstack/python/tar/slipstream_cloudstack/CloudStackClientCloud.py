@@ -264,7 +264,7 @@ class CloudStackClientCloud(BaseCloudConnector):
         return vm_instance.extra.get('size_name')
 
     @override
-    def _get_vm_sizes(self):
+    def _list_vm_sizes(self):
         return self.sizes
 
     @override
