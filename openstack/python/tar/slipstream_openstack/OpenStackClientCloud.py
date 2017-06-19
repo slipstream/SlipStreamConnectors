@@ -115,6 +115,7 @@ class OpenStackClientCloud(BaseCloudConnector):
             self._get_iaas_attributes()
             self._create_keypair_and_set_on_user_info(user_info)
 
+
     @override
     def _finalization(self, user_info):
         try:
@@ -362,6 +363,22 @@ class OpenStackClientCloud(BaseCloudConnector):
     @override
     def _vm_get_ip_from_list_instances(self, vm_instance):
         return self._get_instance_ip_address(vm_instance, strict=False)
+
+    @override
+    def _get_vm_sizes(self):
+        return self.flavors
+
+    @override
+    def _size_get_cpu(self, vm_size):
+        return vm_size.vcpus
+
+    @override
+    def _size_get_ram(self, vm_size):
+        return vm_size.ram
+
+    @override
+    def _size_get_instance_type(self, vm_size):
+        return vm_size.name
 
     @override
     def _vm_get_cpu(self, vm_instance):
