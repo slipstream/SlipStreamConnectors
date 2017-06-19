@@ -23,6 +23,7 @@ package com.sixsq.slipstream.connector.openstack;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.gson.JsonObject;
 import com.sixsq.slipstream.configuration.Configuration;
 import com.sixsq.slipstream.connector.CliConnectorBase;
 import com.sixsq.slipstream.connector.Connector;
@@ -217,6 +218,13 @@ public class OpenStackConnector extends CliConnectorBase {
 				.getRequiredProperty(constructKey(OpenStackUserParametersFactory.SERVICE_REGION_PARAMETER_NAME)));
 
         return environment;
+	}
+
+	@Override
+	public void applyServiceOffer(Run run, String nodeInstanceName, JsonObject serviceOffer) {
+		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
+				ImageModule.INSTANCE_TYPE_KEY,
+				"openstack:instanceType");
 	}
 
 }

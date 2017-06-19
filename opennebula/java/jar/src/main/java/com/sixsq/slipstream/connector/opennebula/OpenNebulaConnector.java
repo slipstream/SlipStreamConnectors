@@ -23,6 +23,7 @@ package com.sixsq.slipstream.connector.opennebula;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.gson.JsonObject;
 import com.sixsq.slipstream.configuration.Configuration;
 import com.sixsq.slipstream.connector.CliConnectorBase;
 import com.sixsq.slipstream.connector.Connector;
@@ -266,6 +267,19 @@ public class OpenNebulaConnector extends CliConnectorBase {
 	protected String getNetworkPrivate() throws ConfigurationException, ValidationException {
 		return Configuration.getInstance().getRequiredProperty(
 				constructKey(OpenNebulaUserParametersFactory.NETWORK_PRIVATE_NAME));
+	}
+
+	@Override
+	public void applyServiceOffer(Run run, String nodeInstanceName, JsonObject serviceOffer) {
+		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
+				Run.CPU_PARAMETER_NAME,
+				"resource:vcpu");
+		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
+				Run.RAM_PARAMETER_NAME,
+				"resource:ram");
+		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
+				ImageModule.DISK_PARAM,
+				"resource:disk");
 	}
 
 }
