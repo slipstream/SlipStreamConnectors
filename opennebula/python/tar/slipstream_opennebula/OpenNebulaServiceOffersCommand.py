@@ -34,10 +34,13 @@ class OpenNebulaServiceOffersCommand(OpenNebulaCommand, ServiceOffersCommand):
     def __init__(self):
         super(OpenNebulaServiceOffersCommand, self).__init__()
 
+    def __get_interval(self, interval, max):
+        return range(interval, max + interval, interval)
+
     def _list_vm_sizes(self):
         vm_sizes = []
-        for cpu in range(1, self.get_option(self.CPU_MAX_KEY) + 1, 1)[1:]:
-            for ram in range(512, (self.get_option(self.RAM_MAX_KEY) * 1024) + 512, 512)[1:]:
+        for cpu in self.__get_interval(1, self.get_option(self.CPU_MAX_KEY)):
+            for ram in self.__get_interval(512, self.get_option(self.RAM_MAX_KEY) * 1024):
                 vm_sizes.append({'cpu': cpu, 'ram': ram})
         return vm_sizes
 
@@ -48,7 +51,7 @@ class OpenNebulaServiceOffersCommand(OpenNebulaCommand, ServiceOffersCommand):
         return vm_size['ram']
 
     def _get_root_disk_sizes(self, vm_size, os):
-        return range(10, self.get_option(self.DISK_MAX_KEY) + self.get_option(self.DISK_INTERVAL_KEY), self.get_option(self.DISK_INTERVAL_KEY))[1:]
+        return self.__get_interval(self.get_option(self.DISK_INTERVAL_KEY), self.get_option(self.DISK_MAX_KEY))
 
     def set_cloud_specific_options(self, parser):
         super(OpenNebulaCommand, self).set_cloud_specific_options(parser)

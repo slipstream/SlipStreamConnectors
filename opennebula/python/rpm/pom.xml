@@ -179,6 +179,9 @@
                                 <softlinkSource>
                                     <location>${slipstream.base.dir}/connectors/bin/opennebula-terminate-instances</location>
                                 </softlinkSource>
+                                <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/opennebula-service-offers</location>
+                                </softlinkSource>
                             </sources>
                         </mapping>
 

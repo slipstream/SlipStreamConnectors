@@ -179,6 +179,9 @@
                                 <softlinkSource>
                                     <location>${slipstream.base.dir}/connectors/bin/openstack-terminate-instances</location>
                                 </softlinkSource>
+                                <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/openstack-service-offers</location>
+                                </softlinkSource>
                             </sources>
                         </mapping>
 

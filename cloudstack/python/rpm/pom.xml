@@ -178,6 +178,9 @@
                                 <softlinkSource>
                                     <location>${slipstream.base.dir}/connectors/bin/cloudstack-terminate-instances</location>
                                 </softlinkSource>
+                                <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/cloudstack-service-offers</location>
+                                </softlinkSource>
                             </sources>
                         </mapping>
 
