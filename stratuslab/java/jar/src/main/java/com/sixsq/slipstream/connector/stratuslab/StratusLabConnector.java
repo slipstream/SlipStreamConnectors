@@ -253,15 +253,17 @@ public class StratusLabConnector extends CliConnectorBase {
 	}
 
 	@Override
-	public void applyServiceOffer(Run run, String nodeInstanceName, JsonObject serviceOffer) {
+	public void applyServiceOffer(Run run, String nodeInstanceName, JsonObject serviceOffer)
+			throws ValidationException
+	{
 		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
-				Run.CPU_PARAMETER_NAME,
+				constructCloudParameterName(Run.CPU_PARAMETER_NAME),
 				"resource:vcpu");
 		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
-				Run.RAM_PARAMETER_NAME,
+				constructCloudParameterName(Run.RAM_PARAMETER_NAME),
 				"resource:ram");
 		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
-				ImageModule.INSTANCE_TYPE_KEY,
+				constructCloudParameterName(ImageModule.INSTANCE_TYPE_KEY),
 				"stratuslab:instanceType");
 	}
 

@@ -191,9 +191,11 @@ public class CloudStackConnector extends CliConnectorBase {
 	}
 
 	@Override
-	public void applyServiceOffer(Run run, String nodeInstanceName, JsonObject serviceOffer) {
+	public void applyServiceOffer(Run run, String nodeInstanceName, JsonObject serviceOffer)
+			throws ValidationException
+	{
 		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
-				ImageModule.INSTANCE_TYPE_KEY,
+				constructCloudParameterName(ImageModule.INSTANCE_TYPE_KEY),
 				"cloudstack:instanceType");
 	}
 
