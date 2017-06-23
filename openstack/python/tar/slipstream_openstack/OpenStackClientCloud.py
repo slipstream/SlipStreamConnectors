@@ -376,6 +376,10 @@ class OpenStackClientCloud(BaseCloudConnector):
         return vm_size.ram
 
     @override
+    def _size_get_disk(self, vm_size):
+        return vm_size.disk
+
+    @override
     def _size_get_instance_type(self, vm_size):
         return vm_size.name
 

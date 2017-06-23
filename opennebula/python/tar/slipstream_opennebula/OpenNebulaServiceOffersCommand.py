@@ -17,9 +17,9 @@
 """
 
 import warnings
-
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+import math
 from slipstream.command.ServiceOffersCommand import ServiceOffersCommand
 from slipstream_opennebula.OpenNebulaCommand import OpenNebulaCommand
 
@@ -37,10 +37,41 @@ class OpenNebulaServiceOffersCommand(OpenNebulaCommand, ServiceOffersCommand):
     def __get_interval(self, interval, max):
         return range(interval, max + interval, interval)
 
+    @staticmethod
+    def _get_ram_range(max_ram):
+        ram_list = [512]
+
+        exp = 5
+        while True:
+            last_ram = ram_list[-1]
+            next_ram = None
+
+            if last_ram < 1024:
+                next_ram = last_ram + 256
+            elif last_ram < 6144:
+                next_ram = last_ram + 1024
+            elif last_ram < 16384:
+                next_ram = last_ram + 2048
+            else:
+                next_ram = 2 ** exp * 1024
+                exp += 1
+
+            if next_ram is not None and next_ram <= max_ram:
+                ram_list.append(next_ram)
+            else:
+                break
+
+        return ram_list
+
+    @staticmethod
+    def _get_cpu_range(max_cpu):
+        base = 2
+        return [base ** i for i in range(int(math.log(max_cpu,base))+1)]
+
     def _list_vm_sizes(self):
         vm_sizes = []
-        for cpu in self.__get_interval(1, self.get_option(self.CPU_MAX_KEY)):
-            for ram in self.__get_interval(512, self.get_option(self.RAM_MAX_KEY) * 1024):
+        for cpu in self._get_cpu_range(self.get_option(self.CPU_MAX_KEY)):
+            for ram in self._get_ram_range(self.get_option(self.RAM_MAX_KEY) * 1024):
                 vm_sizes.append({'cpu': cpu, 'ram': ram})
         return vm_sizes
 
@@ -56,22 +87,20 @@ class OpenNebulaServiceOffersCommand(OpenNebulaCommand, ServiceOffersCommand):
     def set_cloud_specific_options(self, parser):
         super(OpenNebulaCommand, self).set_cloud_specific_options(parser)
 
-        parser.add_option('--' + self.CPU_MAX_KEY, dest=self.CPU_MAX_KEY,
+        parser.add_option('--' + self.CPU_MAX_KEY, dest=self.CPU_MAX_KEY, default=8,
                           help='Max number of vCPU available per virtual machine', metavar='NUMBER', type='int')
 
-        parser.add_option('--' + self.RAM_MAX_KEY, dest=self.RAM_MAX_KEY,
+        parser.add_option('--' + self.RAM_MAX_KEY, dest=self.RAM_MAX_KEY, default=14,
                           help='Max number of RAM in GiB available per virtual machine', metavar='NUMBER', type='int')
 
-        parser.add_option('--' + self.DISK_MAX_KEY, dest=self.DISK_MAX_KEY,
+        parser.add_option('--' + self.DISK_MAX_KEY, dest=self.DISK_MAX_KEY, default=200,
                           help='Max number of disk in GiB available per virtual machine', metavar='NUMBER', type='int')
 
         parser.add_option('--' + self.DISK_INTERVAL_KEY, dest=self.DISK_INTERVAL_KEY, default=10, metavar='NUMBER',
                           type='int', help='Interval of disk space between two service offers in (GiB). Default: 10')
 
     def get_cloud_specific_mandatory_options(self):
-        return [self.CPU_MAX_KEY,
-                self.RAM_MAX_KEY,
-                self.DISK_MAX_KEY]
+        return []
 
     def _get_common_mandatory_options(self):
         return []
