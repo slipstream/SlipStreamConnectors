@@ -259,9 +259,16 @@ public class StratusLabConnector extends CliConnectorBase {
 		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
 				constructCloudParameterName(Run.CPU_PARAMETER_NAME),
 				"resource:vcpu");
+
 		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
 				constructCloudParameterName(Run.RAM_PARAMETER_NAME),
 				"resource:ram");
+
+		String ram = getAttributeValueFromServiceOffer(serviceOffer,"resource:ram", nodeInstanceName);
+		Float ramValue = Float.parseFloat(ram) / 1024;
+		setRuntimeParameterValueWithCheck(run, constructCloudParameterName(Run.RAM_PARAMETER_NAME),
+				nodeInstanceName, ramValue.toString());
+
 		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
 				constructCloudParameterName(ImageModule.INSTANCE_TYPE_KEY),
 				"stratuslab:instanceType");
