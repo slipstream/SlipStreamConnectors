@@ -271,7 +271,7 @@ public class StratusLabConnector extends CliConnectorBase {
 
 		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
 				constructCloudParameterName(ImageModule.INSTANCE_TYPE_KEY),
-				"stratuslab:instanceType");
+				"resource:instanceType");
 	}
 
 }

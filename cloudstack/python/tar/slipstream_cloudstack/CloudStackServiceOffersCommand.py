@@ -37,7 +37,6 @@ class CloudStackServiceOffersCommand(CloudStackCommand, ServiceOffersCommand):
         instance_type = self.cc._size_get_instance_type(vm_size)
         zone = self.get_option(self.ZONE_KEY)
         return {
-            "cloudstack:instanceType": instance_type,
             "cloudstack:zone": zone
         }
 

@@ -196,7 +196,7 @@ public class CloudStackConnector extends CliConnectorBase {
 	{
 		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
 				constructCloudParameterName(ImageModule.INSTANCE_TYPE_KEY),
-				"cloudstack:instanceType");
+				"resource:instanceType");
 	}
 
 }

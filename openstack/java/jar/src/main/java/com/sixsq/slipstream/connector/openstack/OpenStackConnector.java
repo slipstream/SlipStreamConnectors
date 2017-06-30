@@ -226,7 +226,7 @@ public class OpenStackConnector extends CliConnectorBase {
 	{
 		setRuntimeParameterValueFromServiceOffer(run, serviceOffer, nodeInstanceName,
 				constructCloudParameterName(ImageModule.INSTANCE_TYPE_KEY),
-				"openstack:instanceType");
+				"resource:instanceType");
 	}
 
 }
