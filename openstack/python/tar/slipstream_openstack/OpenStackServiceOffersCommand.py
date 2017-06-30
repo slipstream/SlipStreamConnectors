@@ -27,15 +27,3 @@ class OpenStackServiceOffersCommand(OpenStackCommand, ServiceOffersCommand):
 
     def __init__(self):
         super(OpenStackServiceOffersCommand, self).__init__()
-
-
-    def _get_extra_attributes(self, vm_size):
-        """
-        Return the billing period
-        :param vm_size: A vm_size object as returned by the method _get_vm_sizes() of the connector
-        """
-        instance_type = self.cc._size_get_instance_type(vm_size)
-        return {
-            "openstack:instanceType": instance_type,
-        }
-
