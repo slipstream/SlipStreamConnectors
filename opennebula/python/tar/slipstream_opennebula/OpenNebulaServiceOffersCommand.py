@@ -22,6 +22,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import math
 from slipstream.command.ServiceOffersCommand import ServiceOffersCommand
 from slipstream_opennebula.OpenNebulaCommand import OpenNebulaCommand
+from slipstream.util import override
 
 
 class OpenNebulaServiceOffersCommand(OpenNebulaCommand, ServiceOffersCommand):
@@ -68,6 +69,7 @@ class OpenNebulaServiceOffersCommand(OpenNebulaCommand, ServiceOffersCommand):
         base = 2
         return [base ** i for i in range(int(math.log(max_cpu,base))+1)]
 
+    @override
     def _list_vm_sizes(self):
         vm_sizes = []
         for cpu in self._get_cpu_range(self.get_option(self.CPU_MAX_KEY)):
@@ -75,15 +77,19 @@ class OpenNebulaServiceOffersCommand(OpenNebulaCommand, ServiceOffersCommand):
                 vm_sizes.append({'cpu': cpu, 'ram': ram})
         return vm_sizes
 
+    @override
     def _get_cpu(self, vm_size):
         return vm_size['cpu']
 
+    @override
     def _get_ram(self, vm_size):
         return vm_size['ram']
 
+    @override
     def _get_root_disk_sizes(self, vm_size, os):
         return self.__get_interval(self.get_option(self.DISK_INTERVAL_KEY), self.get_option(self.DISK_MAX_KEY))
 
+    @override
     def set_cloud_specific_options(self, parser):
         super(OpenNebulaCommand, self).set_cloud_specific_options(parser)
 

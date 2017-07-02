@@ -21,22 +21,28 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from slipstream.command.ServiceOffersCommand import ServiceOffersCommand
 from slipstream_cloudstack.CloudStackCommand import CloudStackCommand
+from slipstream.util import override
 
 
 class CloudStackServiceOffersCommand(CloudStackCommand, ServiceOffersCommand):
 
+    prefix = 'cloudstack'
+
     def __init__(self):
         super(CloudStackServiceOffersCommand, self).__init__()
 
+    @override
+    def _get_prefix(self):
+        return self.prefix
 
+    @override
     def _get_extra_attributes(self, vm_size):
         """
         Return the billing period
         :param vm_size: A vm_size object as returned by the method _get_vm_sizes() of the connector
         """
-        instance_type = self.cc._size_get_instance_type(vm_size)
         zone = self.get_option(self.ZONE_KEY)
         return {
-            "cloudstack:zone": zone
+            "zone": zone
         }
 
