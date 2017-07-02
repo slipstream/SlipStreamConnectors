@@ -106,7 +106,7 @@ class OpenNebulaServiceOffersCommand(OpenNebulaCommand, ServiceOffersCommand):
                           type='int', help='Interval of disk space between two service offers in (GiB). Default: 10')
 
     def get_cloud_specific_mandatory_options(self):
-            return []
+        return []
 
     def _get_common_mandatory_options(self):
         return []
