@@ -1,4 +1,4 @@
-(def +version+ "3.31-SNAPSHOT")
+(def +version+ "3.32-SNAPSHOT")
 
 (set-env!
   :project 'com.sixsq.slipstream/SlipStreamConnector-CloudStack-conf
