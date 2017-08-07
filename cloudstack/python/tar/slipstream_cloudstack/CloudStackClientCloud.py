@@ -177,9 +177,8 @@ class CloudStackClientCloud(BaseCloudConnector):
         driver.ex_authorize_security_group_ingress(sg_name, 'icmp', '0.0.0.0/0')
 
     def _stop_instances(self, instances):
-        max_workers = self._get_max_workers(self.configHolder)
         tasksRunnner = TasksRunner(self._stop_instance,
-                                   max_workers=max_workers,
+                                   max_workers=self.max_iaas_workers,
                                    verbose=self.verboseLevel)
         for instance in instances:
             tasksRunnner.put_task(instance)
