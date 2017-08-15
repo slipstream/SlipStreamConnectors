@@ -151,9 +151,6 @@ lvs
         return StratusLabClientCloud
 
     def _start_instances(self):
-
-        self.client._get_max_workers = Mock(return_value=self.max_iaas_workers)
-
         util.printAndFlush('Starting instances\n')
         self.client.start_nodes_and_clients(self.user_info, self.node_instances)
         util.printAndFlush('Instances started\n')

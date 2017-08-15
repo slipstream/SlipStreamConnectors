@@ -8,7 +8,7 @@
     [com.sixsq.slipstream.ssclj.resources.lifecycle-test-utils :as ltu]))
 
 
-(use-fixtures :each ltu/with-test-client-fixture)
+(use-fixtures :each ltu/with-test-es-client-fixture)
 
 ;; initialize must to called to pull in ConnectorTemplate test examples
 (dyn/initialize)

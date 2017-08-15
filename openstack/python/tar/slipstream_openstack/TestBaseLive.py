@@ -100,7 +100,6 @@ class TestBaseLive(unittest.TestCase):
 
     def _test_startStopImages(self):
         "Live test that starts and stops VMs on a cloud."
-        self.client._get_max_workers = Mock(return_value=self.max_iaas_workers)
         self.client.run_category = RUN_CATEGORY_DEPLOYMENT
 
         success = True
