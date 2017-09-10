@@ -1,4 +1,4 @@
-(def +version+ "3.35-SNAPSHOT")
+(def +version+ "3.37-SNAPSHOT")
 
 (set-env!
   :project 'com.sixsq.slipstream/SlipStreamConnector-StratusLab-conf
