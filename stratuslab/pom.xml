@@ -3,14 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>SlipStreamConnector-StratusLab</artifactId>
-  <version>3.37-SNAPSHOT</version>
+  <version>3.38-SNAPSHOT</version>
   <name>SlipStreamConnectors/stratuslab</name>
   <packaging>pom</packaging>
 
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
     <artifactId>SlipStreamConnectors</artifactId>
-    <version>3.37-SNAPSHOT</version>
+    <version>3.38-SNAPSHOT</version>
   </parent>
 
   <modules>
