@@ -222,11 +222,17 @@ class CloudStackClientCloud(BaseCloudConnector):
 
     @override
     def _vm_get_ip(self, vm):
-        return vm['ip']
+        if hasattr(vm, 'ip'):
+            return vm.ip
+        else:
+            return vm['ip']
 
     @override
     def _vm_get_id(self, vm):
-        return vm['id']
+        if hasattr(vm, 'id'):
+            return vm.id
+        else:
+            return vm['id']
 
     def _get_vm_size(self, vm_instance):
         try:

@@ -19,6 +19,7 @@
 
 import os
 import unittest
+from mock import Mock
 from slipstream.ConfigHolder import ConfigHolder
 from slipstream_cloudstack.CloudStackClientCloud import CloudStackClientCloud
 
@@ -35,6 +36,19 @@ class TestCloudStackClientCloud(unittest.TestCase):
 
     def test_init(self):
         CloudStackClientCloud(ConfigHolder(context={'foo': 'bar'}))
+
+    def test_vm_get_id_ip(self):
+        cs = CloudStackClientCloud(ConfigHolder(context={'foo': 'bar'}))
+
+        assert 1 == cs._vm_get_id(dict(id=1))
+        obj = Mock()
+        obj.id = 1
+        assert 1 == cs._vm_get_id(obj)
+
+        assert '1.2.3.4' == cs._vm_get_ip(dict(ip='1.2.3.4'))
+        obj = Mock()
+        obj.ip = '1.2.3.4'
+        assert '1.2.3.4' == cs._vm_get_ip(obj)
 
 
 if __name__ == '__main__':
