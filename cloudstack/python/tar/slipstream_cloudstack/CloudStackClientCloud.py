@@ -285,7 +285,7 @@ class CloudStackClientCloud(BaseCloudConnector):
             return (len(instance.public_ips) != 0) and instance.public_ips[0] or (len(instance.private_ips) != 0) and instance.private_ips[0] or ''
 
     def _import_keypair(self, user_info):
-        kp_name = 'ss-key-%i' % int(time.time())
+        kp_name = 'ss-key-%i' % int(time.time() * 1000000)
         public_key = user_info.get_public_keys()
         try:
             kp = self._thread_local.driver.import_key_pair_from_string(kp_name, public_key)
