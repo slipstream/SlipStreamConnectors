@@ -512,7 +512,7 @@ class OpenStackClientCloud(BaseCloudConnector):
             img = searchInObjectList(images, 'id', image_id)
 
     def _import_keypair(self, user_info):
-        kp_name = 'ss-key-%i' % int(time.time())
+        kp_name = 'ss-key-%i' % int(time.time() * 1000000)
         public_key = user_info.get_public_keys()
         try:
             kp = self._thread_local.driver.ex_import_keypair_from_string(kp_name, public_key)
