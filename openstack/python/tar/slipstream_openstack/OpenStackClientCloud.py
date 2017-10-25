@@ -17,6 +17,7 @@
 """
 
 
+import os
 import time
 
 from .OpenStackLibcloudPatch import patch_libcloud
@@ -29,6 +30,8 @@ from libcloud.compute.providers import get_driver
 from libcloud.compute.drivers.openstack import OpenStack_1_1_FloatingIpAddress
 import libcloud.security
 
+from slipstream.UserInfo import UserInfo
+from slipstream.ConfigHolder import ConfigHolder
 import slipstream.util as util
 import slipstream.exceptions.Exceptions as Exceptions
 
@@ -68,6 +71,33 @@ STATE_MAP = {0: 'Running',
 
 def is_instance_failed(instance):
     return STATE_MAP.get(instance.state, '') in ['Error']
+
+def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
+    user_info = UserInfo(cimi_connector['instanceName'])
+
+    cloud_params = {
+        UserInfo.CLOUD_USERNAME_KEY: cimi_cloud_credential['key'],
+        UserInfo.CLOUD_PASSWORD_KEY: cimi_cloud_credential['secret'],
+        'domain.name': cimi_cloud_credential['domain-name'],
+        'tenant.name': cimi_cloud_credential['tenant-name'],
+        'endpoint': cimi_connector.get('endpoint'),
+        'service.region': cimi_connector.get('serviceRegion'),
+        'service.name': cimi_connector.get('serviceName'),
+        'service.type': cimi_connector.get('serviceType'),
+        'identity.version': cimi_connector.get('identityVersion')
+    }
+
+    user_info.set_cloud_params(cloud_params)
+
+    config_holder = ConfigHolder(options={'verboseLevel': 0, 'retry': False})
+
+    os.environ['SLIPSTREAM_CONNECTOR_INSTANCE'] = cimi_connector['instanceName']
+
+    connector_instance = OpenStackClientCloud(config_holder)
+
+    connector_instance._initialization(user_info)
+
+    return connector_instance
 
 
 class OpenStackClientCloud(BaseCloudConnector):
