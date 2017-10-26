@@ -25,6 +25,10 @@ from slipstream.util import override
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 from slipstream.utils.ssh import generate_keypair
 
+from slipstream.UserInfo import UserInfo
+from slipstream.ConfigHolder import ConfigHolder
+import os
+
 import xmlrpclib
 import ssl
 import urllib
@@ -54,6 +58,26 @@ def searchInObjectList(list_, property_name, property_value):
                 return element
     return None
 
+def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
+    user_info = UserInfo(cimi_connector['instanceName'])
+
+    cloud_params = {
+        UserInfo.CLOUD_USERNAME_KEY: cimi_cloud_credential['key'],
+        UserInfo.CLOUD_PASSWORD_KEY: cimi_cloud_credential['secret'],
+        'endpoint': cimi_connector.get('endpoint')
+    }
+
+    user_info.set_cloud_params(cloud_params)
+
+    config_holder = ConfigHolder(options={'verboseLevel': 0, 'retry': False})
+
+    os.environ['SLIPSTREAM_CONNECTOR_INSTANCE'] = cimi_connector['instanceName']
+
+    connector_instance = OpenNebulaClientCloud(config_holder)
+
+    connector_instance._initialization(user_info)
+
+    return connector_instance
 
 class OpenNebulaClientCloud(BaseCloudConnector):
 

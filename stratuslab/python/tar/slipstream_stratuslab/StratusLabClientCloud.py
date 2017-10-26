@@ -44,6 +44,10 @@ LogUtil.get_console_logger()
 import slipstream.exceptions.Exceptions as Exceptions
 import slipstream.util as util
 
+from slipstream.UserInfo import UserInfo
+from slipstream.ConfigHolder import ConfigHolder
+import os
+
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 from slipstream.utils.ssh import generate_ssh_keypair
 from slipstream.util import override
@@ -58,6 +62,31 @@ def getConnector(configHolder):
 
 def getConnectorClass():
     return StratusLabClientCloud
+
+
+def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
+    user_info = UserInfo(cimi_connector['instanceName'])
+
+    cloud_params = {
+        UserInfo.CLOUD_USERNAME_KEY: cimi_cloud_credential['key'],
+        UserInfo.CLOUD_PASSWORD_KEY: cimi_cloud_credential['secret'],
+        'endpoint': cimi_connector.get('endpoint'),
+        'marketplace.endpoint': cimi_connector.get('marketplaceEndpoint')
+    }
+
+    user_info.set_cloud_params(cloud_params)
+
+    config_holder = ConfigHolder(options={'verboseLevel': 0,
+                                          'retry': False})
+
+    os.environ['SLIPSTREAM_CONNECTOR_INSTANCE'] = cimi_connector['instanceName']
+    os.environ['SLIPSTREAM_PDISK_ENDPOINT'] = cimi_connector['pdiskEndpoint']
+
+    connector_instance = StratusLabClientCloud(config_holder)
+
+    connector_instance._initialization(user_info)
+
+    return connector_instance
 
 
 # pylint: disable=protected-access

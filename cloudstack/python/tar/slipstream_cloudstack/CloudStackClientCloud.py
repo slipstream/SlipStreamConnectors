@@ -24,6 +24,10 @@ patch_libcloud()
 
 from urlparse import urlparse
 
+import os
+from slipstream.UserInfo import UserInfo
+from slipstream.ConfigHolder import ConfigHolder
+
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 from slipstream.utils.tasksrunner import TasksRunner
 from slipstream.NodeDecorator import NodeDecorator
@@ -44,6 +48,27 @@ def getConnector(configHolder):
 
 def getConnectorClass():
     return CloudStackClientCloud
+
+
+def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
+    user_info = UserInfo(cimi_connector['instanceName'])
+
+    cloud_params = {
+        UserInfo.CLOUD_USERNAME_KEY: cimi_cloud_credential['key'],
+        UserInfo.CLOUD_PASSWORD_KEY: cimi_cloud_credential['secret'],
+        'zone': cimi_connector.get('zone'),
+    }
+    user_info.set_cloud_params(cloud_params)
+
+    config_holder = ConfigHolder(options={'verboseLevel': 0, 'retry': False})
+
+    os.environ['SLIPSTREAM_CONNECTOR_INSTANCE'] = cimi_connector['instanceName']
+
+    connector_instance = CloudStackClientCloud(config_holder)
+
+    connector_instance._initialization(user_info)
+
+    return connector_instance
 
 
 class CloudStackClientCloud(BaseCloudConnector):
