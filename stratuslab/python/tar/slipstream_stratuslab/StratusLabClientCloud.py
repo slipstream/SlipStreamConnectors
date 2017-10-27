@@ -313,6 +313,10 @@ class StratusLabClientCloud(BaseCloudConnector):
             return vm.instancesDetail[0]['id']
 
     @override
+    def _vm_get_id_from_list_instances(self, vm):
+        return self._vm_get_id(vm)
+
+    @override
     def _vm_get_state(self, vm):
         if isinstance(vm, CloudInfo):
             return vm.state_summary

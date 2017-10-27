@@ -382,6 +382,10 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         return vm.findtext('ID')
 
     @override
+    def _vm_get_id_from_list_instances(self, vm):
+        return self._vm_get_id(vm)
+
+    @override
     def _vm_get_ip_from_list_instances(self, vm_instance):
         return self._vm_get_ip(vm_instance)
 

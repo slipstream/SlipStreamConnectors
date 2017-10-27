@@ -266,6 +266,10 @@ class CloudStackClientCloud(BaseCloudConnector):
         return self._get_instance_ip_address(vm_instance)
 
     @override
+    def _vm_get_id_from_list_instances(self, vm):
+        return vm.id
+
+    @override
     def _vm_get_cpu(self, vm_instance):
         size = self._get_vm_size(vm_instance)
         if size and 'cpu' in size.extra:
