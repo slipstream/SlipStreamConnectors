@@ -381,6 +381,10 @@ class OpenStackClientCloud(BaseCloudConnector):
     def _vm_get_id(self, vm):
         return vm['id']
 
+    @override
+    def _vm_get_state(self, vm):
+        return STATE_MAP[vm.state]
+
     def _get_vm_size(self, vm_instance):
         try:
             size = [i for i in self.flavors if i.id == vm_instance.extra.get('flavorId')][0]

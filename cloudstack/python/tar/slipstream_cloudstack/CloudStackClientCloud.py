@@ -70,6 +70,12 @@ def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
 
     return connector_instance
 
+STATE_MAP = {0: 'Running',
+             1: 'Rebooting',
+             2: 'Terminated',
+             3: 'Pending',
+             4: 'Unknown',
+             5: 'Stopped'}
 
 class CloudStackClientCloud(BaseCloudConnector):
 
@@ -252,6 +258,10 @@ class CloudStackClientCloud(BaseCloudConnector):
     @override
     def _vm_get_id(self, vm):
         return vm['id']
+
+    @override
+    def _vm_get_state(self, vm_instance):
+        return STATE_MAP[vm_instance.state]
 
     def _get_vm_size(self, vm_instance):
         try:
