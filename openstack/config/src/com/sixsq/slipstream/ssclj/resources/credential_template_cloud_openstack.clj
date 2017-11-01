@@ -1,6 +1,6 @@
 (ns com.sixsq.slipstream.ssclj.resources.credential-template-cloud-openstack
     "This CredentialTemplate allows creating a Cloud Credential instance to hold
-    cloud credentials for Exoscale cloud."
+    cloud credentials for OpenStack cloud."
     (:require
     [clojure.spec.alpha :as s]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]

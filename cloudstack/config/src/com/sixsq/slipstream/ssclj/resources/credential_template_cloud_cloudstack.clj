@@ -1,6 +1,6 @@
 (ns com.sixsq.slipstream.ssclj.resources.credential-template-cloud-cloudstack
     "This CredentialTemplate allows creating a Cloud Credential instance to hold
-    cloud credentials for Exoscale cloud."
+    cloud credentials for CloudStack cloud."
     (:require
     [clojure.spec.alpha :as s]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
@@ -23,8 +23,8 @@
 (def ^:const resource
   {:type        credential-type
    :method      method
-   :name        "Exoscale cloud credentials store"
-   :description "Stores user cloud credentials for Exoscale"
+   :name        "CloudStack cloud credentials store"
+   :description "Stores user cloud credentials for CloudStack"
    :connector   ""
    :key         ""
    :secret      ""
