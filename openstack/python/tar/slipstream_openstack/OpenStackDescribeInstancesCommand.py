@@ -24,7 +24,7 @@ from slipstream_openstack.OpenStackCommand import OpenStackCommand
 class OpenStackDescribeInstances(DescribeInstancesCommand, OpenStackCommand):
 
     def _vm_get_state(self, cc, vm):
-        return self.STATE_MAP[vm.state]
+        return self.STATE_MAP.get(vm.state)
 
     def _vm_get_id(self, cc, vm):
         return vm.id
