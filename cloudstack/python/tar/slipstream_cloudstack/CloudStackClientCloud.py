@@ -27,7 +27,7 @@ from urlparse import urlparse
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 from slipstream.utils.tasksrunner import TasksRunner
 from slipstream.NodeDecorator import NodeDecorator
-from slipstream.util import override
+from slipstream.util import override, retry
 import slipstream.util as util
 import slipstream.exceptions.Exceptions as Exceptions
 
@@ -49,6 +49,8 @@ def getConnectorClass():
 class CloudStackClientCloud(BaseCloudConnector):
 
     cloudName = 'cloudstack'
+
+    ZONE_KEY = 'zone'
 
     def __init__(self, configHolder):
         libcloud.security.VERIFY_SSL_CERT = False
@@ -118,22 +120,8 @@ class CloudStackClientCloud(BaseCloudConnector):
 
         image = self._get_image(node_instance)
 
-        if node_instance.is_windows():
-            instance = self._thread_local.driver.create_node(
-                name=instance_name,
-                size=size,
-                image=image,
-                location=self.zone,
-                ex_security_groups=security_groups)
-        else:
-            instance = self._thread_local.driver.create_node(
-                name=instance_name,
-                size=size,
-                image=image,
-                location=self.zone,
-                ex_keyname=keypair,
-                ex_userdata=contextualization_script,
-                ex_security_groups=security_groups)
+        instance = self._create_node(instance_name, size, image, security_groups, keypair, contextualization_script,
+                                     node_instance.is_windows())
 
         ip = self._get_instance_ip_address(instance, ip_type)
         if not ip:
@@ -144,8 +132,28 @@ class CloudStackClientCloud(BaseCloudConnector):
                   id=instance.id)
         return vm
 
+    @retry(Exception, tries=3, delay=10, backoff=3)
+    def _create_node(self, instance_name, size, image, security_groups, keypair=None, contextualization_script=None,
+                     is_windows=False):
+        if is_windows:
+            return self._thread_local.driver.create_node(
+                name=instance_name,
+                size=size,
+                image=image,
+                location=self.zone,
+                ex_security_groups=security_groups)
+        else:
+            return self._thread_local.driver.create_node(
+                name=instance_name,
+                size=size,
+                image=image,
+                location=self.zone,
+                ex_keyname=keypair,
+                ex_userdata=contextualization_script,
+                ex_security_groups=security_groups)
+
     def _get_zone(self, user_info):
-        zone_name = user_info.get_cloud('zone', '')
+        zone_name = user_info.get_cloud(self.ZONE_KEY, '')
         try:
             return [i for i in self.zones if i.name.lower() == zone_name.lower()][0]
         except IndexError:
