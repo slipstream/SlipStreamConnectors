@@ -26,12 +26,6 @@ class StratusLabDescribeInstances(DescribeInstancesCommand, StratusLabCommand):
     def __init__(self):
         super(StratusLabDescribeInstances, self).__init__()
 
-    def _vm_get_state(self, _, vm):
-        return vm.state_summary
-
-    def _vm_get_id(self, _, vm):
-        return vm.id
-
     def get_initialization_extra_kwargs(self):
         return {'run_instance': False}
 

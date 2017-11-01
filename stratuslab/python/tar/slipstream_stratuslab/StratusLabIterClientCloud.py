@@ -34,6 +34,9 @@ import slipstream.exceptions.Exceptions as Exceptions
 from slipstream.util import override, importETree
 from slipstream_stratuslab.StratusLabClientCloud import StratusLabClientCloud
 
+from slipstream.UserInfo import UserInfo
+from slipstream.ConfigHolder import ConfigHolder
+
 import traceback
 etree = importETree()
 
@@ -44,6 +47,31 @@ def getConnector(configHolder):
 
 def getConnectorClass():
     return StratusLabIterClientCloud
+
+
+def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
+    user_info = UserInfo(cimi_connector['instanceName'])
+
+    cloud_params = {
+        UserInfo.CLOUD_USERNAME_KEY: cimi_cloud_credential['key'],
+        UserInfo.CLOUD_PASSWORD_KEY: cimi_cloud_credential['secret'],
+        'endpoint': cimi_connector.get('endpoint'),
+        'marketplace.endpoint': cimi_connector.get('marketplaceEndpoint')
+    }
+
+    user_info.set_cloud_params(cloud_params)
+
+    config_holder = ConfigHolder(options={'verboseLevel': 0,
+                                          'retry': False})
+
+    os.environ['SLIPSTREAM_CONNECTOR_INSTANCE'] = cimi_connector['instanceName']
+    os.environ['SLIPSTREAM_PDISK_ENDPOINT'] = cimi_connector['pdiskEndpoint']
+
+    connector_instance = StratusLabClientCloud(config_holder)
+
+    connector_instance._initialization(user_info)
+
+    return connector_instance
 
 
 class StratusLabIterClientCloud(StratusLabClientCloud):
