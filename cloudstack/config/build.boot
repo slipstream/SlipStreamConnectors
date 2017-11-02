@@ -27,7 +27,9 @@
                     [superstring nil :scope "provided"]
 
                     [com.sixsq.slipstream/SlipStreamCljResources-jar nil :scope "provided"]
+                    [com.sixsq.slipstream/cimi-resources-jar nil :scope "provided"]
                     [com.sixsq.slipstream/SlipStreamCljResourcesTests-jar nil :classifier "tests" :type "test-jar" :scope "test"]
+                    [com.sixsq.slipstream/cimi-resources-tests-jar nil :classifier "tests" :type "test-jar" :scope "test"]
 
                     ;; test dependencies
                     [peridot nil :scope "test"]
