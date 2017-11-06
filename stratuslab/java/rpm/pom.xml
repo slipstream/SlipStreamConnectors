@@ -92,7 +92,7 @@
             </mapping>
 
             <mapping>
-              <directory>${slipstream.base.dir}/ssclj/lib/ext/</directory>
+              <directory>${slipstream.base.dir}/cimi/lib/</directory>
               <sources>
                 <softlinkSource>
                   <location>${jetty.connector.dir}/SlipStreamConnector-StratusLab-conf-${project.version}.jar</location>
