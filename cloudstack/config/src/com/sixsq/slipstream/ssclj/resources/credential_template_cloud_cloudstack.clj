@@ -8,8 +8,8 @@
     [com.sixsq.slipstream.ssclj.resources.credential-template :as p]
     [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-cloudstack]))
 
-(def ^:const credential-type "cloud-cred-" ct/cloud-service-type)
-(def ^:const method "store-cloud-cred-" ct/cloud-service-type)
+(def ^:const credential-type (str "cloud-cred-" ct/cloud-service-type))
+(def ^:const method (str "store-cloud-cred-" ct/cloud-service-type))
 
 (def resource-acl {:owner {:principal "ADMIN"
                            :type      "ROLE"}
