@@ -15,10 +15,7 @@ public class CloudStackUserParametersFactory extends UserParametersFactoryBase {
 
 	@Override
 	protected void initReferenceParameters() throws ValidationException {
-		putMandatoryParameter(KEY_PARAMETER_NAME, "API Key", ParameterType.RestrictedString,
-				"On the default CloudStack web interface you can find this information on <code>Accounts > [your account name] > View Users > [your user name] > API Key</code>", 10);
-		putMandatoryPasswordParameter(SECRET_PARAMETER_NAME, "Secret Key",
-				"On the default CloudStack web interface you can find this information on <code>Accounts > [your account name] > View Users > [your user name] > Secret Key</code>", 20);
+		initReferenceParameters(CloudStackConnector.CLOUD_SERVICE_NAME);
 	}
 
 }

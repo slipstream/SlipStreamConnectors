@@ -1,0 +1,22 @@
+{:key         {:displayName "API key"
+               :category    "cloud-cred-cloudstack"
+               :description "On the default CloudStack web interface you can find this information on <code>Accounts > [your account name] > View Users > [your user name] > API Key</code>"
+               :type        "restricted string"
+               :mandatory   true
+               :readOnly    false
+               :order       10}
+ :secret      {:displayName "API secret"
+               :category    "cloud-cred-cloudstack"
+               :description "On the default CloudStack web interface you can find this information on <code>Accounts > [your account name] > View Users > [your user name] > Secret Key</code>"
+               :type        "password"
+               :mandatory   true
+               :readOnly    false
+               :order       20}
+ :quota       {:displayName "User VM quota"
+               :category    "cloud-cred-cloudstack"
+               :description "Number of VMs the user can start for this cloud"
+               :type        "string"
+               :mandatory   true
+               :readOnly    true
+               :order       0}
+}

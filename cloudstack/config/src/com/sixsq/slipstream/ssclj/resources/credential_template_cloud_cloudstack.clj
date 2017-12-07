@@ -2,14 +2,14 @@
   "This CredentialTemplate allows creating a Cloud Credential instance to hold
   cloud credentials for CloudStack cloud."
   (:require
-    [clojure.spec.alpha :as s]
+    [com.sixsq.slipstream.ssclj.util.userparamsdesc :refer [slurp-cloud-cred-desc]]
+    [com.sixsq.slipstream.connector.cloudstack-template :as ct]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
-    [com.sixsq.slipstream.ssclj.resources.common.schema :as c]
     [com.sixsq.slipstream.ssclj.resources.credential-template :as p]
     [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-cloudstack]))
 
-(def ^:const credential-type "cloud-cred-cloudstack")
-(def ^:const method "store-cloud-cred-cloudstack")
+(def ^:const credential-type "cloud-cred-" ct/cloud-service-type)
+(def ^:const method "store-cloud-cred-" ct/cloud-service-type)
 
 (def resource-acl {:owner {:principal "ADMIN"
                            :type      "ROLE"}
@@ -25,7 +25,7 @@
    :method      method
    :name        "CloudStack cloud credentials store"
    :description "Stores user cloud credentials for CloudStack"
-   :connector   ""
+   :connector   {:href ""}
    :key         ""
    :secret      ""
    :quota       20
@@ -36,30 +36,7 @@
 ;;
 (def ^:const desc
   (merge p/CredentialTemplateDescription
-         {:connector {:displayName "Connector name"
-                      :category    credential-type
-                      :description "SlipStream connector instance name"
-                      :type        "string"
-                      :mandatory   true
-                      :readOnly    false
-                      :order       10}
-          :key       {:displayName "API key"
-                      :category    credential-type
-                      :description "On the default CloudStack web interface you can find this information on
-                        'Accounts > [your account name] > View Users > [your user name] > API Key'"
-                      :type        "string"
-                      :mandatory   true
-                      :readOnly    false
-                      :order       20}
-          :secret    {:displayName "API secret"
-                      :category    credential-type
-                      :description "On the default CloudStack web interface you can find this information on
-                        'Accounts > [your account name] > View Users > [your user name] > Secret Key'"
-                      :type        "password"
-                      :mandatory   true
-                      :readOnly    false
-                      :order       30}
-          }))
+         (slurp-cloud-cred-desc ct/cloud-service-type)))
 
 ;;
 ;; initialization: register this Credential template
