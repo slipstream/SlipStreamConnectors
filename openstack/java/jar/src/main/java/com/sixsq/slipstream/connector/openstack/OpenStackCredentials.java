@@ -22,10 +22,16 @@ package com.sixsq.slipstream.connector.openstack;
 
 import com.sixsq.slipstream.connector.CredentialsBase;
 import com.sixsq.slipstream.credentials.Credentials;
+import com.sixsq.slipstream.credentials.ICloudCredential;
 import com.sixsq.slipstream.exceptions.InvalidElementException;
 import com.sixsq.slipstream.exceptions.SlipStreamRuntimeException;
 import com.sixsq.slipstream.exceptions.ValidationException;
 import com.sixsq.slipstream.persistence.User;
+import com.sixsq.slipstream.persistence.UserParameter;
+
+import java.util.Map;
+
+import static com.sixsq.slipstream.credentials.CloudCredential.fromJson;
 
 public class OpenStackCredentials extends CredentialsBase implements Credentials {
 	
@@ -46,5 +52,35 @@ public class OpenStackCredentials extends CredentialsBase implements Credentials
 	public String getSecret() throws InvalidElementException {
 		return getParameterValue(OpenStackUserParametersFactory.SECRET_PARAMETER_NAME);
 	}
+	/**
+	 * If mapping is not known null is returned.
+	 *
+	 * @param pName          parameter name of the UserParameter.
+	 * @param cloudCredsJSON JSON with cloud cred definition document.
+	 * @return value for the parameter or null
+	 * @throws ValidationException
+	 */
+	protected String getCloudCredParamValue(String pName, String
+			cloudCredsJSON) throws ValidationException {
+		OpenStackCloudCredDef credDef;
+		switch (pName) {
+			case OpenStackUserParametersFactory.KEY_DOMAIN_NAME:
+				credDef = (OpenStackCloudCredDef) fromJson(cloudCredsJSON,
+						OpenStackCloudCredDef.class);
+				return credDef.domainName;
+			case OpenStackUserParametersFactory.KEY_TENANT_NAME:
+				credDef = (OpenStackCloudCredDef) fromJson(cloudCredsJSON,
+						OpenStackCloudCredDef.class);
+				return credDef.tenantName;
+			default:
+				return super.getCloudCredParamValue(pName, cloudCredsJSON);
+		}
+	}
 
+	public ICloudCredential getCloudCredential(Map<String, UserParameter> params, String connInstanceName) {
+		if (params.size() < 1) {
+			return null;
+		}
+		return new OpenStackCloudCredDef(connInstanceName, params);
+	}
 }
