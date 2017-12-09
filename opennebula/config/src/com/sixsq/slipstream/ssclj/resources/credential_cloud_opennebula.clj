@@ -1,5 +1,5 @@
 (ns com.sixsq.slipstream.ssclj.resources.credential-cloud-opennebula
-    (:require
+  (:require
     [com.sixsq.slipstream.auth.acl :as acl]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.credential :as p]
@@ -10,11 +10,12 @@
 ;; convert template to credential
 ;;
 (defmethod p/tpl->credential tpl/credential-type
-  [{:keys [type method connector key secret domain-name tenant-name acl]} request]
+  [{:keys [type method connector key secret quota acl]} request]
   (let [resource (cond-> {:resourceURI p/resource-uri
                           :type        type
                           :method      method
-                          :connector   {:href connector}
+                          :connector   connector
+                          :quota       (or quota (:quota tpl/resource))
                           :key         key
                           :secret      secret}
                          acl (assoc :acl acl))]

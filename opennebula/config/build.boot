@@ -11,8 +11,7 @@
                   [sixsq/build-utils "0.1.4" :scope "test"]])
 
 (require '[sixsq.build-fns :refer [merge-defaults
-                                   sixsq-nexus-url
-                                   lein-generate]])
+                                   sixsq-nexus-url]])
 
 (set-env!
   :repositories
@@ -38,12 +37,14 @@
                     [boot-environ]
                     [adzerk/boot-test]
                     [adzerk/boot-reload]
+                    [onetom/boot-lein-generate]
                     [tolitius/boot-check]]))))
 
 (require
   '[environ.boot :refer [environ]]
   '[adzerk.boot-test :refer [test]]
   '[adzerk.boot-reload :refer [reload]]
+  '[boot.lein :refer [generate]]
   '[tolitius.boot-check :refer [with-yagni
                                 with-eastwood
                                 with-kibit
@@ -58,7 +59,7 @@
        :version (get-env :version)}
   test {:junit-output-to ""}
   install {:pom (str (get-env :project))}
-  push {:pom (str (get-env :project))
+  push {:pom  (str (get-env :project))
         :repo "sixsq"})
 
 (deftask run-tests
