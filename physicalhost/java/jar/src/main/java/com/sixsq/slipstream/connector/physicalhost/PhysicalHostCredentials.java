@@ -21,11 +21,16 @@ package com.sixsq.slipstream.connector.physicalhost;
  */
 
 import com.sixsq.slipstream.connector.CredentialsBase;
+import com.sixsq.slipstream.credentials.CloudCredential;
 import com.sixsq.slipstream.credentials.Credentials;
+import com.sixsq.slipstream.credentials.ICloudCredential;
 import com.sixsq.slipstream.exceptions.InvalidElementException;
 import com.sixsq.slipstream.exceptions.SlipStreamRuntimeException;
 import com.sixsq.slipstream.exceptions.ValidationException;
 import com.sixsq.slipstream.persistence.User;
+import com.sixsq.slipstream.persistence.UserParameter;
+
+import java.util.Map;
 
 
 public class PhysicalHostCredentials extends CredentialsBase implements Credentials {
@@ -46,6 +51,11 @@ public class PhysicalHostCredentials extends CredentialsBase implements Credenti
 
 	public String getSecret() throws InvalidElementException {
 		return getParameterValue(PhysicalHostUserParametersFactory.ORCHESTRATOR_PASSWORD);
+	}
+
+	@Override
+	public ICloudCredential getCloudCredential(Map<String, UserParameter> map, String s) {
+		return new CloudCredential(PhysicalHostConnector.CLOUD_SERVICE_NAME);
 	}
 
 }
