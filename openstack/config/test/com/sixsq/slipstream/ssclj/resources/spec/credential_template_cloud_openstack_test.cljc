@@ -1,20 +1,22 @@
 (ns com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-openstack-test
-    (:require
+  (:require
     [clojure.test :refer :all]
     [clojure.spec.alpha :as s]
     [com.sixsq.slipstream.ssclj.resources.credential :as p]
     [com.sixsq.slipstream.ssclj.resources.credential-template :as ct]
+    [com.sixsq.slipstream.ssclj.resources.credential-template-cloud :as ctc]
     [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-openstack]
-    [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-openstack
-     :refer [resource-acl credential-type method]]))
+    [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-openstack :as ctco]
+    [com.sixsq.slipstream.ssclj.resources.credential-template-cloud :as ctc]))
 
-(def valid-acl resource-acl)
+(def valid-acl ctc/resource-acl-default)
 
 (deftest test-credential-template-cloud-openstack-create-schema-check
   (let [root {:resourceURI        p/resource-uri
-              :credentialTemplate {:key       "foo"
-                                   :secret    "bar"
-                                   :connector "connector/xyz"
+              :credentialTemplate {:key         "foo"
+                                   :secret      "bar"
+                                   :connector   {:href "connector/xyz"}
+                                   :quota       7
                                    :tenant-name "tenant"
                                    :domain-name "domain"}}]
     (is (s/valid? :cimi/credential-template.cloud-openstack-create root))
@@ -28,11 +30,12 @@
                    :created     timestamp
                    :updated     timestamp
                    :acl         valid-acl
-                   :type        credential-type
-                   :method      method
+                   :type        ctco/credential-type
+                   :method      ctco/method
                    :key         "foo"
                    :secret      "bar"
-                   :connector   "connector/xyz"
+                   :quota       7
+                   :connector   {:href "connector/xyz"}
                    :tenant-name "tenant"}]
     (is (s/valid? :cimi/credential-template.cloud-openstack root))
     (doseq [k (into #{} (keys root))]

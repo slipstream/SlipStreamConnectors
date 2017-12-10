@@ -1,0 +1,36 @@
+{:key         {:displayName "User Name"
+               :category    "cloud-cred-openstack"
+               :description ""
+               :type        "restricted string"
+               :mandatory   true
+               :readOnly    false
+               :order       10}
+ :secret      {:displayName "Password"
+               :category    "cloud-cred-openstack"
+               :description ""
+               :type        "password"
+               :mandatory   true
+               :readOnly    false
+               :order       20}
+ :tenant-name {:displayName "Project name (Tenant name)"
+               :category    "cloud-cred-openstack"
+               :description ""
+               :type        "string"
+               :mandatory   true
+               :readOnly    false
+               :order       30}
+ :domain-name {:displayName "Domain name"
+               :category    "cloud-cred-openstack"
+               :description "Only useful if Identity API v3"
+               :type        "string"
+               :mandatory   true
+               :readOnly    false
+               :order       40}
+ :quota       {:displayName "User VM quota"
+               :category    "cloud-cred-openstack"
+               :description "Number of VMs the user can start for this cloud"
+               :type        "string"
+               :mandatory   true
+               :readOnly    true
+               :order       0}
+}
