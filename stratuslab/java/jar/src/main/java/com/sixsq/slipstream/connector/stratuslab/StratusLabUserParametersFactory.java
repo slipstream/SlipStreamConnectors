@@ -22,7 +22,6 @@ package com.sixsq.slipstream.connector.stratuslab;
 
 import com.sixsq.slipstream.connector.UserParametersFactoryBase;
 import com.sixsq.slipstream.exceptions.ValidationException;
-import com.sixsq.slipstream.persistence.ParameterType;
 
 public class StratusLabUserParametersFactory extends UserParametersFactoryBase {
 
@@ -36,13 +35,7 @@ public class StratusLabUserParametersFactory extends UserParametersFactoryBase {
 
 	@Override
 	protected void initReferenceParameters() throws ValidationException {
-
-		putMandatoryParameter(KEY_PARAMETER_NAME, "StratusLab account username",
-				ParameterType.RestrictedString, 10);
-
-		putMandatoryPasswordParameter(SECRET_PARAMETER_NAME,
-				"StratusLab account password", 20);
-
+		initReferenceParameters(StratusLabConnector.CLOUD_SERVICE_NAME);
 	}
 
 }

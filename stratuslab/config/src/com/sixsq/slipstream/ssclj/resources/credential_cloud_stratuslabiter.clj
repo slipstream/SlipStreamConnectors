@@ -1,6 +1,5 @@
 (ns com.sixsq.slipstream.ssclj.resources.credential-cloud-stratuslabiter
-    (:require
-    [com.sixsq.slipstream.auth.acl :as acl]
+  (:require
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.credential :as p]
     [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-stratuslabiter]
@@ -10,15 +9,15 @@
 ;; convert template to credential
 ;;
 (defmethod p/tpl->credential tpl/credential-type
-  [{:keys [type method connector key secret domain-name tenant-name acl]} request]
+  [{:keys [type method connector key secret quota acl]} request]
   (let [resource (cond-> {:resourceURI p/resource-uri
                           :type        type
                           :method      method
-                          :connector   {:href connector}
+                          :connector   connector
                           :key         key
+                          :quota       (or quota (:quota tpl/resource))
                           :secret      secret}
-                         acl (assoc :acl acl)
-                         )]
+                         acl (assoc :acl acl))]
     [nil resource]))
 
 ;;

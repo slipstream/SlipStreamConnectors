@@ -21,11 +21,16 @@ package com.sixsq.slipstream.connector.stratuslab;
  */
 
 import com.sixsq.slipstream.connector.CredentialsBase;
+import com.sixsq.slipstream.credentials.CloudCredential;
 import com.sixsq.slipstream.credentials.Credentials;
+import com.sixsq.slipstream.credentials.ICloudCredential;
 import com.sixsq.slipstream.exceptions.InvalidElementException;
 import com.sixsq.slipstream.exceptions.SlipStreamRuntimeException;
 import com.sixsq.slipstream.exceptions.ValidationException;
 import com.sixsq.slipstream.persistence.User;
+import com.sixsq.slipstream.persistence.UserParameter;
+
+import java.util.Map;
 
 public class StratusLabCredentials extends CredentialsBase implements Credentials {
 
@@ -45,6 +50,14 @@ public class StratusLabCredentials extends CredentialsBase implements Credential
 
 	public String getSecret() throws InvalidElementException {
 		return getParameterValue(StratusLabUserParametersFactory.SECRET_PARAMETER_NAME);
+	}
+
+	@Override
+	public ICloudCredential getCloudCredential(Map<String, UserParameter> params, String connInstanceName) {
+		if (params.size() < 1) {
+			return null;
+		}
+		return new StratusLabCloudCredDef(connInstanceName, params);
 	}
 
 }

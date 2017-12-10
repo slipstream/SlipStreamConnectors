@@ -1,5 +1,5 @@
 (ns com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-stratuslabiter
-    (:require
+  (:require
     [clojure.spec.alpha :as s]
     [com.sixsq.slipstream.ssclj.util.spec :as us]
     [com.sixsq.slipstream.ssclj.resources.spec.credential-template :as ct]

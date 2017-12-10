@@ -66,4 +66,23 @@
 
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <property>
+              <name>slipstream.config.dir</name>
+              <value>${project.build.directory}/configuration
+              </value>
+            </property>
+          </systemPropertyVariables>
+          <useSystemClassLoader>false</useSystemClassLoader>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>
