@@ -1,5 +1,5 @@
 (ns com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-cloudstack-test
-    (:require
+  (:require
     [clojure.test :refer :all]
     [clojure.spec.alpha :as s]
     [com.sixsq.slipstream.ssclj.resources.credential :as p]
@@ -14,7 +14,8 @@
   (let [root {:resourceURI        p/resource-uri
               :credentialTemplate {:key       "foo"
                                    :secret    "bar"
-                                   :connector "connector/xyz"}}]
+                                   :quota     20
+                                   :connector {:href "connector/xyz"}}}]
     (is (s/valid? :cimi/credential-template.cloud-cloudstack-create root))
     (doseq [k (into #{} (keys (dissoc root :resourceURI)))]
       (is (not (s/valid? :cimi/credential-template.cloud-cloudstack-create (dissoc root k)))))))
@@ -30,7 +31,8 @@
                    :method      method
                    :key         "foo"
                    :secret      "bar"
-                   :connector   "connector/xyz"}]
+                   :quota       20
+                   :connector   {:href "connector/xyz"}}]
     (is (s/valid? :cimi/credential-template.cloud-cloudstack root))
     (doseq [k (into #{} (keys root))]
       (is (not (s/valid? :cimi/credential-template.cloud-cloudstack (dissoc root k)))))))

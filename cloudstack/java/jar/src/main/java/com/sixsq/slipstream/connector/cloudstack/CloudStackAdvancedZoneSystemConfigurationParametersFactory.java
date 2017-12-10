@@ -13,7 +13,7 @@ public class CloudStackAdvancedZoneSystemConfigurationParametersFactory extends
 	}
 
 	@Override
-	protected void initReferenceParameters() throws ValidationException {
+	protected void initReferenceParameters() {
 		initConnectorParameters(CloudStackAdvancedZoneConnector.CLOUD_SERVICE_NAME);
 	}
 	
