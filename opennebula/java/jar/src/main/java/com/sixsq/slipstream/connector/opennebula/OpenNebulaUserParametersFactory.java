@@ -38,8 +38,7 @@ public class OpenNebulaUserParametersFactory extends UserParametersFactoryBase {
 
 	@Override
 	protected void initReferenceParameters() throws ValidationException {
-		putMandatoryParameter(KEY_PARAMETER_NAME, "Username", 10);
-		putMandatoryPasswordParameter(SECRET_PARAMETER_NAME, "Password", 20);
+		initReferenceParameters(OpenNebulaConnector.CLOUD_SERVICE_NAME);
 	}
 
 }

@@ -30,7 +30,7 @@ public class OpenNebulaSystemConfigurationParametersFactory extends SystemConfig
 	}
 
 	@Override
-	protected void initReferenceParameters() throws ValidationException {
+	protected void initReferenceParameters() {
 		initConnectorParameters(OpenNebulaConnector.CLOUD_SERVICE_NAME);
     }
 
