@@ -1,8 +1,8 @@
 (ns com.sixsq.slipstream.ssclj.resources.credential-cloud-openstack-lifecycle-test
-    (:require
+  (:require
     [clojure.test :refer [deftest is are use-fixtures]]
     [peridot.core :refer :all]
-    [clojure.data.json :as json]
+    [com.sixsq.slipstream.connector.openstack-template :as cont]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-openstack :as cloud-openstack]
     [com.sixsq.slipstream.ssclj.resources.credential-cloud-lifecycle-test-utils :as cclt]
     [com.sixsq.slipstream.ssclj.resources.credential-template :as ct]
@@ -18,6 +18,8 @@
   (cclt/cloud-cred-lifecycle {:href        (str ct/resource-url "/" cloud-openstack/method)
                               :key         "key"
                               :secret      "secret"
-                              :connector   "connector/openstack-1"
+                              :connector   {:href "connector/openstack-1"}
+                              :quota       7
                               :tenant-name "tenant"
-                              :domain-name "domain"}))
+                              :domain-name "domain"}
+                             cont/cloud-service-type))

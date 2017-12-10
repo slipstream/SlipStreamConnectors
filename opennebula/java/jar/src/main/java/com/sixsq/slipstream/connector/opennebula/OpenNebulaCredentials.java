@@ -22,10 +22,14 @@ package com.sixsq.slipstream.connector.opennebula;
 
 import com.sixsq.slipstream.connector.CredentialsBase;
 import com.sixsq.slipstream.credentials.Credentials;
+import com.sixsq.slipstream.credentials.ICloudCredential;
 import com.sixsq.slipstream.exceptions.InvalidElementException;
 import com.sixsq.slipstream.exceptions.SlipStreamRuntimeException;
 import com.sixsq.slipstream.exceptions.ValidationException;
 import com.sixsq.slipstream.persistence.User;
+import com.sixsq.slipstream.persistence.UserParameter;
+
+import java.util.Map;
 
 public class OpenNebulaCredentials extends CredentialsBase implements Credentials {
 	
@@ -47,4 +51,11 @@ public class OpenNebulaCredentials extends CredentialsBase implements Credential
 		return getParameterValue(OpenNebulaUserParametersFactory.SECRET_PARAMETER_NAME);
 	}
 
+
+	public ICloudCredential getCloudCredential(Map<String, UserParameter> params, String connInstanceName) {
+		if (params.size() < 1) {
+			return null;
+		}
+		return new OpenNebulaCloudCredDef(connInstanceName, params);
+	}
 }

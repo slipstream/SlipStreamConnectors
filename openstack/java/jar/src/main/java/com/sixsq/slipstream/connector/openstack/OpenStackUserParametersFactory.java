@@ -28,6 +28,8 @@ public class OpenStackUserParametersFactory extends UserParametersFactoryBase {
 
 	public static final String TENANT_NAME = "tenant.name";
 	public static final String DOMAIN_NAME = "domain.name";
+	public static final String KEY_DOMAIN_NAME = DOMAIN_NAME;
+	public static final String KEY_TENANT_NAME = TENANT_NAME;
 	public static final String SERVICE_TYPE_PARAMETER_NAME = "service.type";
 	public static final String SERVICE_NAME_PARAMETER_NAME = "service.name";
 	public static final String SERVICE_REGION_PARAMETER_NAME = "service.region";
@@ -43,10 +45,7 @@ public class OpenStackUserParametersFactory extends UserParametersFactoryBase {
 
 	@Override
 	protected void initReferenceParameters() throws ValidationException {
-		putMandatoryParameter(KEY_PARAMETER_NAME, "Username", 10);
-		putMandatoryPasswordParameter(SECRET_PARAMETER_NAME, "Password", 20);
-		putMandatoryParameter(TENANT_NAME, "Project name (Tenant name)", 30);
-		putMandatoryParameter(DOMAIN_NAME, "Domain", ParameterType.String, "Only useful if Identity API v3", 40);
+		initReferenceParameters(OpenStackConnector.CLOUD_SERVICE_NAME);
 	}
 
 }

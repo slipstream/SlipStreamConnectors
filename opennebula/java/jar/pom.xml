@@ -44,6 +44,13 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.sixsq.slipstream</groupId>
+      <artifactId>SlipStreamConnector-OpenNebula-conf</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Needs to be before junit -->
     <dependency>
       <groupId>org.hamcrest</groupId>
@@ -58,5 +65,24 @@
     </dependency>
 
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <property>
+              <name>slipstream.config.dir</name>
+              <value>${project.build.directory}/configuration
+              </value>
+            </property>
+          </systemPropertyVariables>
+          <useSystemClassLoader>false</useSystemClassLoader>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
