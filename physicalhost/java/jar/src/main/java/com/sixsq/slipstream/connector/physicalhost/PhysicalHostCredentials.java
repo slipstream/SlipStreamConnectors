@@ -55,7 +55,8 @@ public class PhysicalHostCredentials extends CredentialsBase implements Credenti
 
 	@Override
 	public ICloudCredential getCloudCredential(Map<String, UserParameter> map, String s) {
-		return new CloudCredential(PhysicalHostConnector.CLOUD_SERVICE_NAME);
+		return new CloudCredential(PhysicalHostConnector.CLOUD_SERVICE_NAME,
+				PhysicalHostConnector.CLOUD_SERVICE_NAME);
 	}
 
 }

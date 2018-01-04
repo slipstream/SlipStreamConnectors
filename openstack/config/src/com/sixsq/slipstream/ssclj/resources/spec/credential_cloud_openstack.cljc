@@ -7,13 +7,13 @@
     [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud :as ctc]
     [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-openstack]))
 
-(s/def :cimi.credential.cloud-openstack/tenant-name :cimi.core/nonblank-string)
+(s/def :cimi.credential.cloud-openstack/tenant-name string?)
 (s/def :cimi.credential.cloud-openstack/domain-name string?)
 
 (def credential-keys-spec
   (-> ctc/credential-template-cloud-keys-spec
-      (update-in [:req-un] concat [:cimi.credential.cloud-openstack/tenant-name])
-      (update-in [:opt-un] concat [:cimi.credential.cloud-openstack/domain-name])))
+      (update-in [:opt-un] concat [:cimi.credential.cloud-openstack/tenant-name
+                                   :cimi.credential.cloud-openstack/domain-name])))
 
 (s/def :cimi/credential.cloud-openstack
   (us/only-keys-maps cred/credential-keys-spec

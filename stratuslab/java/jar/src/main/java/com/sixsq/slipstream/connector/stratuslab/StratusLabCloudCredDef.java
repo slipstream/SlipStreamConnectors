@@ -7,19 +7,16 @@ import java.util.Map;
 
 public class StratusLabCloudCredDef extends CloudCredential<StratusLabCloudCredDef> {
 
-    public String href = "credential-template/store-cloud-cred-stratuslab";
-
-
     public StratusLabCloudCredDef(String instanceName, String key, String secret) {
-        super(instanceName, key, secret);
+        super(instanceName, key, secret, StratusLabConnector.CLOUD_SERVICE_NAME);
     }
     public StratusLabCloudCredDef(String instanceName, String key, String secret, Integer quota) {
-        super(instanceName, key, secret);
+        super(instanceName, key, secret, StratusLabConnector.CLOUD_SERVICE_NAME);
         this.quota = quota;
     }
 
     StratusLabCloudCredDef(String instanceName, Map<String, UserParameter> params) {
-        super(instanceName);
+        super(instanceName, StratusLabConnector.CLOUD_SERVICE_NAME);
         setParams(params);
     }
 

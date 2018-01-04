@@ -30,8 +30,6 @@ import java.util.Map;
 
 public class OpenStackCloudCredDef extends CloudCredential<OpenStackCloudCredDef> {
 
-    public String href = "credential-template/store-cloud-cred-openstack";
-
     @SerializedName("tenant-name")
     public String tenantName;
 
@@ -40,7 +38,7 @@ public class OpenStackCloudCredDef extends CloudCredential<OpenStackCloudCredDef
 
     public OpenStackCloudCredDef(String instanceName, String key, String secret,
                                  String tenantName, String domainName) {
-        super(instanceName, key, secret);
+        super(instanceName, key, secret, OpenStackConnector.CLOUD_SERVICE_NAME);
         this.tenantName = tenantName;
         this.domainName = domainName;
     }
@@ -52,7 +50,7 @@ public class OpenStackCloudCredDef extends CloudCredential<OpenStackCloudCredDef
     }
 
     OpenStackCloudCredDef(String instanceName, Map<String, UserParameter> params) {
-        super(instanceName);
+        super(instanceName, OpenStackConnector.CLOUD_SERVICE_NAME);
         setParams(params);
     }
 
