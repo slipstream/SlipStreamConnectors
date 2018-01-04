@@ -7,19 +7,16 @@ import java.util.Map;
 
 public class CloudStackCloudCredDef extends CloudCredential<CloudStackCloudCredDef> {
 
-    public String href = "credential-template/store-cloud-cred-cloudstack";
-
-
     public CloudStackCloudCredDef(String instanceName, String key, String secret) {
-        super(instanceName, key, secret);
+        super(instanceName, key, secret, CloudStackConnector.CLOUD_SERVICE_NAME);
     }
     public CloudStackCloudCredDef(String instanceName, String key, String secret, Integer quota) {
-        super(instanceName, key, secret);
+        super(instanceName, key, secret, CloudStackConnector.CLOUD_SERVICE_NAME);
         this.quota = quota;
     }
 
     CloudStackCloudCredDef(String instanceName, Map<String, UserParameter> params) {
-        super(instanceName);
+        super(instanceName, CloudStackConnector.CLOUD_SERVICE_NAME);
         setParams(params);
     }
 

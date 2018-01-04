@@ -37,8 +37,7 @@
                    :key         "foo"
                    :secret      "bar"
                    :connector   {:href "connector/xyz"}
-                   :quota       8
-                   :tenant-name "tenant"}]
+                   :quota       8}]
     (is (s/valid? :cimi/credential.cloud-openstack root))
     (doseq [k (into #{} (keys root))]
       (is (not (s/valid? :cimi/credential.cloud-openstack (dissoc root k)))))))
