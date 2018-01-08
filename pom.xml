@@ -20,7 +20,6 @@
     <module>cloudstack</module>
     <module>openstack</module>
     <module>physicalhost</module>
-    <module>stratuslab</module>
     <module>opennebula</module>
     <!-- Add commercial connectors below.  Do not remove this comment. -->
   </modules>
