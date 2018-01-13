@@ -40,4 +40,10 @@ nosetests.xml
 logs
 /bin
 
-project.clj
+# Mac files
+.DS_Store
+
+# Clojure
+.nrepl-history
+.lein-failures
+
