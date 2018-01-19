@@ -16,9 +16,12 @@
  limitations under the License.
 """
 
+import datetime
+
 from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver, CloudStackAddress, \
     CloudStackIPForwardingRule, CloudStackPortForwardingRule
 from libcloud.compute.types import LibcloudError
+from libcloud.compute.base import NodeImage
 
 
 def ex_authorize_security_group_ingress(self, securitygroupname, protocol,
@@ -211,6 +214,48 @@ def list_nodes(self, project=None, location=None):
     return nodes
 
 
+def list_images(self, location=None):
+    args = {
+        'templatefilter': 'executable'
+    }
+    if location is not None:
+        args['zoneid'] = location.id
+
+    imgs = self._sync_request(command='listTemplates',
+                              params=args,
+                              method='GET')
+    images = []
+    for img in imgs.get('template', []):
+
+        extra = {'hypervisor': img['hypervisor'],
+                 'format': img['format'],
+                 'os': img['ostypename'],
+                 'displaytext': img['displaytext'],
+                 'location': img.get('zonename'),
+                 'ready': img.get('isready', True),
+                 'featured': img.get('isfeatured', False)}
+
+        size = img.get('size', None)
+        if size is not None:
+            extra.update({'size': img['size']})
+
+        if 'created' in img:
+            try:
+                created = datetime.datetime.strptime(img['created'][:19], '%Y-%m-%dT%H:%M:%S')
+                extra.update({'created': created})
+            except:
+                pass
+
+        images.append(NodeImage(
+            id=img['id'],
+            name=img['name'],
+            driver=self.connection.driver,
+            extra=extra))
+    return images
+
+
 def patch_libcloud():
     CloudStackNodeDriver.ex_authorize_security_group_ingress = ex_authorize_security_group_ingress
     CloudStackNodeDriver.list_nodes = list_nodes
+    CloudStackNodeDriver.list_images = list_images
+

@@ -22,9 +22,11 @@ import time
 from .LibcloudCloudstackPatch import patch_libcloud
 patch_libcloud()
 
-from urlparse import urlparse
-
 import os
+
+from urlparse import urlparse
+from threading import RLock
+
 from slipstream.UserInfo import UserInfo
 from slipstream.ConfigHolder import ConfigHolder
 
@@ -56,6 +58,7 @@ def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
     cloud_params = {
         UserInfo.CLOUD_USERNAME_KEY: cimi_cloud_credential['key'],
         UserInfo.CLOUD_PASSWORD_KEY: cimi_cloud_credential['secret'],
+        'endpoint': cimi_connector.get('endpoint'),
         'zone': cimi_connector.get('zone'),
     }
     user_info.set_cloud_params(cloud_params)
@@ -91,18 +94,63 @@ class CloudStackClientCloud(BaseCloudConnector):
                                direct_ip_assignment=True,
                                orchestrator_can_kill_itself_or_its_vapp=True)
 
-        self.zones = []
-        self.sizes = []
-        self.images = []
+        self._zone = None
+        self._zones = None
+        self._sizes = None
+        self._images = None
+        self._lock_zone = RLock()
+        self._lock_zones = RLock()
+        self._lock_sizes = RLock()
+        self._lock_images = RLock()
+        self._lock_libcloud_driver = RLock()
+
+    @property
+    def libcloud_driver(self):
+        with self._lock_libcloud_driver:
+            if not hasattr(self._thread_local, '_libcloud_driver'):
+                util.printDetail('Initializing libcloud driver')
+                self._thread_local._libcloud_driver = self._get_driver(self.user_info)
+            return self._thread_local._libcloud_driver
+
+    @property
+    def zones(self):
+        if self._zones is None:
+            with self._lock_zones:
+                if self._zones is None:
+                    util.printDetail('Getting zones')
+                    self._zones = self.libcloud_driver.list_locations()
+        return self._zones
+
+    @property
+    def zone(self):
+        if self._zone is None:
+            with self._lock_zone:
+                if self._zone is None:
+                    util.printDetail('Getting zone')
+                    self._zone = self._get_zone(self.user_info)
+        return self._zone
+
+    @property
+    def sizes(self):
+        if self._sizes is None:
+            with self._lock_sizes:
+                if self._sizes is None:
+                    util.printDetail('Getting sizes')
+                    self._sizes = self.libcloud_driver.list_sizes(location=self.zone)
+        return self._sizes
+
+    @property
+    def images(self):
+        if self._images is None:
+            with self._lock_images:
+                if self._images is None:
+                    util.printDetail('Getting images')
+                    self._images = self.libcloud_driver.list_images(location=self.zone)
+        return self._images
 
     @override
     def _initialization(self, user_info):
         util.printStep('Initialize the CloudStack connector.')
-        self._thread_local.driver = self._get_driver(user_info)
-        self.zones = self._thread_local.driver.list_locations()
-        self.zone = self._get_zone(user_info)
-        self.sizes = self._thread_local.driver.list_sizes(location=self.zone)
-        self.images = self._thread_local.driver.list_images(location=self.zone)
 
         self.user_info = user_info
 
@@ -125,7 +173,6 @@ class CloudStackClientCloud(BaseCloudConnector):
 
     @override
     def _start_image(self, user_info, node_instance, vm_name):
-        self._thread_local.driver = self._get_driver(user_info)
         return self._start_image_on_cloudstack(user_info, node_instance, vm_name)
 
     def _start_image_on_cloudstack(self, user_info, node_instance, vm_name):
@@ -150,14 +197,14 @@ class CloudStackClientCloud(BaseCloudConnector):
         image = self._get_image(node_instance)
 
         if node_instance.is_windows():
-            instance = self._thread_local.driver.create_node(
+            instance = self.libcloud_driver.create_node(
                 name=instance_name,
                 size=size,
                 image=image,
                 location=self.zone,
                 ex_security_groups=security_groups)
         else:
-            instance = self._thread_local.driver.create_node(
+            instance = self.libcloud_driver.create_node(
                 name=instance_name,
                 size=size,
                 image=image,
@@ -191,13 +238,13 @@ class CloudStackClientCloud(BaseCloudConnector):
 
     @override
     def list_instances(self):
-        return self._thread_local.driver.list_nodes(location=self.zone)
+        return self.libcloud_driver.list_nodes(location=self.zone)
 
     @override
     def _create_allow_all_security_group(self):
         sg_name = NodeDecorator.SECURITY_GROUP_ALLOW_ALL_NAME
         sg_desc = NodeDecorator.SECURITY_GROUP_ALLOW_ALL_DESCRIPTION
-        driver = self._thread_local.driver
+        driver = self.libcloud_driver
 
         if any([sg.get('name') == sg_name for sg in driver.ex_list_security_groups()]):
             return
@@ -218,8 +265,7 @@ class CloudStackClientCloud(BaseCloudConnector):
         tasksRunnner.wait_tasks_processed()
 
     def _stop_instance(self, instance):
-        driver = self._get_driver(self.user_info)
-        driver.destroy_node(instance)
+        self.libcloud_driver.destroy_node(instance)
 
     @override
     def _stop_deployment(self):
@@ -327,7 +373,7 @@ class CloudStackClientCloud(BaseCloudConnector):
         kp_name = 'ss-key-%i' % int(time.time() * 1000000)
         public_key = user_info.get_public_keys()
         try:
-            kp = self._thread_local.driver.import_key_pair_from_string(kp_name, public_key)
+            kp = self.libcloud_driver.import_key_pair_from_string(kp_name, public_key)
         except Exception as e:
             user_info.set_keypair_name(None)
             raise Exceptions.ExecutionException('Cannot import the public key. Reason: %s' % e)
@@ -337,7 +383,7 @@ class CloudStackClientCloud(BaseCloudConnector):
 
     def _create_keypair_and_set_on_user_info(self, user_info):
         kp_name = 'ss-build-image-%i' % int(time.time())
-        kp = self._thread_local.driver.create_key_pair(kp_name)
+        kp = self.libcloud_driver.create_key_pair(kp_name)
         user_info.set_private_key(kp.private_key)
         kp_name = kp.name
         user_info.set_keypair_name(kp_name)
@@ -345,8 +391,8 @@ class CloudStackClientCloud(BaseCloudConnector):
 
     def _delete_keypair(self, kp_name):
         kp = KeyPair(name=kp_name, public_key=None, fingerprint=None,
-                     driver=self._thread_local.driver)
-        return self._thread_local.driver.delete_key_pair(kp)
+                     driver=self.libcloud_driver)
+        return self.libcloud_driver.delete_key_pair(kp)
 
     def format_instance_name(self, name):
         name = self.remove_bad_char_in_instance_name(name)
