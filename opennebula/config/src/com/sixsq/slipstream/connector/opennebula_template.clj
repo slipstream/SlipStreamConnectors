@@ -17,6 +17,7 @@
    :orchestratorCpuSize               "orchestrator.cpu.size"
    :orchestratorRamSize               "orchestrator.ram.size"
    :orchestratorContextualizationType "orchestrator.contextualization.type"
+   :cpuRatio                          "cpu.ratio"
    })
 
 (def connector-pname->kw (set/map-invert connector-kw->pname))
@@ -34,6 +35,7 @@
 (s/def :cimi.connector-template.opennebula/orchestratorCpuSize :cimi.core/nonblank-string)
 (s/def :cimi.connector-template.opennebula/orchestratorRamSize :cimi.core/nonblank-string)
 (s/def :cimi.connector-template.opennebula/orchestratorContextualizationType :cimi.core/nonblank-string)
+(s/def :cimi.connector-template.opennebula/cpuRatio :cimi.core/nonblank-string)
 
 (def keys-spec {:req-un [:cimi.connector-template/endpoint
                          :cimi.connector-template/nativeContextualization
@@ -43,6 +45,7 @@
                          :cimi.connector-template.opennebula/networkPrivate
                          :cimi.connector-template.opennebula/orchestratorCpuSize
                          :cimi.connector-template.opennebula/orchestratorRamSize
+                         :cimi.connector-template.opennebula/cpuRatio
                          :cimi.connector-template.opennebula/orchestratorContextualizationType]})
 
 (def opt-keys-spec {:opt-un (:req-un keys-spec)})
@@ -81,6 +84,7 @@
           :orchestratorCpuSize               "1"
           :orchestratorRamSize               "0.5"
           :orchestratorContextualizationType "one-context"
+          :cpuRatio                          "0.5"
           }))
 
 ;;

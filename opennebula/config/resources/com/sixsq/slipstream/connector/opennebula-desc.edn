@@ -45,12 +45,20 @@
   :order        17,
   :instructions "Ram size in GB"}
  :orchestratorContextualizationType
- {:displayName  "orchestrator.contextualization.type",
-  :type         "enum",
-  :category     "",
-  :description  "Orchestrator Contextualization type",
-  :mandatory    true,
-  :readOnly     false,
-  :order        18,
+ {:displayName "orchestrator.contextualization.type",
+  :type        "enum",
+  :category    "",
+  :description "Orchestrator Contextualization type",
+  :mandatory   true,
+  :readOnly    false,
+  :order       18,
   :enum        ["one-context" "cloud-init"]}
+ :cpuRatio
+ {:displayName "cpu.ratio",
+  :type        "string",
+  :category    "",
+  :description "CPU ratio required for the Virtual Machine. This value is used to guide the host overcommitment.",
+  :mandatory   true,
+  :readOnly    false,
+  :order       19}
  }

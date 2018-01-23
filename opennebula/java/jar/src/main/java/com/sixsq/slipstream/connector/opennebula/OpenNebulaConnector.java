@@ -82,6 +82,7 @@ public class OpenNebulaConnector extends CliConnectorBase {
 		launchParams.put("custom-vm-template", getCustomVMTemplate(run));
 		launchParams.put("network-specific-name", getNetworkSpecificName(run));
 		launchParams.put("contextualization-type", getContextualizationType(run));
+		launchParams.put("cpu-ratio", getCpuRatio(run));
 		return launchParams;
 	}
 
@@ -142,6 +143,19 @@ public class OpenNebulaConnector extends CliConnectorBase {
 			} else {
 				return network_specific_name;
 			}
+		}
+	}
+
+	private String getCpuRatio(Run run) throws ValidationException {
+		String cpu_ratio = Configuration
+				.getInstance()
+				.getRequiredProperty(
+						constructKey(OpenNebulaUserParametersFactory.CPU_RATIO));
+		if (cpu_ratio == null || cpu_ratio.isEmpty()) {
+			throw new ValidationException("CPU Ratio value should not be empty.");
+		} else {
+			checkConvertsToFloat(cpu_ratio, "CPU Ratio");
+			return cpu_ratio;
 		}
 	}
 

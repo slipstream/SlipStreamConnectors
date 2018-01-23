@@ -18,6 +18,7 @@
 """
 
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from slipstream.command.CloudClientCommand import main
@@ -26,7 +27,6 @@ from slipstream_opennebula.OpenNebulaCommand import OpenNebulaCommand
 
 
 class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
-
     NETWORK_PUBLIC_KEY = 'network-public'
     NETWORK_PRIVATE_KEY = 'network-private'
     CPU_KEY = 'cpu'
@@ -34,6 +34,7 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
     CUSTOM_VM_TEMPLATE_KEY = 'custom-vm-template'
     NETWORK_SPECIFIC_NAME_KEY = 'network-specific-name'
     CONTEXTUALIZATION_TYPE_KEY = 'contextualization-type'
+    CPU_RATIO_KEY = 'cpu-ratio'
 
     def __init__(self):
         super(OpenNebulaRunInstances, self).__init__()
@@ -72,6 +73,11 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
                                help='Contextualization type (default: "one-context")',
                                default='one-context', metavar='CONTEXTUALIZATION_TYPE')
 
+        self.parser.add_option('--' + self.CPU_RATIO_KEY, dest=self.CPU_RATIO_KEY,
+                               help='CPU ratio required for the Virtual Machine. ' +
+                                    'This value is used to guide the host overcommitment. (default: 0.5)',
+                               default='0.5', metavar='RATIO')
+
     def get_cloud_specific_user_cloud_params(self):
         user_params = OpenNebulaCommand.get_cloud_specific_user_cloud_params(self)
         user_params['network.public'] = self.get_option(self.NETWORK_PUBLIC_KEY)
@@ -83,10 +89,11 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
                 'ram': self.get_option(self.RAM_KEY),
                 'custom.vm.template': self.get_option(self.CUSTOM_VM_TEMPLATE_KEY),
                 'contextualization.type': self.get_option(self.CONTEXTUALIZATION_TYPE_KEY),
-                'network.specific.name': self.get_option(self.NETWORK_SPECIFIC_NAME_KEY)}
+                'network.specific.name': self.get_option(self.NETWORK_SPECIFIC_NAME_KEY),
+                'cpu.ratio': self.get_option(self.CPU_RATIO_KEY)}
 
     def get_cloud_specific_mandatory_options(self):
-        return OpenNebulaCommand.get_cloud_specific_mandatory_options(self)
+        return OpenNebulaCommand.get_cloud_specific_mandatory_options(self) + [self.CPU_RATIO_KEY]
 
 
 if __name__ == "__main__":
