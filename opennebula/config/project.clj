@@ -9,7 +9,10 @@
   :plugins [[lein-parent "0.3.2"]]
 
   :parent-project {:coords  [com.sixsq.slipstream/parent "3.45-SNAPSHOT"]
-                   :inherit [:min-lein-version :managed-dependencies :repositories :deploy-repositories]}
+                   :inherit [:min-lein-version
+                             :managed-dependencies
+                             :repositories
+                             :deploy-repositories]}
 
   :source-paths ["src"]
 
@@ -24,11 +27,11 @@
 
   :profiles
   {:test
-   {:dependencies [[com.sixsq.slipstream/SlipStreamCljResourcesTests-jar]
-                   [com.sixsq.slipstream/SlipStreamDbTesting-jar]
-                   [peridot]
-                   [commons-logging]
-                   [org.clojure/test.check]]}
+   {:dependencies   [[com.sixsq.slipstream/SlipStreamCljResourcesTests-jar]
+                     [com.sixsq.slipstream/SlipStreamDbTesting-jar]
+                     [peridot]
+                     [commons-logging]
+                     [org.clojure/test.check]]
+    :resource-paths ["test-resources"]}
    :provided
-   {:dependencies [[superstring]
-                   [com.sixsq.slipstream/SlipStreamCljResources-jar]]}})
+   {:dependencies [[com.sixsq.slipstream/SlipStreamCljResources-jar]]}})
