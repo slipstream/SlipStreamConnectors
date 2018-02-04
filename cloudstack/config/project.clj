@@ -1,6 +1,6 @@
-(def +version+ "3.45")
+(def +version+ "3.46-SNAPSHOT")
 
-(defproject com.sixsq.slipstream/SlipStreamConnector-CloudStack-conf "3.45"
+(defproject com.sixsq.slipstream/SlipStreamConnector-CloudStack-conf "3.46-SNAPSHOT"
 
   :description "CloudStack connector configuration"
 
@@ -12,7 +12,7 @@
 
   :plugins [[lein-parent "0.3.2"]]
 
-  :parent-project {:coords  [com.sixsq.slipstream/parent "3.45"]
+  :parent-project {:coords  [com.sixsq.slipstream/parent "3.46-SNAPSHOT"]
                    :inherit [:min-lein-version
                              :managed-dependencies
                              :repositories
