@@ -38,5 +38,5 @@
                      [org.clojure/test.check]]
     :resource-paths ["test-resources"]}
    :provided
-   {:dependencies [[com.sixsq.slipstream/SlipStreamCljResources-jar]]}})
+   {:dependencies [[com.sixsq.slipstream/SlipStreamServer-cimi-resources]]}})
 
