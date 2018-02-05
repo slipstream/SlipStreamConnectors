@@ -1,0 +1,64 @@
+{
+ :networkPrivate
+ {:displayName  "network.private",
+  :type         "string",
+  :category     "",
+  :description  "Mapping for Private network",
+  :mandatory    true,
+  :readOnly     false,
+  :order        31,
+  :instructions "Numerical id"},
+ :marketplaceEndpoint
+ {:displayName  "marketplace.endpoint",
+  :type         "string",
+  :category     "",
+  :description  "Marketplace endpoint",
+  :mandatory    true,
+  :readOnly     false,
+  :order        11,
+  :instructions "Marketplace endpoint, used to fetch images by id. Optional field"},
+ :networkPublic
+ {:displayName  "network.public",
+  :type         "string",
+  :category     "",
+  :description  "Mapping for Public network",
+  :mandatory    true,
+  :readOnly     false,
+  :order        30,
+  :instructions "Numerical id"},
+ :orchestratorCpuSize
+ {:displayName  "orchestrator.cpu.size",
+  :type         "string",
+  :category     "",
+  :description  "Orchestrator CPU size",
+  :mandatory    true,
+  :readOnly     false,
+  :order        16,
+  :instructions "Number of vCPU"},
+ :orchestratorRamSize
+ {:displayName  "orchestrator.ram.size",
+  :type         "string",
+  :category     "",
+  :description  "Orchestrator RAM size",
+  :mandatory    true,
+  :readOnly     false,
+  :order        17,
+  :instructions "Ram size in GB"}
+ :orchestratorContextualizationType
+ {:displayName "orchestrator.contextualization.type",
+  :type        "enum",
+  :category    "",
+  :description "Orchestrator Contextualization type",
+  :mandatory   true,
+  :readOnly    false,
+  :order       18,
+  :enum        ["one-context" "cloud-init"]}
+ :cpuRatio
+ {:displayName "cpu.ratio",
+  :type        "string",
+  :category    "",
+  :description "CPU ratio required for the Virtual Machine. This value is used to guide the host overcommitment.",
+  :mandatory   true,
+  :readOnly    false,
+  :order       19}
+ }

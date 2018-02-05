@@ -1,0 +1,225 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>SlipStreamConnector-Docker-python-rpm</artifactId>
+	<name>SlipStreamConnectors/docker/python/rpm</name>
+
+	<packaging>pom</packaging>
+
+    <parent>
+      <groupId>com.sixsq.slipstream</groupId>
+      <artifactId>SlipStreamConnector-Docker-python</artifactId>
+      <version>3.46-SNAPSHOT</version>
+    </parent>
+
+	<build>
+
+		<plugins>
+
+
+		  <plugin>
+		    <groupId>org.codehaus.mojo</groupId>
+		    <artifactId>exec-maven-plugin</artifactId>
+
+		    <executions>
+		      <execution>
+			<id>pyc</id>
+			<goals>
+			  <goal>exec</goal>
+			</goals>
+			<phase>compile</phase>
+			<configuration>
+			  <executable>python</executable>
+			  <arguments>
+			    <argument>-m</argument>
+			    <argument>compileall</argument>
+			    <argument>${project.build.directory}/docker-connector/slipstream_docker</argument>
+			  </arguments>
+			</configuration>
+		      </execution>
+		      
+		      <execution>
+			<id>pyo</id>
+			<goals>
+			  <goal>exec</goal>
+			</goals>
+			<phase>compile</phase>
+			<configuration>
+			  <executable>python</executable>
+			  <arguments>
+			    <argument>-O</argument>
+			    <argument>-m</argument>
+			    <argument>compileall</argument>
+			    <argument>${project.build.directory}/docker-connector/slipstream_docker</argument>
+			  </arguments>
+			</configuration>
+		      </execution>
+		      
+		    </executions>
+		  </plugin>
+		  
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+
+				<executions>
+					<execution>
+						<id>get-sources</id>
+						<phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.sixsq.slipstream</groupId>
+									<artifactId>SlipStreamConnector-Docker-python-bundle</artifactId>
+								    <version>${project.version}</version>
+									<classifier>bundle</classifier>
+									<type>tar.gz</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>dockerclient.tgz</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<stripVersion>true</stripVersion>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+                                    <groupId>com.sixsq.slipstream</groupId>
+                                    <artifactId>SlipStreamConnector-Docker-python-bundle</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>bundle</classifier>
+                                    <type>tar.gz</type>
+									<outputDirectory>${project.build.directory}/docker-connector</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+							<stripVersion>true</stripVersion>
+						</configuration>
+					</execution>
+				</executions>
+
+ 			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>rpm-maven-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<classifier>${package.os}</classifier>
+					<release>${BUILD_NUMBER}.${package.os}</release>
+					<name>slipstream-connector-docker-python</name>
+					<summary>SlipStream Connector for Docker - Python
+%include %{_rpmconfigdir}/macros.python
+					</summary>
+					<group>Applications/Engineering</group>
+					<vendor>SixSq</vendor>
+					<packager>SixSq</packager>
+					<license>Apache 2.0</license>
+					<url>http://sixsq.com</url>
+					<needarch>noarch</needarch>
+                                        <description>SlipStream Connector for Docker - Python</description>
+
+                                        <obsoletes>
+                                          <obsolete>slipstream-connector-docker-python-community</obsolete>
+                                          <obsolete>slipstream-connector-docker-python-enterprise</obsolete>
+                                        </obsoletes>
+
+                    <requires>
+                      <require>slipstream-useradd</require>
+                    </requires>
+
+                    <mappings>
+
+                        <mapping>
+                            <directory>${slipstream.downloads.dir}</directory>
+                            <filemode>664</filemode>
+                            <username>slipstream</username>
+                            <groupname>slipstream</groupname>
+                            <directoryIncluded>false</directoryIncluded>
+                            <sources>
+                                <source>
+                                    <location>${project.build.directory}/dockerclient.tgz</location>
+                                </source>
+                            </sources>
+                        </mapping>
+
+                        <mapping>
+                          <directory>${slipstream.base.dir}/connectors/bin</directory>
+                          <filemode>775</filemode>
+                          <username>slipstream</username>
+                          <groupname>slipstream</groupname>
+                          <directoryIncluded>false</directoryIncluded>
+                          <sources>
+                            <source>
+                              <location>../tar/bin</location>
+                              <includes>
+                                <include>docker-*</include>
+                              </includes>
+                            </source>
+                          </sources>
+                        </mapping>
+
+                        <mapping>
+                            <directory>/usr/bin</directory>
+                            <sources>
+                                 <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/docker-describe-instances</location>
+                                </softlinkSource>
+                                <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/docker-run-instances</location>
+                                </softlinkSource>
+                                <softlinkSource>
+                                    <location>${slipstream.base.dir}/connectors/bin/docker-terminate-instances</location>
+                                </softlinkSource>
+                            </sources>
+                        </mapping>
+
+                        <mapping>
+                          <directory>%{py_sitedir}</directory>
+                          <filemode>664</filemode>
+                          <username>slipstream</username>
+                          <groupname>slipstream</groupname>
+                          <directoryIncluded>false</directoryIncluded>
+                          <sources>
+                            <source>
+                              <location>target/docker-connector</location>
+                              <includes>
+                                <include>slipstream_docker/**/*</include>
+                              </includes>
+                            </source>
+                          </sources>
+                        </mapping>
+
+                    </mappings>
+
+      <installScriptlet>
+        <script>
+mkdir -p $RPM_BUILD_ROOT/%{py_sitedir}
+mv $RPM_BUILD_ROOT/%%py_sitedir/* $RPM_BUILD_ROOT/%{py_sitedir}
+        </script>
+      </installScriptlet>
+
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-rpm</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attached-rpm</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+	</build>
+
+</project>
