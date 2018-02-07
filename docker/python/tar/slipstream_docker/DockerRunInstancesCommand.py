@@ -23,20 +23,12 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 from slipstream.command.CloudClientCommand import main
 from slipstream.command.RunInstancesCommand import RunInstancesCommand
 from slipstream_docker.DockerCommand import DockerCommand
-
+from slipstream.NodeDecorator import NodeDecorator
+from slipstream.NodeInstance import NodeInstance
 
 class DockerRunInstances(RunInstancesCommand, DockerCommand):
 
-    NETWORK_PUBLIC_KEY = 'network-public'
-    NETWORK_PRIVATE_KEY = 'network-private'
-    CPU_KEY = 'cpu'
-    RAM_KEY = 'ram'
-    CUSTOM_VM_TEMPLATE_KEY = 'custom-vm-template'
-    NETWORK_SPECIFIC_NAME_KEY = 'network-specific-name'
-    CONTEXTUALIZATION_TYPE_KEY = 'contextualization-type'
-
-    REQUEST_BODY = "instance-namespace"
-
+    SERVICE_REQUEST = "service"
 
     def __init__(self):
         super(DockerRunInstances, self).__init__()
@@ -44,14 +36,44 @@ class DockerRunInstances(RunInstancesCommand, DockerCommand):
     def set_cloud_specific_options(self, parser):
         DockerCommand.set_cloud_specific_options(self, parser)
 
-        self.parser.add_option('--' + self.INSTANCES_NAMESPACE, dest=self.INSTANCES_NAMESPACE,
-                          help='Namespace where the instances are',
-                          default=[], metavar='NAMESPACE')
+        self.parser.add_option('--' + self.SERVICE_REQUEST, dest=self.SERVICE_REQUEST,
+                          help='Service request to be passed to Docker',
+                          default='', metavar='SERVICE-REQUEST')
+    
+    def _set_command_specific_options(self, parser):
+        pass
+
+    def _get_command_specific_user_cloud_params(self):
+        # NodeDecorator.NATIVE_CONTEXTUALIZATION_KEY doesn't apply here, and it doesn't even exist anymore
+        # so simply force return {} as it line 97 of RunInstancesCommand.py
+        return {}
+
+    def _get_node_instance(self):
+        # the runtime parameters are not the same as for VMs
+        runtime_parameters = {
+            NodeDecorator.NODE_INSTANCE_NAME_KEY: self.get_node_instance_name(),
+            'cloudservice': self._cloud_instance_name
+        }
+
+        return NodeInstance(runtime_parameters)
+
+    def get_cloud_specific_node_inst_cloud_params(self):
+        node_params = DockerCommand.get_cloud_specific_node_inst_cloud_params(self)
+        node_params[self.SERVICE_REQUEST] = self.get_option(self.SERVICE_REQUEST)
+        return node_params
+
+    def _get_command_specific_node_inst_cloud_params(self):
+        # LOGIN_PASS_KEY does not apply to the Docker connector
+        cloud_params = {}
+        return cloud_params
 
     def get_cloud_specific_mandatory_options(self):
-        # return KubernetesCommand.get_cloud_specific_mandatory_options(self).append(self.INSTANCES_NAMESPACE)
         return DockerCommand.get_cloud_specific_mandatory_options(self)
 
+    def _get_command_mandatory_options(self):
+        # Remove USER PASS from mandatory parameters as we might be dealing
+        # with a no protected cluster
+        return [self.SERVICE_REQUEST]
 
 if __name__ == "__main__":
     main(DockerRunInstances)

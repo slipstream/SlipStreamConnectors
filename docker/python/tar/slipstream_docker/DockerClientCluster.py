@@ -31,6 +31,7 @@ import re
 import base64
 import requests
 import json
+import sys
 
 def getConnector(config_holder):
     return getConnectorClass()(config_holder)
@@ -81,7 +82,7 @@ class DockerClientCluster(BaseCloudConnector):
         super(DockerClientCluster, self).__init__(config_holder)
 
         self._set_capabilities(contextualization=True)
-        self.user_info = None
+        self.user_info = None 
 
     @override
     def _initialization(self, user_info, **kwargs):
@@ -124,109 +125,43 @@ class DockerClientCluster(BaseCloudConnector):
     @override
     def _start_image(self, user_info, node_instance, vm_name):
         # Adapt naming convention from IaaS model
-        container_name = vm_name
-        return self._start_container_in_docker(user_info, node_instance, container_name)
+        try: 
+            service = json.loads(node_instance.get_cloud_parameter("service"))
+        except ValueError as ve:
+            raise ValueError("Requested service is not in JSON format - %s" % ve), None, sys.exc_info()[2]
+        except:
+            raise
 
-    def _start_container_in_docker(self, user_info, node_instance, container_name):
-        instance_name = self._set_instance_name(container_name)
-        instance_type = "service"
-        instance_image_id = node_instance.get_image_id()
-        #################### TODO
-        # BUILD IMG does not apply the same way on containers. tmp key is not needed neither there are any contextualization packages like cloud-init
-        # if self.is_build_image():
-        #     context = self._set_contextualization(node_instance.get_cloud_parameter('contextualization.type'),
-        #                                           self.tmp_public_key, '')
-        # else:
-        #     context = self._set_contextualization(node_instance.get_cloud_parameter('contextualization.type'),
-        #                                           self.user_info.get_public_keys(),
-        #                                           self._get_bootstrap_script(node_instance))
-        ####################
+        service_name = service["Name"] if service.has_key("Name") else vm_name
 
-        # create pod manifest
-#         manifest = '''
-# {
-#     "kind": "%s",
-#     "apiVersion": "v1",
-#     "metadata":{
-#         "name": "%s",
-#         "namespace": "default",
-#         "labels": {
-#             "name": "%s"
-#         }
-#     },
-#     "spec": {
-#         "containers": [{
-#             "name": "%s",
-#             "image": "%s",
-#             "ports": [{"containerPort": 80}],
-#             "resources": {
-#                 "limits": {
-#                     "memory": "128Mi",
-#                     "cpu": "500m"
-#                 }
-#             }
-#         }]
-#     }
-# }''' % (instance_type, instance_name, instance_name, instance_name, instance_image_id)
+        util.printStep('Deploy service %s to %s' % (service_name, user_info.get_cloud_endpoint()))
+        return self._start_container_in_docker(user_info, node_instance, service_name)
 
-        manifest = '''
-{
-  "Name": "web",
-  "TaskTemplate": {
-    "ContainerSpec": {
-      "Image": "nginx"
-    },
-    "LogDriver": {
-      "Name": "json-file",
-      "Options": {
-        "max-file": "3",
-        "max-size": "10M"
-      }
-    },
-    "RestartPolicy": {
-      "Condition": "on-failure",
-      "Delay": 10000000000,
-      "MaxAttempts": 10
-    }
-  },
-  "Mode": {
-    "Replicated": {
-      "Replicas": 1
-    }
-  },
-  "UpdateConfig": {
-    "Parallelism": 2,
-    "Delay": 1000000000,
-    "FailureAction": "pause",
-    "Monitor": 15000000000,
-    "MaxFailureRatio": 0.15
-  },
-  "RollbackConfig": {
-    "Parallelism": 1,
-    "Delay": 1000000000,
-    "FailureAction": "pause",
-    "Monitor": 15000000000,
-    "MaxFailureRatio": 0.15
-  },
-  "EndpointSpec": {
-    "Ports": [
-      {
-        "Protocol": "tcp",
-        "PublishedPort": 8181,
-        "TargetPort": 80
-      }
-    ]
-  },
-  "Labels": {
-    "foo": "bar"
-  }
-}
-'''
+    def _start_container_in_docker(self, user_info, node_instance, service_name):
+        request_url = "%s/services/create" % (user_info.get_cloud_endpoint())
+        service = node_instance.get_cloud_parameter("service")
+        print service
+        try:
+            create = requests.post(request_url, data=service, 
+                        headers={'Content-Type': 'application/json', 'Accept': 'application/json'})
+        except requests.exceptions.ConnectionError as e:
+            raise requests.exceptions.ConnectionError("Remote Docker API is not running - %s" % e), None, sys.exc_info()[2]
+        except:
+            raise
 
-        request_url = "%s/services/create" % (self.user_info.get_cloud_endpoint())
-        create = requests.post(request_url, data=manifest, headers={'Content-Type': 'application/json'})
-        # pod = self._get_pod(instance_name, "defaut")
-        return json.loads(create.text)
+        response_json = json.loads(create.text)
+        print response_json
+        self.validate_start_image(response_json)
+
+        return response_json
+
+    
+    def validate_start_image(self, response):
+        """Takes the raw response from _start_container_in_docker
+        and checks whether the service creation request was successful or not"""
+        if len(response.keys()) == 1 and response.has_key("message"):
+            raise Exceptions.ExecutionException(response["message"])
+
 
     @override
     def list_instances(self):
@@ -330,10 +265,10 @@ class DockerClientCluster(BaseCloudConnector):
             current_state = self._get_image_state(image_id)
         return current_state
 
-    def _create_session_string(self):
-        quoted_username = urllib.quote(self.user_info.get_cloud_username(), '')
-        quoted_password = urllib.quote(self.user_info.get_cloud_password(), '')
-        return '{0}:{1}'.format(quoted_username, quoted_password)
+    # def _create_session_string(self):
+    #     quoted_username = urllib.quote(self.user_info.get_cloud_username(), '')
+    #     quoted_password = urllib.quote(self.user_info.get_cloud_password(), '')
+    #     return '{0}:{1}'.format(quoted_username, quoted_password)
 
     def _create_rpc_connection(self):
         protocol_separator = '://'
@@ -347,75 +282,70 @@ class DockerClientCluster(BaseCloudConnector):
             return xmlrpclib.ServerProxy(url)
 
     def _vm_get_name(self, vm):
-        # Return the container name
-        return vm['spec']['containers'][0]['name']
+        # Return the service name
+        return vm["Spec"]["Name"]
 
-    def _vm_get_namespace(self, vm):
-        return vm['metadata']['namespace']
-
-    def _vm_get_node_name(self, vm):
-        # Return the host name
-        if "containerStatuses" not in vm['status'].keys():
-            return ""
-        else:
-            return vm['spec']['nodeName']
+    # def _vm_get_node_name(self, vm):
+    #     # Return the host name
+    #     if "containerStatuses" not in vm['status'].keys():
+    #         return ""
+    #     else:
+    #         return vm['spec']['nodeName']
 
     def _vm_get_image_name(self, vm):
         # Return the container image name
-        return vm['spec']['containers'][0]['image']
+        return vm["Spec"]["TaskTemplate"]["ContainerSpec"]["Image"]
 
     def _vm_get_port_mappings(self, vm):
         # string of hostPort:containerPort mappings
-        port_mappings = ""
-        if 'ports' in vm['spec']['containers'][0].keys():
-            for mapping in vm['spec']['containers'][0]['ports']:
-                port_mappings += "%s:%s " % (mapping.get("hostPort", ""), \
-                                mapping.get("containerPort", ""))
-        return port_mappings
+        return "%s:%s" % (vm["Endpoint"]["Ports"][0]["PublishedPort"], vm["Endpoint"]["Ports"][0]["TargetPort"])
 
     def _vm_get_restart_policy(self, vm):
         # Return the container restart policy
-        return vm['spec']['restartPolicy']
+        return vm["Spec"]["TaskTemplate"]["RestartPolicy"]["Condition"]
 
     def _vm_get_creation_time(self, vm):
         # Return the container creation time
-        return vm['metadata']['creationTimestamp']
+        return vm['CreatedAt']
 
     def _vm_get_start_time(self, vm):
         # Return the container creation time
-        if "containerStatuses" not in vm['status'].keys():
-            return ""
-        else:
-            return vm['status']['startTime']
+        return vm['UpdatedAt']
 
     @override
     def _vm_get_ip(self, vm):
-        if "containerStatuses" not in vm['status'].keys():
-            return ""
+        if vm.has_key("Endpoint"):
+            return vm["Endpoint"]["VirtualIPs"][0]["Addr"]
         else:
-            return vm['status']['podIP']
+            return vm
 
-    @override
-    def _vm_get_cpu(self, vm):
-        if bool(vm['spec']['containers'][0]['resources']):
-            return vm['spec']['containers'][0]['resources']['requests']['cpu']
-        else:
-            return "not defined"
+    # @override
+    # def _vm_get_cpu(self, vm):
+    #     # if bool(vm['spec']['containers'][0]['resources']):
+    #     #     return vm['spec']['containers'][0]['resources']['requests']['cpu']
+    #     # else:
+    #     #     return "not defined"
+    #     return vm
 
-    @override
-    def _vm_get_ram(self, vm):
-        if bool(vm['spec']['containers'][0]['resources']):
-            return vm['spec']['containers'][0]['resources']['requests']['memory']
-        else:
-            return "not defined"
+    # @override
+    # def _vm_get_ram(self, vm):
+    #     # if bool(vm['spec']['containers'][0]['resources']):
+    #     #     return vm['spec']['containers'][0]['resources']['requests']['memory']
+    #     # else:
+    #     #     return "not defined"
+    #     return vm
 
     @override
     def _vm_get_id(self, vm):
-        return vm['metadata']['name']
+        return vm["ID"]
 
-    @override
-    def _vm_get_state(self, vm):
-        return vm['status']['phase']
+    # @override
+    # def _has_vm_failed(self, vm):
+    #     return "this is vm failed"
+
+    # @override
+    # def _vm_get_state(self, vm):
+    #     return vm
 
     @override
     def _vm_get_ip_from_list_instances(self, vm_instance):
@@ -423,4 +353,4 @@ class DockerClientCluster(BaseCloudConnector):
 
     @override
     def _vm_get_instance_type(self, vm_instance):
-        return "container"
+        return "service"
