@@ -20,6 +20,7 @@
     <module>cloudstack</module>
     <module>openstack</module>
     <module>opennebula</module>
+    <module>docker</module>
     <!-- Add commercial connectors below.  Do not remove this comment. -->
   </modules>
 

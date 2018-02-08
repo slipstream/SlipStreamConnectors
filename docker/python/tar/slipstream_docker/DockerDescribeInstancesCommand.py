@@ -28,32 +28,28 @@ from slipstream_docker.DockerClientCluster import DockerClientCluster
 
 class DockerDescribeInstances(DescribeInstancesCommand, DockerCommand):
 
-    # def _vm_get_state(self, cc, vm):
-    #     return vm['status']['phase']
-    #
-    # def _vm_get_id(self, cc, vm):
-    #     return vm['metadata']['uid']
-
     def _print_results(self, cc, vms):
-        print "id, name, namespace, node name, image, state, ip, " \
+        # print "id, name, node name, image, state, ip, " \
+        #         "port mappings [containerPort:hostPort], restart policy, " \
+        #         "cpu request, ram request, instance-type, creation time, start time"
+        print "SERVICES: \n" \
+                "id, name, image, ip, " \
                 "port mappings [containerPort:hostPort], restart policy, " \
-                "cpu request, ram request, instance-type, creation time, start time"
+                "creation time, update time, replicas"
         for vm in vms:
             print ', '.join([
                 cc._vm_get_id(vm),
                 cc._vm_get_name(vm),
-                cc._vm_get_namespace(vm),
-                cc._vm_get_node_name(vm),
                 cc._vm_get_image_name(vm),
-                cc._vm_get_state(vm) or 'Unknown',
                 cc._vm_get_ip(vm),
                 cc._vm_get_port_mappings(vm),
                 cc._vm_get_restart_policy(vm),
-                cc._vm_get_cpu(vm),
-                cc._vm_get_ram(vm),
-                cc._vm_get_instance_type( vm),
-                cc._vm_get_creation_time( vm),
-                cc._vm_get_start_time( vm)])
+                cc._vm_get_creation_time(vm),
+                cc._vm_get_start_time(vm),
+                cc._vm_get_replicas(vm)
+                # cc._vm_get_node_name(vm)
+
+                ])
 
     def __init__(self):
         super(DockerDescribeInstances, self).__init__()
