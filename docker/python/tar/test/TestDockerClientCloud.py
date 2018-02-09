@@ -20,7 +20,7 @@
 import os
 import unittest
 from slipstream.ConfigHolder import ConfigHolder
-from slipstream_docker.DockerClientCloud import DockerClientCloud
+from slipstream_docker.DockerClientCluster import DockerClientCluster
 
 
 class TestDockerClientCloud(unittest.TestCase):
@@ -34,7 +34,7 @@ class TestDockerClientCloud(unittest.TestCase):
         pass
 
     def test_init(self):
-        DockerClientCloud(ConfigHolder(context={'foo': 'bar'}))
+        DockerClientCluster(ConfigHolder(context={'foo': 'bar'}))
 
 
 if __name__ == '__main__':
