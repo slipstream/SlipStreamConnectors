@@ -58,6 +58,7 @@ def searchInObjectList(list_, property_name, property_value):
                 return element
     return None
 
+
 def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
     user_info = UserInfo(cimi_connector['instanceName'])
 
@@ -78,6 +79,7 @@ def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
     connector_instance._initialization(user_info)
 
     return connector_instance
+
 
 class OpenNebulaClientCloud(BaseCloudConnector):
 
@@ -172,13 +174,16 @@ class OpenNebulaClientCloud(BaseCloudConnector):
     ]
 
     def _resize(self, node_instance):
-        raise Exceptions.ExecutionException('{0} doesn\'t implement resize feature.'.format(self.__class__.__name__))
+        raise Exceptions.ExecutionException(
+            '{0} doesn\'t implement resize feature.'.format(self.__class__.__name__))
 
     def _detach_disk(self, node_instance):
-        raise Exceptions.ExecutionException('{0} doesn\'t implement detach disk feature.'.format(self.__class__.__name__))
+        raise Exceptions.ExecutionException(
+            '{0} doesn\'t implement detach disk feature.'.format(self.__class__.__name__))
 
     def _attach_disk(self, node_instance):
-        raise Exceptions.ExecutionException('{0} doesn\'t implement attach disk feature.'.format(self.__class__.__name__))
+        raise Exceptions.ExecutionException(
+            '{0} doesn\'t implement attach disk feature.'.format(self.__class__.__name__))
 
     cloudName = 'opennebula'
 
@@ -231,8 +236,8 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         try:
             img_id = int(image_id)
         except:
-            raise Exception('Somethiing is wrong with image ID : {0}!'.format(image_id))
-        if disk_size_gb == None:
+            raise Exception('Something is wrong with image ID : {0}!'.format(image_id))
+        if disk_size_gb is None:
            return 'DISK = [ IMAGE_ID  = {0:d}]'.format(img_id)
         else:
             try:
@@ -247,7 +252,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         try:
             disk_size_mb = int(float(disk_size_gb) * 1024)
         except:
-            raise 'Something wrong with additionnal disk size : {0}!'.format(disk_size_gb)
+            raise Exception('Something wrong with additionnal disk size : {0}!'.format(disk_size_gb))
         return 'DISK = [ FORMAT = "ext4", SIZE="{0:d}", TYPE="fs", IO="native" ]'.format(disk_size_mb)
 
     def _set_cpu(self, vm_vcpu, cpu_ratio):
@@ -255,14 +260,14 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             number_vcpu = int(vm_vcpu)
             ratio = float(cpu_ratio)
         except:
-            raise 'Something wrong with CPU size : cpu = {0} and cpu ratio = {1} !'.format(vm_vcpu, cpu_ratio)
+            raise Exception('Something wrong with CPU size: cpu = {0} and cpu ratio = {1} !'.format(vm_vcpu, cpu_ratio))
         return 'VCPU = {0:d} CPU ={1:f}'.format(number_vcpu, ratio)
 
     def _set_ram(self, vm_ram_gbytes):
         try:
             ram = int(float(vm_ram_gbytes) * 1024)
         except ValueError:
-            raise 'Something wrong with RAM size : {0}!'.format(vm_ram_gbytes)
+            raise Exception('Something wrong with RAM size : {0}!'.format(vm_ram_gbytes))
         return 'MEMORY = {0:d}'.format(ram)
 
     def _set_nics(self, requested_network_type, public_network_id, private_network_id):
@@ -271,12 +276,12 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             try:
                 network_id = int(public_network_id)
             except ValueError:
-                raise 'Something wrong with specified Public Network ID : {0}!'.format(public_network_id)
+                raise Exception('Something wrong with specified Public Network ID : {0}!'.format(public_network_id))
         elif requested_network_type.upper() == 'PRIVATE':
             try:
                 network_id = int(private_network_id)
             except ValueError:
-                raise 'Something wrong with specified Private Network ID : {0}!'.format(private_network_id)
+                raise Exception('Something wrong with specified Private Network ID : {0}!'.format(private_network_id))
         else:
             return ''
         return 'NIC = [ NETWORK_ID = {0:d} ]'.format(network_id)
@@ -288,7 +293,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         elif len(network_infos) == 2:
             return 'NIC = [ NETWORK = {0}, NETWORK_UNAME = {1} ]'.format(network_infos[0], network_infos[1])
         else:
-            raise 'Something wrong with specified Network name : {0}!'.format(network_specific_name)
+            raise Exception('Something wrong with specified Network name : {0}!'.format(network_specific_name))
 
 
     def _set_contextualization(self, contextualization_type, public_ssh_key, contextualization_script):
