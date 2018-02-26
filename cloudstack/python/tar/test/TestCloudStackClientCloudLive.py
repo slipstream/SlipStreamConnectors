@@ -25,7 +25,7 @@ from mock import Mock
 from slipstream.cloudconnectors.BaseCloudConnector import BaseCloudConnector
 from slipstream_cloudstack.CloudStackClientCloud import CloudStackClientCloud
 from slipstream.ConfigHolder import ConfigHolder
-from slipstream.SlipStreamHttpClient import UserInfo
+from slipstream.UserInfo import UserInfo
 from slipstream.NodeInstance import NodeInstance
 from slipstream.NodeDecorator import RUN_CATEGORY_DEPLOYMENT, KEY_RUN_CATEGORY, NodeDecorator
 from slipstream import util
@@ -47,11 +47,11 @@ cloudstack.security.groups = default
 cloudstack.max.iaas.workers = 2
 """  # pylint: disable=pointless-string-statement
 
+
 # pylint: disable=protected-access
 
 
 class TestCloudStackClientCloud(unittest.TestCase):
-
     connector_instance_name = 'cloudstack'
 
     def constructKey(self, name):
@@ -80,7 +80,7 @@ class TestCloudStackClientCloud(unittest.TestCase):
         self.user_info[self.constructKey('password')] = self.ch.config['cloudstack.secret']
         security_groups = self.ch.config['cloudstack.security.groups']
         instance_type = self.ch.config['cloudstack.instance.type']
-        self.user_info['General.ssh.public.key'] = self.ch.config['General.ssh.public.key']
+        self.user_info['General.' + UserInfo.SSH_PUBKEY_KEY] = self.ch.config['General.ssh.public.key']
         image_id = self.ch.config[self.constructKey('template')]
 
         self.multiplicity = 2

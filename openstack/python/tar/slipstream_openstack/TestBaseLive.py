@@ -39,7 +39,7 @@ def publish_vm_info(self, vm, node_instance):
 
 class TestBaseLive(unittest.TestCase):
     cin = ''
-    node_instances = {} # of NodeInstance()
+    node_instances = {}  # of NodeInstance()
     multiplicity = 0
     max_iaas_workers = 1
 
@@ -54,7 +54,7 @@ class TestBaseLive(unittest.TestCase):
 
     def _build_user_info(self, keys):
         self.user_info = UserInfo(self.cin)
-        self.user_info['General.ssh.public.key'] = self.ch.config[
+        self.user_info['General.' + UserInfo.SSH_PUBKEY_KEY] = self.ch.config[
             'General.ssh.public.key']
         for k in keys:
             self.user_info[self.construct_key(k)] = self._conf_val(k)
@@ -98,7 +98,7 @@ class TestBaseLive(unittest.TestCase):
         self.max_iaas_workers = self._conf_val('max.iaas.workers',
                                                str(self.multiplicity))
 
-    def _test_startStopImages(self):
+    def _test_start_stop_images(self):
         "Live test that starts and stops VMs on a cloud."
         self.client.run_category = RUN_CATEGORY_DEPLOYMENT
 

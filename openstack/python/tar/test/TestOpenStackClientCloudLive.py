@@ -18,20 +18,17 @@
 """
 
 import os
-import sys
 import unittest
-import traceback
-from mock import Mock
-from pprint import pprint as pp
 
-from slipstream_openstack.TestBaseLive import TestBaseLive
-from slipstream_openstack.OpenStackClientCloud import \
-    OpenStackClientCloud
-from slipstream_openstack.OpenStackClientCloud import searchInObjectList
-from slipstream.NodeDecorator import (NodeDecorator, RUN_CATEGORY_IMAGE,
-                                      RUN_CATEGORY_DEPLOYMENT, KEY_RUN_CATEGORY)
-from slipstream import util
+from slipstream.NodeDecorator import (NodeDecorator, RUN_CATEGORY_IMAGE)
 from slipstream.NodeInstance import NodeInstance
+from slipstream.UserInfo import UserInfo
+import slipstream.util as util
+
+from slipstream_openstack.OpenStackClientCloud import \
+    OpenStackClientCloud, FLOATING_IPS_KEY
+from slipstream_openstack.OpenStackClientCloud import searchInObjectList
+from slipstream_openstack.TestBaseLive import TestBaseLive
 
 CONFIG_FILE = os.path.join(os.path.dirname(__file__),
                            'pyunit.credentials.properties')
@@ -48,26 +45,30 @@ openstack.ssh.password = yyy
 
 
 class TestOpenStackClientCloudLive(TestBaseLive):
-
     cin = 'openstack'
 
     conf_keys = ['endpoint',
-                 'tenant.name',
+                 'tenant-name',
                  'username',
                  'password',
-                 'domain.name',
-                 'identity.version',
-                 'service.type',
-                 'service.name',
-                 'service.region',
-                 'floating.ips',
+                 'domain-name',
+                 'identityVersion',
+                 'serviceType',
+                 'serviceName',
+                 'serviceRegion',
+                 'tenant-name',
                  'network.type',
-                 'network.private',
-                 'network.public']
+                 FLOATING_IPS_KEY,
+                 UserInfo.NETWORK_PUBLIC_KEY,
+                 UserInfo.NETWORK_PRIVATE_KEY]
+
+    def _update_user_info(self):
+        self.user_info[self.construct_key(FLOATING_IPS_KEY)] = \
+            util.str2bool(self.user_info.get_cloud(FLOATING_IPS_KEY, 'false'))
 
     def setUp(self):
         self._setUp(OpenStackClientCloud, CONFIG_FILE, self.conf_keys)
-
+        self._update_user_info()
         security_groups = self._conf_val('security.groups')
         image_id = self._conf_val('imageid')
         instance_type = self._conf_val('intance.type', 'm1.tiny')
@@ -136,8 +137,8 @@ lvs
         self.client = None
         self.ch = None
 
-    def test_1_startStopImages(self):
-        self._test_startStopImages()
+    def xtest_1_start_stop_images(self):
+        self._test_start_stop_images()
 
     def xtest_2_buildImage(self):
         self.client.run_category = RUN_CATEGORY_IMAGE
@@ -155,7 +156,7 @@ lvs
         self.client._initialization(self.user_info)
         assert isinstance(self.client.list_instances(), list)
 
-    def xtest_4_startImageWithAdditionalDisk(self):
+    def xtest_4_start_image_with_extra_disk(self):
         self.client.run_category = RUN_CATEGORY_IMAGE
 
         self.client.start_nodes_and_clients(self.user_info,
@@ -167,6 +168,7 @@ lvs
         assert searchInObjectList(nodes, 'id', vm_id).extra['volumes_attached']
 
         self.client.stop_deployment()
+
 
 if __name__ == '__main__':
     unittest.main()

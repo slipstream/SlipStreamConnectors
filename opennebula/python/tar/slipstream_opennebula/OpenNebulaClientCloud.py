@@ -261,7 +261,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             ratio = float(cpu_ratio)
         except:
             raise Exception('Something wrong with CPU size: cpu = {0} and cpu ratio = {1} !'.format(vm_vcpu, cpu_ratio))
-        return 'VCPU = {0:d} CPU ={1:f}'.format(number_vcpu, ratio)
+        return 'VCPU = {0:d} CPU = {1:f}'.format(number_vcpu, ratio)
 
     def _set_ram(self, vm_ram_gbytes):
         try:
@@ -313,7 +313,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
 
         ram = self._set_ram(node_instance.get_ram())
 
-        cpu = self._set_cpu(node_instance.get_cpu(), node_instance.get_cloud_parameter('cpu.ratio'))
+        cpu = self._set_cpu(node_instance.get_cpu(), user_info.get_cloud('cpuRatio'))
 
         disks = self._set_disks(node_instance.get_image_id(), node_instance.get_root_disk_size())
 

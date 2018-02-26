@@ -18,7 +18,9 @@
 """
 
 from slipstream.command.RunInstancesCommand import RunInstancesCommand
+from slipstream.UserInfo import UserInfo
 from slipstream_openstack.OpenStackCommand import OpenStackCommand
+from slipstream_openstack.OpenStackClientCloud import FLOATING_IPS_KEY
 
 
 class OpenStackRunInstances(RunInstancesCommand, OpenStackCommand):
@@ -58,9 +60,9 @@ class OpenStackRunInstances(RunInstancesCommand, OpenStackCommand):
 
     def get_cloud_specific_user_cloud_params(self):
         user_params = OpenStackCommand.get_cloud_specific_user_cloud_params(self)
-        user_params['network.public'] = self.get_option(self.NETWORK_PUBLIC_KEY)
-        user_params['network.private'] = self.get_option(self.NETWORK_PRIVATE_KEY)
-        user_params['floating.ips']= 'true' if self.get_option(self.USE_FLOATING_IP) else 'false'
+        user_params[UserInfo.NETWORK_PUBLIC_KEY] = self.get_option(self.NETWORK_PUBLIC_KEY)
+        user_params[UserInfo.NETWORK_PRIVATE_KEY] = self.get_option(self.NETWORK_PRIVATE_KEY)
+        user_params[FLOATING_IPS_KEY]= 'true' if self.get_option(self.USE_FLOATING_IP) else 'false'
         return user_params
 
     def get_cloud_specific_node_inst_cloud_params(self):

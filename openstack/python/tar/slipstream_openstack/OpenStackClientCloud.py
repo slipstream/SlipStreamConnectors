@@ -69,8 +69,12 @@ STATE_MAP = {0: 'Running',
              8: 'Paused'}
 
 
+FLOATING_IPS_KEY = 'floatingIps'
+
+
 def is_instance_failed(instance):
     return STATE_MAP.get(instance.state, '') in ['Error']
+
 
 def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
     user_info = UserInfo(cimi_connector['instanceName'])
@@ -78,13 +82,13 @@ def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
     cloud_params = {
         UserInfo.CLOUD_USERNAME_KEY: cimi_cloud_credential['key'],
         UserInfo.CLOUD_PASSWORD_KEY: cimi_cloud_credential['secret'],
-        'domain.name': cimi_cloud_credential['domain-name'],
-        'tenant.name': cimi_cloud_credential['tenant-name'],
+        'domain-name': cimi_cloud_credential['domain-name'],
+        'tenant-name': cimi_cloud_credential['tenant-name'],
         'endpoint': cimi_connector.get('endpoint'),
-        'service.region': cimi_connector.get('serviceRegion'),
-        'service.name': cimi_connector.get('serviceName'),
-        'service.type': cimi_connector.get('serviceType'),
-        'identity.version': cimi_connector.get('identityVersion')
+        'serviceRegion': cimi_connector.get('serviceRegion'),
+        'serviceName': cimi_connector.get('serviceName'),
+        'serviceType': cimi_connector.get('serviceType'),
+        'identityVersion': cimi_connector.get('identityVersion')
     }
 
     user_info.set_cloud_params(cloud_params)
@@ -159,9 +163,6 @@ class OpenStackClientCloud(BaseCloudConnector):
         self.networks = self._thread_local.driver.ex_list_networks()
         self.security_groups = self._thread_local.driver.ex_list_security_groups()
 
-    def _is_floating_ip(self, user_info):
-        return util.str2bool(user_info.get_cloud('floating.ips', 'false'))
-
     def _build_image(self, user_info, node_instance):
         return self._build_image_on_openstack(user_info, node_instance)
 
@@ -210,7 +211,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         flavor = searchInObjectList(self.flavors, 'name', instance_type)
         image = searchInObjectList(self.images, 'id', image_id)
         contextualization_script = self._get_bootstrap_script_if_not_build_image(node_instance)
-        use_floating_ips = self._is_floating_ip(user_info)
+        use_floating_ips = user_info.get_cloud(FLOATING_IPS_KEY, False)
 
         if flavor is None:
             raise Exceptions.ParameterNotFoundException("Couldn't find the specified flavor: %s" % instance_type)
@@ -348,8 +349,8 @@ class OpenStackClientCloud(BaseCloudConnector):
     def _get_driver(self, user_info):
         driverOpenStack = get_driver(Provider.OPENSTACK)
         isHttps = user_info.get_cloud_endpoint().lower().startswith('https://')
-        version = user_info.get_cloud('identity.version', '').strip()
-        domain = user_info.get_cloud('domain.name', 'default').strip()
+        version = user_info.get_cloud('identityVersion', '').strip()
+        domain = user_info.get_cloud('domain-name', 'default').strip()
         kwargs = {}
 
         if version == 'v3':
@@ -361,16 +362,16 @@ class OpenStackClientCloud(BaseCloudConnector):
         return driverOpenStack(user_info.get_cloud_username(),
                                user_info.get_cloud_password(),
                                secure=isHttps,
-                               ex_tenant_name=user_info.get_cloud('tenant.name'),
+                               ex_tenant_name=user_info.get_cloud('tenant-name'),
                                ex_force_auth_url=user_info.get_cloud_endpoint(),
                                ex_force_auth_version=auth_version,
-                               ex_force_service_type=user_info.get_cloud('service.type'),
+                               ex_force_service_type=user_info.get_cloud('serviceType'),
                                ex_force_service_name=self._get_service_name(user_info),
-                               ex_force_service_region=user_info.get_cloud('service.region'),
+                               ex_force_service_region=user_info.get_cloud('serviceRegion'),
                                **kwargs)
 
     def _get_service_name(self, user_info):
-        service_name = user_info.get_cloud('service.name', '')
+        service_name = user_info.get_cloud('serviceName', '')
         return service_name if service_name is not None and service_name.strip() != '' else None
 
     @override

@@ -23,7 +23,7 @@ import unittest
 from slipstream_opennebula.OpenNebulaClientCloud import \
     OpenNebulaClientCloud
 from slipstream.ConfigHolder import ConfigHolder
-from slipstream.SlipStreamHttpClient import UserInfo
+from slipstream.UserInfo import UserInfo
 from slipstream.NodeDecorator import (NodeDecorator, RUN_CATEGORY_IMAGE,
                                       RUN_CATEGORY_DEPLOYMENT, KEY_RUN_CATEGORY)
 from slipstream import util
@@ -49,7 +49,6 @@ def publish_vm_info(self, vm, node_instance):
 
 
 class TestOpenNebulaClientCloudLive(unittest.TestCase):
-
     connector_instance_name = 'opennebula'
 
     def constructKey(self, name):
@@ -70,16 +69,19 @@ class TestOpenNebulaClientCloudLive(unittest.TestCase):
         self.client = OpenNebulaClientCloud(self.ch)
 
         self.user_info = UserInfo(self.connector_instance_name)
-        self.user_info['General.ssh.public.key'] = self.ch.config['General.ssh.public.key']
+        self.user_info['General.'+ UserInfo.SSH_PUBKEY_KEY] = self.ch.config['General.ssh.public.key']
         self.user_info[self.constructKey('endpoint')] = self.ch.config['opennebula.endpoint']
         self.user_info[self.constructKey('username')] = self.ch.config['opennebula.username']
         self.user_info[self.constructKey('password')] = self.ch.config['opennebula.password']
+        self.user_info[self.constructKey(UserInfo.NETWORK_PUBLIC_KEY)] = self.ch.config['opennebula.networkPublic']
+        self.user_info[self.constructKey(UserInfo.NETWORK_PRIVATE_KEY)] = self.ch.config['opennebula.networkPrivate']
+        self.user_info[self.constructKey('cpuRatio')] = '1.0'
 
         image_id = self.ch.config['opennebula.imageid']
         instance_type = self.ch.config.get('opennebula.intance.type', 'm1.tiny')
         node_name = 'test_node'
 
-        self.multiplicity = 2
+        self.multiplicity = 1
 
         self.node_instances = {}
         for i in range(1, self.multiplicity + 1):
@@ -88,11 +90,13 @@ class TestOpenNebulaClientCloudLive(unittest.TestCase):
                 NodeDecorator.NODE_NAME_KEY: node_name,
                 NodeDecorator.NODE_INSTANCE_NAME_KEY: node_instance_name,
                 'cloudservice': self.connector_instance_name,
-                # 'index': i,
                 'image.platform': 'Ubuntu',
                 'image.imageId': image_id,
                 'image.id': image_id,
-                self.constructKey('instance.type'): instance_type
+                'network': self.ch.config['opennebula.network'],
+                self.constructKey('instance.type'): instance_type,
+                self.constructKey('ram'): '2',
+                self.constructKey('cpu'): '1'
             })
 
         self.node_instance = NodeInstance({

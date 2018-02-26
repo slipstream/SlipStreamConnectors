@@ -23,6 +23,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from slipstream.command.CloudClientCommand import main
 from slipstream.command.RunInstancesCommand import RunInstancesCommand
+from slipstream.UserInfo import UserInfo
 from slipstream_opennebula.OpenNebulaCommand import OpenNebulaCommand
 
 
@@ -80,8 +81,9 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
 
     def get_cloud_specific_user_cloud_params(self):
         user_params = OpenNebulaCommand.get_cloud_specific_user_cloud_params(self)
-        user_params['network.public'] = self.get_option(self.NETWORK_PUBLIC_KEY)
-        user_params['network.private'] = self.get_option(self.NETWORK_PRIVATE_KEY)
+        user_params[UserInfo.NETWORK_PUBLIC_KEY] = self.get_option(self.NETWORK_PUBLIC_KEY)
+        user_params[UserInfo.NETWORK_PRIVATE_KEY] = self.get_option(self.NETWORK_PRIVATE_KEY)
+        user_params['cpuRatio'] = self.get_option(self.CPU_RATIO_KEY)
         return user_params
 
     def get_cloud_specific_node_inst_cloud_params(self):
@@ -89,8 +91,7 @@ class OpenNebulaRunInstances(RunInstancesCommand, OpenNebulaCommand):
                 'ram': self.get_option(self.RAM_KEY),
                 'custom.vm.template': self.get_option(self.CUSTOM_VM_TEMPLATE_KEY),
                 'contextualization.type': self.get_option(self.CONTEXTUALIZATION_TYPE_KEY),
-                'network.specific.name': self.get_option(self.NETWORK_SPECIFIC_NAME_KEY),
-                'cpu.ratio': self.get_option(self.CPU_RATIO_KEY)}
+                'network.specific.name': self.get_option(self.NETWORK_SPECIFIC_NAME_KEY)}
 
     def get_cloud_specific_mandatory_options(self):
         return OpenNebulaCommand.get_cloud_specific_mandatory_options(self) + [self.CPU_RATIO_KEY]
