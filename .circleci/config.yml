@@ -41,4 +41,5 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
         
       # deploy artifacts
+      - run: pip install slipstream-api
       - run: mvn -s .circleci/settings.xml --batch-mode deploy
