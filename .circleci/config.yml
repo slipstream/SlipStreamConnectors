@@ -31,6 +31,9 @@ jobs:
           - v1-dependencies-
 
       - run: mvn -s .circleci/settings.xml --batch-mode dependency:go-offline
+      - run: (cd openstack/config; lein deps)
+      - run: (cd cloudstack/config; lein deps)
+      - run: (cd opennebula/config; lein deps)
 
       - save_cache:
           paths:
