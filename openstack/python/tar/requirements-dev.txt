@@ -1,0 +1,5 @@
+coverage
+mock
+nose
+pylint
+apache-libcloud==${libcloud.version}
