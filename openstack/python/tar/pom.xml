@@ -23,7 +23,35 @@
       </activation>
       
       <build>
-        <plugins>            
+        <plugins>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+
+            <executions>
+              <execution>
+                <id>copy-files</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
+                  <overwrite>true</overwrite>
+                  <resources>
+                    <resource>
+                      <directory>${project.basedir}</directory>
+                      <include>requirements-dev.txt</include>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+
+          </plugin>
+
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
@@ -35,21 +63,15 @@
                 </goals>
                 <phase>test</phase>
                 <configuration>
-                  <executable>nosetests</executable>
-                  <environmentVariables>
-                    <PYTHONPATH>.:${project.build.directory}/dependencies/slipstream-client/lib/:${project.build.directory}/dependencies/libcloud/</PYTHONPATH>
-                  </environmentVariables>
+                  <workingDirectory>${basedir}/src</workingDirectory>
+                  <executable>tox</executable>
                   <arguments>
-                    <argument>-v</argument>
-                    <argument>--where=./test/</argument>
-                    <argument>--ignore-files=.*Live.py</argument>
-                    <argument>--with-xunit</argument>
-                    <argument>--xunit-file=${project.basedir}/nosetests.xml</argument>
-                    <argument>--with-coverage</argument>
-                    <argument>--cover-xml</argument>
-                    <argument>--cover-erase</argument>
-                    <argument>--cover-xml-file=${project.basedir}/coverage.xml</argument>
-                    <argument>--cover-package=slipstream_openstack</argument>
+                    <argument>-c</argument>
+                    <argument>tox.ini</argument>
+                    <argument>--</argument>
+                    <argument>-r${project.build.directory}/slipstream-client/requirements.txt</argument>
+                    <argument>-r${project.build.directory}/requirements-dev.txt</argument>
+                    <argument>${project.build.directory}/SlipStreamPythonAPI-tarball-${project.version}-bundle.tar.gz</argument>
                   </arguments>
                 </configuration>
               </execution>
@@ -71,22 +93,42 @@
         <executions>
 
           <execution>
-              <id>get-slipstream-client</id>
-              <goals>
-                  <goal>unpack</goal>
-              </goals>
-              <configuration>
-                  <outputDirectory>${project.build.directory}/dependencies/slipstream-client</outputDirectory>
-                  <artifactItems>
-                      <artifactItem>
-                          <groupId>com.sixsq.slipstream</groupId>
-                          <artifactId>SlipStreamClientAll</artifactId>
-                          <version>${project.version}</version>
-                          <type>tar.gz</type>
-                          <classifier>bundle</classifier>
-                      </artifactItem>
-                  </artifactItems>
-              </configuration>
+            <id>get-slipstream-api</id>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/</outputDirectory>
+              <useBaseVersion>true</useBaseVersion>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.sixsq.slipstream</groupId>
+                  <artifactId>SlipStreamPythonAPI-tarball</artifactId>
+                  <version>${project.version}</version>
+                  <type>tar.gz</type>
+                  <classifier>bundle</classifier>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>get-slipstream-client-unpack</id>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/slipstream-client</outputDirectory>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.sixsq.slipstream</groupId>
+                  <artifactId>SlipStreamClientAll</artifactId>
+                  <version>${project.version}</version>
+                  <type>tar.gz</type>
+                  <classifier>bundle</classifier>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
           </execution>
 
           <execution>
