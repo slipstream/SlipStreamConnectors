@@ -1,6 +1,6 @@
-(def +version+ "3.48-SNAPSHOT")
+(def +version+ "3.48")
 
-(defproject com.sixsq.slipstream/SlipStreamConnector-OpenNebula-conf "3.48-SNAPSHOT"
+(defproject com.sixsq.slipstream/SlipStreamConnector-OpenNebula-conf "3.48"
 
   :description "OpenNebula connector configuration"
 
