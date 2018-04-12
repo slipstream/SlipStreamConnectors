@@ -24,7 +24,8 @@
 
 (def ref-attrs [:endpoint
                 :nativeContextualization
-                :updateClientURL])
+                :updateClientURL
+                :objectStoreEndpoint])
 
 ;;
 ;; schemas
@@ -46,9 +47,10 @@
                          :cimi.connector-template.opennebula/orchestratorCpuSize
                          :cimi.connector-template.opennebula/orchestratorRamSize
                          :cimi.connector-template.opennebula/cpuRatio
-                         :cimi.connector-template.opennebula/orchestratorContextualizationType]})
+                         :cimi.connector-template.opennebula/orchestratorContextualizationType]
+                :opt-un [:cimi.connector-template/objectStoreEndpoint]})
 
-(def opt-keys-spec {:opt-un (:req-un keys-spec)})
+(def opt-keys-spec {:opt-un (concat (:req-un keys-spec) (:opt-un keys-spec))})
 
 ;; Defines the contents of the opennebula ConnectorTemplate resource itself.
 (s/def :cimi/connector-template.opennebula

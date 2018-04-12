@@ -32,7 +32,8 @@
                          :cimi.connector-template/securityGroups
                          :cimi.connector-template/updateClientURL
 
-                         :cimi.connector-template.cloudstackadvancedzone/orchestratorNetworks]})
+                         :cimi.connector-template.cloudstackadvancedzone/orchestratorNetworks]
+                :opt-un [:cimi.connector-template/objectStoreEndpoint]})
 
 (def opt-keys-spec {:opt-un (:req-un keys-spec)})
 

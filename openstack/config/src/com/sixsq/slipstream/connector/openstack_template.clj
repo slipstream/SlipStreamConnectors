@@ -37,6 +37,7 @@
 (s/def :cimi.connector-template.openstack/networkPublic string?)
 
 (def keys-spec {:req-un [:cimi.connector-template/endpoint
+                         :cimi.connector-template/objectStoreEndpoint
                          :cimi.connector-template/nativeContextualization
                          :cimi.connector-template/orchestratorSSHUsername
                          :cimi.connector-template/orchestratorSSHPassword

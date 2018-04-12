@@ -33,9 +33,10 @@
                          :cimi.connector-template/updateClientURL
 
                          :cimi.connector-template.cloudstack/orchestratorInstanceType
-                         :cimi.connector-template.cloudstack/zone]})
+                         :cimi.connector-template.cloudstack/zone]
+                :opt-un [:cimi.connector-template/objectStoreEndpoint]})
 
-(def opt-keys-spec {:opt-un (:req-un keys-spec)})
+(def opt-keys-spec {:opt-un (concat (:req-un keys-spec) (:opt-un keys-spec))})
 
 ;; Defines the contents of the cloudstack ConnectorTemplate resource itself.
 (s/def :cimi/connector-template.cloudstack
