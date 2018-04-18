@@ -2,12 +2,11 @@
   (:require
     [clojure.set :as set]
     [clojure.spec.alpha :as s]
-    [com.sixsq.slipstream.ssclj.resources.spec.common]
-    [com.sixsq.slipstream.ssclj.resources.common.schema :as sch]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.connector-template :as ctpl]
-    [com.sixsq.slipstream.ssclj.util.config :as uc]
     [com.sixsq.slipstream.ssclj.resources.spec.connector-template :as ps]
+    [com.sixsq.slipstream.ssclj.resources.spec.core :as cimi-core]
+    [com.sixsq.slipstream.ssclj.util.config :as uc]
     [com.sixsq.slipstream.ssclj.util.spec :as su]))
 
 (def ^:const cloud-service-type "cloudstack")
@@ -22,8 +21,8 @@
 ;; schemas
 ;;
 
-(s/def :cimi.connector-template.cloudstack/orchestratorInstanceType :cimi.core/nonblank-string)
-(s/def :cimi.connector-template.cloudstack/zone :cimi.core/nonblank-string)
+(s/def :cimi.connector-template.cloudstack/orchestratorInstanceType ::cimi-core/nonblank-string)
+(s/def :cimi.connector-template.cloudstack/zone ::cimi-core/nonblank-string)
 
 (def keys-spec {:req-un [:cimi.connector-template/endpoint
                          :cimi.connector-template/nativeContextualization

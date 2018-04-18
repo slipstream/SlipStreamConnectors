@@ -2,10 +2,10 @@
   (:require
     [clojure.set :as set]
     [clojure.spec.alpha :as s]
-    [com.sixsq.slipstream.ssclj.resources.common.schema :as sch]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.connector-template :as ctpl]
     [com.sixsq.slipstream.ssclj.util.config :as uc]
+    [com.sixsq.slipstream.ssclj.resources.spec.core :as cimi-core]
     [com.sixsq.slipstream.ssclj.resources.spec.connector-template :as ps]
     [com.sixsq.slipstream.ssclj.util.spec :as su]))
 
@@ -31,12 +31,12 @@
 ;; schemas
 ;;
 
-(s/def :cimi.connector-template.opennebula/networkPublic :cimi.core/nonblank-string)
-(s/def :cimi.connector-template.opennebula/networkPrivate :cimi.core/nonblank-string)
-(s/def :cimi.connector-template.opennebula/orchestratorCpuSize :cimi.core/nonblank-string)
-(s/def :cimi.connector-template.opennebula/orchestratorRamSize :cimi.core/nonblank-string)
-(s/def :cimi.connector-template.opennebula/orchestratorContextualizationType :cimi.core/nonblank-string)
-(s/def :cimi.connector-template.opennebula/cpuRatio :cimi.core/nonblank-string)
+(s/def :cimi.connector-template.opennebula/networkPublic ::cimi-core/nonblank-string)
+(s/def :cimi.connector-template.opennebula/networkPrivate ::cimi-core/nonblank-string)
+(s/def :cimi.connector-template.opennebula/orchestratorCpuSize ::cimi-core/nonblank-string)
+(s/def :cimi.connector-template.opennebula/orchestratorRamSize ::cimi-core/nonblank-string)
+(s/def :cimi.connector-template.opennebula/orchestratorContextualizationType ::cimi-core/nonblank-string)
+(s/def :cimi.connector-template.opennebula/cpuRatio ::cimi-core/nonblank-string)
 
 (def keys-spec {:req-un [:cimi.connector-template/endpoint
                          :cimi.connector-template/nativeContextualization
