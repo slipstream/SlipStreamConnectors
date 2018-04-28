@@ -4,7 +4,7 @@
 
   <artifactId>SlipStreamConnectors</artifactId>
   <packaging>pom</packaging>
-  <version>3.50-SNAPSHOT</version>
+  <version>3.51-SNAPSHOT</version>
   <name>SlipStreamConnectors</name>
 
   <url>http://sixsq.com/</url>
@@ -12,7 +12,7 @@
   <parent>
     <groupId>com.sixsq.slipstream</groupId>
     <artifactId>SlipStreamCommunity</artifactId>
-    <version>3.50-SNAPSHOT</version>
+    <version>3.51-SNAPSHOT</version>
     <relativePath>../SlipStream/community</relativePath>
   </parent>
 

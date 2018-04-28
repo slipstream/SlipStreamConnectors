@@ -22,7 +22,7 @@ public class OpenStackCloudCredDefTest extends CloudCredDefTestBase {
                     OpenStackSystemConfigurationParametersFactory(getConnectorName());
         } catch (ValidationException e) {
             e.printStackTrace();
-            fail("Failed to create connector " + CONNECTOR_NAME + " with: " +
+            fail("Failed to create connector " + getConnectorName() + " with: " +
                     e.getMessage());
         }
         runCloudCredentialsDirectLifecycle(
