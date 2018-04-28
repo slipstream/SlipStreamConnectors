@@ -47,3 +47,4 @@ logs
 .nrepl-history
 .lein-failures
 
+.tox
