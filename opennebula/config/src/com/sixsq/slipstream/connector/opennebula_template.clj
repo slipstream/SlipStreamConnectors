@@ -4,9 +4,9 @@
     [clojure.spec.alpha :as s]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.connector-template :as ctpl]
-    [com.sixsq.slipstream.ssclj.util.config :as uc]
-    [com.sixsq.slipstream.ssclj.resources.spec.core :as cimi-core]
     [com.sixsq.slipstream.ssclj.resources.spec.connector-template :as ps]
+    [com.sixsq.slipstream.ssclj.resources.spec.core :as cimi-core]
+    [com.sixsq.slipstream.ssclj.util.config :as uc]
     [com.sixsq.slipstream.ssclj.util.spec :as su]))
 
 (def ^:const cloud-service-type "opennebula")

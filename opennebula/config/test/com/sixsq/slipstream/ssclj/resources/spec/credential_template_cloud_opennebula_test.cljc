@@ -1,12 +1,12 @@
 (ns com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-opennebula-test
   (:require
-    [clojure.test :refer :all]
     [clojure.spec.alpha :as s]
+    [clojure.test :refer :all]
     [com.sixsq.slipstream.ssclj.resources.credential :as p]
     [com.sixsq.slipstream.ssclj.resources.credential-template :as ct]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-opennebula]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud :as ctc]
-    [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-opennebula :as ctco]))
+    [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-opennebula :as ctco]
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-opennebula]))
 
 (def valid-acl ctc/resource-acl-default)
 

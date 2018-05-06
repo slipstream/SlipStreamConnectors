@@ -1,9 +1,9 @@
 (ns com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-cloudstack
     (:require
     [clojure.spec.alpha :as s]
-    [com.sixsq.slipstream.ssclj.util.spec :as us]
     [com.sixsq.slipstream.ssclj.resources.spec.credential-template :as ct]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud :as ctc]))
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud :as ctc]
+    [com.sixsq.slipstream.ssclj.util.spec :as us]))
 
 (def credential-template-keys-spec {})
 

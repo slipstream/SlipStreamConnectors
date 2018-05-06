@@ -1,12 +1,12 @@
 (ns com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-cloudstack-test
   (:require
-    [clojure.test :refer :all]
     [clojure.spec.alpha :as s]
+    [clojure.test :refer :all]
     [com.sixsq.slipstream.ssclj.resources.credential :as p]
     [com.sixsq.slipstream.ssclj.resources.credential-template :as ct]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-cloudstack]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-cloudstack
-     :refer [resource-acl credential-type method]]))
+     :refer [credential-type method resource-acl]]
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-cloudstack]))
 
 (def valid-acl resource-acl)
 

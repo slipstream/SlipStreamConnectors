@@ -1,9 +1,9 @@
 (ns com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-openstack
     (:require
     [clojure.spec.alpha :as s]
-    [com.sixsq.slipstream.ssclj.util.spec :as us]
     [com.sixsq.slipstream.ssclj.resources.spec.credential-template :as ct]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud :as ctc]))
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud :as ctc]
+    [com.sixsq.slipstream.ssclj.util.spec :as us]))
 
 (s/def :cimi.credential-template.cloud-openstack/tenant-name string?)
 (s/def :cimi.credential-template.cloud-openstack/domain-name string?)

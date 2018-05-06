@@ -1,10 +1,10 @@
 (ns com.sixsq.slipstream.ssclj.resources.credential-cloud-cloudstack
   (:require
+    [com.sixsq.slipstream.ssclj.resources.common.std-crud :as std-crud]
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.credential :as p]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-cloudstack]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-cloudstack :as tpl]
-    [com.sixsq.slipstream.ssclj.resources.common.std-crud :as std-crud]))
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-cloudstack]))
 
 ;;
 ;; convert template to credential
