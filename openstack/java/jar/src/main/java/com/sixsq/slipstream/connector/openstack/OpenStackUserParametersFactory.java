@@ -37,6 +37,7 @@ public class OpenStackUserParametersFactory extends UserParametersFactoryBase {
 	public static final String NETWORK_PUBLIC_NAME = "network.public";
 	public static final String NETWORK_PRIVATE_NAME = "network.private";
 	public static final String USE_FLOATING_IPS_NAME = "floating.ips";
+	public static final String REUSE_FLOATING_IPS_NAME = "reuse.floating.ips";
 
 	public OpenStackUserParametersFactory(String connectorInstanceName)
 			throws ValidationException {

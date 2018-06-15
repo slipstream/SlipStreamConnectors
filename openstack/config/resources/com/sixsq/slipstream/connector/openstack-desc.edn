@@ -73,4 +73,14 @@
   :order       145,
   :instructions
                "If enabled the parameter 'Mapping for Public network' correspond to the name of the IP pool to use."}
+ :reuseFloatingIps
+ {:displayName "reuse.floating.ips",
+  :type        "boolean",
+  :category    "",
+  :description "Reuse already allocated and unassigned Floating IPs",
+  :mandatory   true,
+  :readOnly    false,
+  :order       146,
+  :instructions
+               "Has no effect if 'Use Floating IPs' is disabled."}
  }

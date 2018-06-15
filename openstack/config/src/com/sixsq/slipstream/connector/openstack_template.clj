@@ -18,6 +18,7 @@
    :serviceType              "service.type"
    :serviceName              "service.name"
    :floatingIps              "floating.ips"
+   :reuseFloatingIps         "reuse.floating.ips"
    :networkPrivate           "network.private"
    :networkPublic            "network.public"})
 
@@ -33,6 +34,7 @@
 (s/def :cimi.connector-template.openstack/serviceType ::cimi-core/nonblank-string)
 (s/def :cimi.connector-template.openstack/serviceName string?)
 (s/def :cimi.connector-template.openstack/floatingIps boolean?)
+(s/def :cimi.connector-template.openstack/reuseFloatingIps boolean?)
 (s/def :cimi.connector-template.openstack/networkPrivate string?)
 (s/def :cimi.connector-template.openstack/networkPublic string?)
 
@@ -50,6 +52,7 @@
                          :cimi.connector-template.openstack/serviceType
                          :cimi.connector-template.openstack/serviceName
                          :cimi.connector-template.openstack/floatingIps
+                         :cimi.connector-template.openstack/reuseFloatingIps
                          :cimi.connector-template.openstack/networkPrivate
                          :cimi.connector-template.openstack/networkPublic]})
 
@@ -86,6 +89,7 @@
           :serviceType              "compute"
           :serviceName              ""
           :floatingIps              false
+          :reuseFloatingIps         false
           :networkPrivate           ""
           :networkPublic            ""}))
 

@@ -20,7 +20,7 @@
 from slipstream.command.RunInstancesCommand import RunInstancesCommand
 from slipstream.UserInfo import UserInfo
 from slipstream_openstack.OpenStackCommand import OpenStackCommand
-from slipstream_openstack.OpenStackClientCloud import FLOATING_IPS_KEY
+from slipstream_openstack.OpenStackClientCloud import FLOATING_IPS_KEY, REUSE_FLOATING_IPS_KEY
 
 
 class OpenStackRunInstances(RunInstancesCommand, OpenStackCommand):
@@ -30,6 +30,7 @@ class OpenStackRunInstances(RunInstancesCommand, OpenStackCommand):
     NETWORK_PUBLIC_KEY = 'network-public'
     NETWORK_PRIVATE_KEY = 'network-private'
     USE_FLOATING_IP = 'use-floating-ips'
+    REUSE_FLOATING_IP = 'reuse-floating-ips'
 
     def __init__(self):
         super(OpenStackRunInstances, self).__init__()
@@ -58,11 +59,17 @@ class OpenStackRunInstances(RunInstancesCommand, OpenStackCommand):
                                     'Use --' + self.NETWORK_PUBLIC_KEY + 'to define the ip-pool',
                                action='store_true', default=False)
 
+        self.parser.add_option('--' + self.REUSE_FLOATING_IP, dest=self.REUSE_FLOATING_IP,
+                               help='Do not allocate new Floating IPs. '
+                                    'Reuse already allocated and unused Floating IPs',
+                               action='store_true', default=False)
+
     def get_cloud_specific_user_cloud_params(self):
         user_params = OpenStackCommand.get_cloud_specific_user_cloud_params(self)
         user_params[UserInfo.NETWORK_PUBLIC_KEY] = self.get_option(self.NETWORK_PUBLIC_KEY)
         user_params[UserInfo.NETWORK_PRIVATE_KEY] = self.get_option(self.NETWORK_PRIVATE_KEY)
         user_params[FLOATING_IPS_KEY]= self.get_option(self.USE_FLOATING_IP)
+        user_params[REUSE_FLOATING_IPS_KEY]= self.get_option(self.REUSE_FLOATING_IP)
         return user_params
 
     def get_cloud_specific_node_inst_cloud_params(self):

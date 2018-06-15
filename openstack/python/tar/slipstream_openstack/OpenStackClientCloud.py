@@ -19,6 +19,9 @@
 
 import os
 import time
+import random
+
+from threading import RLock
 
 from .OpenStackLibcloudPatch import patch_libcloud
 patch_libcloud()
@@ -70,6 +73,7 @@ STATE_MAP = {0: 'Running',
 
 
 FLOATING_IPS_KEY = 'floatingIps'
+REUSE_FLOATING_IPS_KEY = 'reuseFloatingIps'
 
 
 def is_instance_failed(instance):
@@ -120,6 +124,8 @@ class OpenStackClientCloud(BaseCloudConnector):
         self.networks = []
         self.security_groups = []
         self.tempPrivateKey = None
+        self._available_floating_ips = None
+        self._available_floating_ips_lock = RLock()
 
     @override
     def _initialization(self, user_info):
@@ -212,6 +218,7 @@ class OpenStackClientCloud(BaseCloudConnector):
         image = searchInObjectList(self.images, 'id', image_id)
         contextualization_script = self._get_bootstrap_script_if_not_build_image(node_instance)
         use_floating_ips = user_info.get_cloud(FLOATING_IPS_KEY, False)
+        reuse_floating_ips = user_info.get_cloud(REUSE_FLOATING_IPS_KEY, False)
 
         if flavor is None:
             raise Exceptions.ParameterNotFoundException("Couldn't find the specified flavor: %s" % instance_type)
@@ -242,10 +249,11 @@ class OpenStackClientCloud(BaseCloudConnector):
         floating_ip = None
         ip = None
         if use_floating_ips and network_type == 'Public':
-            ip_pool = user_info.get_public_network_name() or None
-            floating_ip = self._thread_local.driver.ex_create_floating_ip(ip_pool)
+            floating_ip = self._get_floating_ip(user_info, reuse_floating_ips)
             ip = floating_ip.ip_address
             kwargs['ex_metadata'].update({'floating_ip': floating_ip.id})
+            if reuse_floating_ips:
+                kwargs['ex_metadata'].update({'reuse_floating_ip': 'yes'})
 
         additional_disk = None
         if node_instance.get_volatile_extra_disk_size():
@@ -264,7 +272,7 @@ class OpenStackClientCloud(BaseCloudConnector):
                 if additional_disk:
                     self._thread_local.driver.attach_volume(instance, additional_disk, device='/dev/vdb')
         except:
-            if floating_ip:
+            if floating_ip and not reuse_floating_ips:
                 self._delete_floating_ip(floating_ip)
             if additional_disk:
                 self._thread_local.driver.destroy_volume(additional_disk)
@@ -280,6 +288,28 @@ class OpenStackClientCloud(BaseCloudConnector):
     @override
     def list_instances(self):
         return self._thread_local.driver.list_nodes()
+
+    @property
+    def available_floating_ips(self):
+        with self._available_floating_ips_lock:
+            if self._available_floating_ips is None:
+                ips = [ip for ip in self._thread_local.driver.ex_list_floating_ips() if not ip.node_id]
+                random.shuffle(ips)
+                self._available_floating_ips = ips
+        return self._available_floating_ips
+
+    def pickup_available_floating_ip(self):
+        with self._available_floating_ips_lock:
+            if not len(self.available_floating_ips):
+                raise Exceptions.CloudError('No floating IP available')
+            return self.available_floating_ips.pop()
+
+    def _get_floating_ip(self, user_info, reuse_floating_ips=False):
+        if reuse_floating_ips:
+            return self.pickup_available_floating_ip()
+        else:
+            ip_pool = user_info.get_public_network_name() or None
+            return self._thread_local.driver.ex_create_floating_ip(ip_pool)
 
     def _get_security_groups_for_node_instance(self, node_instance):
         security_groups = []
@@ -339,7 +369,12 @@ class OpenStackClientCloud(BaseCloudConnector):
         self._thread_local.driver.ex_delete_floating_ip(floating_ip)
 
     def _remove_floating_ip(self, node):
-        ip_id = node.extra.get('metadata', {}).get('floating_ip')
+        metadata = node.extra.get('metadata', {})
+
+        if 'reuse_floating_ip' in metadata:
+            return
+
+        ip_id = metadata.get('floating_ip')
         if ip_id:
             floating_ip = OpenStack_1_1_FloatingIpAddress(id=ip_id,
                                                           ip_address=None,

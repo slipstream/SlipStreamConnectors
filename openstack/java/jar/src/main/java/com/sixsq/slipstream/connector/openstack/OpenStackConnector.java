@@ -87,6 +87,7 @@ public class OpenStackConnector extends CliConnectorBase {
         launchParams.put("network-private", getNetworkPrivate());
 		putLaunchParamSecurityGroups(launchParams, run, user);
 		putLaunchParamUseFloatingIp(launchParams);
+		putLaunchParamReuseFloatingIp(launchParams);
 		return launchParams;
 	}
 
@@ -109,6 +110,17 @@ public class OpenStackConnector extends CliConnectorBase {
 		if (useFloatingIp != null && !useFloatingIp.isEmpty() && Boolean.parseBoolean(useFloatingIp)) {
 			launchParams.put("use-floating-ips", null);
 		}
+	}
+
+	protected void putLaunchParamReuseFloatingIp(Map<String, String> launchParams) throws ValidationException {
+		String reuseFloatingIp = getReuseFloatingIp();
+		if (reuseFloatingIp != null && !reuseFloatingIp.isEmpty() && Boolean.parseBoolean(reuseFloatingIp)) {
+			launchParams.put("reuse-floating-ips", null);
+		}
+	}
+
+	protected String getReuseFloatingIp() throws ConfigurationException, ValidationException {
+		return Configuration.getInstance().getRequiredProperty(constructKey(OpenStackUserParametersFactory.REUSE_FLOATING_IPS_NAME));
 	}
 
 	protected String getUseFloatingIp() throws ConfigurationException, ValidationException {
