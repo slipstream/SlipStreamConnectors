@@ -4,7 +4,7 @@
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.credential :as p]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-cloudstack :as tpl]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-cloudstack]))
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-cloudstack :as cloudstack]))
 
 ;;
 ;; convert template to credential
@@ -25,12 +25,12 @@
 ;; multimethods for validation
 ;;
 
-(def validate-fn (u/create-spec-validation-fn :cimi/credential.cloud-cloudstack))
+(def validate-fn (u/create-spec-validation-fn ::cloudstack/credential))
 (defmethod p/validate-subtype tpl/credential-type
   [resource]
   (validate-fn resource))
 
-(def create-validate-fn (u/create-spec-validation-fn :cimi/credential.cloud-cloudstack.create))
+(def create-validate-fn (u/create-spec-validation-fn ::cloudstack/credential-create))
 (defmethod p/create-validate-subtype tpl/credential-type
   [resource]
   (create-validate-fn resource))
@@ -41,4 +41,4 @@
 ;;
 (defn initialize
       []
-      (std-crud/initialize p/resource-url :cimi/credential.cloud-cloudstack))
+      (std-crud/initialize p/resource-url ::cloudstack/credential))

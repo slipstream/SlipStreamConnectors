@@ -38,13 +38,13 @@
 (s/def :cimi.connector-template.openstack/networkPrivate string?)
 (s/def :cimi.connector-template.openstack/networkPublic string?)
 
-(def keys-spec {:req-un [:cimi.connector-template/endpoint
-                         :cimi.connector-template/objectStoreEndpoint
-                         :cimi.connector-template/nativeContextualization
-                         :cimi.connector-template/orchestratorSSHUsername
-                         :cimi.connector-template/orchestratorSSHPassword
-                         :cimi.connector-template/securityGroups
-                         :cimi.connector-template/updateClientURL
+(def keys-spec {:req-un [::ps/endpoint
+                         ::ps/objectStoreEndpoint
+                         ::ps/nativeContextualization
+                         ::ps/orchestratorSSHUsername
+                         ::ps/orchestratorSSHPassword
+                         ::ps/securityGroups
+                         ::ps/updateClientURL
 
                          :cimi.connector-template.openstack/orchestratorInstanceType
                          :cimi.connector-template.openstack/identityVersion

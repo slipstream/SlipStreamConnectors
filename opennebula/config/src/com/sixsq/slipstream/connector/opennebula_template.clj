@@ -38,9 +38,9 @@
 (s/def :cimi.connector-template.opennebula/orchestratorContextualizationType ::cimi-core/nonblank-string)
 (s/def :cimi.connector-template.opennebula/cpuRatio ::cimi-core/nonblank-string)
 
-(def keys-spec {:req-un [:cimi.connector-template/endpoint
-                         :cimi.connector-template/nativeContextualization
-                         :cimi.connector-template/updateClientURL
+(def keys-spec {:req-un [::ps/endpoint
+                         ::ps/nativeContextualization
+                         ::ps/updateClientURL
 
                          :cimi.connector-template.opennebula/networkPublic
                          :cimi.connector-template.opennebula/networkPrivate
@@ -48,7 +48,7 @@
                          :cimi.connector-template.opennebula/orchestratorRamSize
                          :cimi.connector-template.opennebula/cpuRatio
                          :cimi.connector-template.opennebula/orchestratorContextualizationType]
-                :opt-un [:cimi.connector-template/objectStoreEndpoint]})
+                :opt-un [::ps/objectStoreEndpoint]})
 
 (def opt-keys-spec {:opt-un (concat (:req-un keys-spec) (:opt-un keys-spec))})
 

@@ -5,7 +5,7 @@
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.credential :as p]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-opennebula :as tpl]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-opennebula]))
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-opennebula :as opennebula]))
 
 ;;
 ;; convert template to credential
@@ -26,12 +26,12 @@
 ;; multimethods for validation
 ;;
 
-(def validate-fn (u/create-spec-validation-fn :cimi/credential.cloud-opennebula))
+(def validate-fn (u/create-spec-validation-fn ::opennebula/credential))
 (defmethod p/validate-subtype tpl/credential-type
   [resource]
   (validate-fn resource))
 
-(def create-validate-fn (u/create-spec-validation-fn :cimi/credential.cloud-opennebula.create))
+(def create-validate-fn (u/create-spec-validation-fn ::opennebula/credential-create))
 (defmethod p/create-validate-subtype tpl/credential-type
   [resource]
   (create-validate-fn resource))
@@ -42,4 +42,4 @@
 ;;
 (defn initialize
       []
-      (std-crud/initialize p/resource-url :cimi/credential.cloud-opennebula))
+      (std-crud/initialize p/resource-url ::opennebula/credential))

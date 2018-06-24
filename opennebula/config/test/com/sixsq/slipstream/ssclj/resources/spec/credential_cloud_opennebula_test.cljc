@@ -6,8 +6,8 @@
     [com.sixsq.slipstream.ssclj.resources.credential-template :as ct]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud :as ctc]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-opennebula :as ctco]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-opennebula]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-opennebula]))
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-opennebula :as opennebula]
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-opennebula :as opennebula-tpl]))
 
 (def valid-acl ctc/resource-acl-default)
 
@@ -17,10 +17,10 @@
                                    :secret    "bar"
                                    :quota     7
                                    :connector {:href "connector/xyz"}}}]
-    (is (s/valid? :cimi/credential.cloud-opennebula.create root))
-    (is (s/valid? :cimi.credential-template.cloud-opennebula/credentialTemplate (:credentialTemplate root)))
+    (is (s/valid? ::opennebula/credential-create root))
+    (is (s/valid? ::opennebula-tpl/credentialTemplate (:credentialTemplate root)))
     (doseq [k (into #{} (keys (dissoc root :resourceURI)))]
-      (is (not (s/valid? :cimi/credential.cloud-opennebula.create (dissoc root k)))))))
+      (is (not (s/valid? ::opennebula/credential-create (dissoc root k)))))))
 
 (deftest test-credential-cloud-opennebula-schema-check
   (let [timestamp "1972-10-08T10:00:00.0Z"
@@ -35,8 +35,8 @@
                    :secret      "bar"
                    :quota       7
                    :connector   {:href "connector/xyz"}}]
-    (is (s/valid? :cimi/credential.cloud-opennebula root))
+    (is (s/valid? ::opennebula/credential root))
     (doseq [k (into #{} (keys root))]
-      (is (not (s/valid? :cimi/credential.cloud-opennebula (dissoc root k)))))))
+      (is (not (s/valid? ::opennebula/credential (dissoc root k)))))))
 
 

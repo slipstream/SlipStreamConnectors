@@ -6,8 +6,8 @@
     [com.sixsq.slipstream.ssclj.resources.credential-template :as ct]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud :as ctc]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-openstack :as ctco]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-openstack]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-openstack]
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-openstack :as openstack]
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-openstack :as openstack-tpl]
     [com.sixsq.slipstream.ssclj.util.spec :as su]))
 
 (def valid-acl ctc/resource-acl-default)
@@ -20,10 +20,10 @@
                                    :quota       7
                                    :tenant-name "tenant"
                                    :domain-name "domain"}}]
-    (is (s/valid? :cimi/credential.cloud-openstack.create root))
-    (is (s/valid? :cimi.credential-template.cloud-openstack/credentialTemplate (:credentialTemplate root)))
+    (is (s/valid? ::openstack/credential-create root))
+    (is (s/valid? ::openstack-tpl/credentialTemplate (:credentialTemplate root)))
     (doseq [k (into #{} (keys (dissoc root :resourceURI)))]
-      (is (not (s/valid? :cimi/credential.cloud-openstack.create (dissoc root k)))))))
+      (is (not (s/valid? ::openstack/credential-create (dissoc root k)))))))
 
 (deftest test-credential-cloud-openstack-schema-check
   (let [timestamp "1972-10-08T10:00:00.0Z"
@@ -38,8 +38,8 @@
                    :secret      "bar"
                    :connector   {:href "connector/xyz"}
                    :quota       8}]
-    (is (s/valid? :cimi/credential.cloud-openstack root))
+    (is (s/valid? ::openstack/credential root))
     (doseq [k (into #{} (keys root))]
-      (is (not (s/valid? :cimi/credential.cloud-openstack (dissoc root k)))))))
+      (is (not (s/valid? ::openstack/credential (dissoc root k)))))))
 
 

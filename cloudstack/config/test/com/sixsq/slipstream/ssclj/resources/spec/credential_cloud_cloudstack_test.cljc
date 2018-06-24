@@ -5,9 +5,8 @@
     [com.sixsq.slipstream.ssclj.resources.credential :as p]
     [com.sixsq.slipstream.ssclj.resources.credential-template :as ct]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud-cloudstack :refer [credential-type method resource-acl]]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-cloudstack]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-cloudstack]
-    [com.sixsq.slipstream.ssclj.util.spec :as su]))
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-cloud-cloudstack :as cloudstack]
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-cloudstack :as cloudstack-tpl]))
 
 (def valid-acl resource-acl)
 
@@ -17,10 +16,10 @@
                                    :secret    "bar"
                                    :quota     20
                                    :connector {:href "connector/xyz"}}}]
-    (is (s/valid? :cimi/credential.cloud-cloudstack.create root))
-    (is (s/valid? :cimi.credential-template.cloud-cloudstack/credentialTemplate (:credentialTemplate root)))
+    (is (s/valid? ::cloudstack/credential-create root))
+    (is (s/valid? ::cloudstack-tpl/credentialTemplate (:credentialTemplate root)))
     (doseq [k (into #{} (keys (dissoc root :resourceURI)))]
-      (is (not (s/valid? :cimi/credential.cloud-cloudstack.create (dissoc root k)))))))
+      (is (not (s/valid? ::cloudstack/credential-create (dissoc root k)))))))
 
 (deftest test-credential-cloud-cloudstack-schema-check
   (let [timestamp "1972-10-08T10:00:00.0Z"
@@ -35,6 +34,6 @@
                    :secret      "bar"
                    :quota       20
                    :connector   {:href "connector/xyz"}}]
-    (is (s/valid? :cimi/credential.cloud-cloudstack root))
+    (is (s/valid? ::cloudstack/credential root))
     (doseq [k (into #{} (keys root))]
-      (is (not (s/valid? :cimi/credential.cloud-cloudstack (dissoc root k)))))))
+      (is (not (s/valid? ::cloudstack/credential (dissoc root k)))))))

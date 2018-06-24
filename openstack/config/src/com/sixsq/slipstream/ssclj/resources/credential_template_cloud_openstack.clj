@@ -6,7 +6,7 @@
     [com.sixsq.slipstream.ssclj.resources.common.utils :as u]
     [com.sixsq.slipstream.ssclj.resources.credential-template :as p]
     [com.sixsq.slipstream.ssclj.resources.credential-template-cloud :as ctc]
-    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-openstack]))
+    [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-openstack :as openstack-tpl]))
 
 (def ^:const credential-type (ctc/cred-type ct/cloud-service-type))
 (def ^:const method (ctc/cred-method ct/cloud-service-type))
@@ -35,7 +35,7 @@
 ;; multimethods for validation
 ;;
 
-(def validate-fn (u/create-spec-validation-fn :cimi/credential-template.cloud-openstack))
+(def validate-fn (u/create-spec-validation-fn ::openstack-tpl/credential-template))
 (defmethod p/validate-subtype method
   [resource]
   (validate-fn resource))
