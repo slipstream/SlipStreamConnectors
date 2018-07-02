@@ -587,7 +587,7 @@ class OpenStackClientCloud(BaseCloudConnector):
 
     def _import_keypair(self, user_info):
         kp_name = 'ss-key-%i' % int(time.time() * 1000000)
-        public_key = user_info.get_public_keys()
+        public_key = user_info.get_public_keys().split('\n', 1)[0]
         try:
             kp = self._thread_local.driver.ex_import_keypair_from_string(kp_name, public_key)
         except Exception as ex:
