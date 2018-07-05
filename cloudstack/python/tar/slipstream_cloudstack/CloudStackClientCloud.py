@@ -351,7 +351,7 @@ class CloudStackClientCloud(BaseCloudConnector):
     @override
     def _vm_get_root_disk(self, vm_instance):
         volume = self._find_root_disk_volume(vm_instance.id)
-        return volume.size / (1024 * 1024 * 1024) if volume else None
+        return volume.size / float(1024 * 1024 * 1024) if volume else None
 
     @override
     def _vm_get_instance_type(self, vm_instance):
@@ -375,7 +375,7 @@ class CloudStackClientCloud(BaseCloudConnector):
 
     def _find_root_disk_volume(self, instance_id):
         for v in self.volumes:
-            if v.extra.get('volume_type') == 'ROOT' and v.extra.get('instance_id') == instance_id:
+            if v.extra.get('instance_id') == instance_id and v.extra.get('volume_type') == 'ROOT':
                 return v
 
     def _get_instance_ip_address(self, instance, ipType='public'):
