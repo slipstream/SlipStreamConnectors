@@ -98,10 +98,12 @@ class CloudStackClientCloud(BaseCloudConnector):
         self._zones = None
         self._sizes = None
         self._images = None
+        self._volumes = None
         self._lock_zone = RLock()
         self._lock_zones = RLock()
         self._lock_sizes = RLock()
         self._lock_images = RLock()
+        self._lock_volumes = RLock()
         self._lock_libcloud_driver = RLock()
 
     @property
@@ -147,6 +149,15 @@ class CloudStackClientCloud(BaseCloudConnector):
                     util.printDetail('Getting images')
                     self._images = self.libcloud_driver.list_images(location=self.zone)
         return self._images
+
+    @property
+    def volumes(self):
+        if self._volumes is None:
+            with self._lock_volumes:
+                if self._volumes is None:
+                    util.printDetail('Getting volumes')
+                    self._volumes = self.libcloud_driver.list_volumes()
+        return self._volumes
 
     @override
     def _initialization(self, user_info):
@@ -339,9 +350,8 @@ class CloudStackClientCloud(BaseCloudConnector):
 
     @override
     def _vm_get_root_disk(self, vm_instance):
-        size = self._get_vm_size(vm_instance)
-        if size:
-            return size.disk
+        volume = self._find_root_disk_volume(vm_instance.id)
+        return volume.size / float(1024 * 1024 * 1024) if volume else None
 
     @override
     def _vm_get_instance_type(self, vm_instance):
@@ -362,6 +372,11 @@ class CloudStackClientCloud(BaseCloudConnector):
     @override
     def _size_get_instance_type(self, vm_size):
         return vm_size.name
+
+    def _find_root_disk_volume(self, instance_id):
+        for v in self.volumes:
+            if v.extra.get('instance_id') == instance_id and v.extra.get('volume_type') == 'ROOT':
+                return v
 
     def _get_instance_ip_address(self, instance, ipType='public'):
         if ipType.lower() == 'private':
