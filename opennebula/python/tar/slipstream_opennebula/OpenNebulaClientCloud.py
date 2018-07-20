@@ -237,7 +237,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             img_id = int(image_id)
         except:
             raise Exception('Something is wrong with image ID : {0}!'.format(image_id))
-        disk = 'IMAGE_ID = {0:d}, DEV_PREFIX="vd"'.format(img_id)
+        disk = 'IMAGE_ID = {0:d}'.format(img_id)
         if disk_size_gb is None:
             return 'DISK = [ {} ]'.format(disk)
         else:
