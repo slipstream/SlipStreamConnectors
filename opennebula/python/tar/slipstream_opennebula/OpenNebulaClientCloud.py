@@ -34,6 +34,7 @@ import ssl
 import urllib
 import re
 import base64
+
 try:
     import xml.etree.cElementTree as eTree  # c-version, faster
 except ImportError:
@@ -82,7 +83,6 @@ def instantiate_from_cimi(cimi_connector, cimi_cloud_credential):
 
 
 class OpenNebulaClientCloud(BaseCloudConnector):
-
     VM_STATE = [
         'Init',       # 0
         'Pending',    # 1
@@ -237,14 +237,15 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             img_id = int(image_id)
         except:
             raise Exception('Something is wrong with image ID : {0}!'.format(image_id))
+        disk = 'IMAGE_ID = {0:d}'.format(img_id)
         if disk_size_gb is None:
-           return 'DISK = [ IMAGE_ID  = {0:d}]'.format(img_id)
+            return 'DISK = [ {} ]'.format(disk)
         else:
             try:
                 disk_size_mb = int(float(disk_size_gb) * 1024)
             except:
                 raise Exception('Something is wrong with root disk size : {0}!'.format(disk_size_gb))
-            return 'DISK = [ IMAGE_ID  = {0:d}, SIZE={1:d} ]'.format(img_id, disk_size_mb)
+            return 'DISK = [ {0}, SIZE={1:d} ]'.format(disk, disk_size_mb)
 
     def _set_additionnal_disks(self, disk_size_gb):
         if disk_size_gb is None:
@@ -284,17 +285,17 @@ class OpenNebulaClientCloud(BaseCloudConnector):
                 raise Exception('Something wrong with specified Private Network ID : {0}!'.format(private_network_id))
         else:
             return ''
-        return 'NIC = [ NETWORK_ID = {0:d} ]'.format(network_id)
+        return 'NIC = [ NETWORK_ID = {0:d}, MODEL = "virtio" ]'.format(network_id)
 
     def _set_specific_nic(self, network_specific_name):
         network_infos = network_specific_name.split(';')
+        nic = 'NETWORK = {0}, MODEL = "virtio"'.format(network_infos[0])
         if len(network_infos) == 1:
-            return 'NIC = [ NETWORK = {0} ]'.format(network_infos[0])
+            return 'NIC = [ {} ]'.format(nic)
         elif len(network_infos) == 2:
-            return 'NIC = [ NETWORK = {0}, NETWORK_UNAME = {1} ]'.format(network_infos[0], network_infos[1])
+            return 'NIC = [ {0}, NETWORK_UNAME = {1} ]'.format(nic, network_infos[1])
         else:
             raise Exception('Something wrong with specified Network name : {0}!'.format(network_specific_name))
-
 
     def _set_contextualization(self, contextualization_type, public_ssh_key, contextualization_script):
         if contextualization_type != 'cloud-init':
@@ -328,8 +329,8 @@ class OpenNebulaClientCloud(BaseCloudConnector):
             nics = self._set_specific_nic(network_specific_name)
         else:
             nics = self._set_nics(node_instance.get_network_type(),
-                          user_info.get_public_network_name(),
-                          user_info.get_private_network_name())
+                                  user_info.get_public_network_name(),
+                                  user_info.get_private_network_name())
 
         if self.is_build_image():
             context = self._set_contextualization(node_instance.get_cloud_parameter('contextualization.type'),
@@ -421,7 +422,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         while current_state == self.IMAGE_STATE.index(state):
             if time.time() > time_stop:
                 raise Exceptions.ExecutionException(
-                        'Timed out while waiting for image {0} to be in state {1}'.format(image_id, state))
+                    'Timed out while waiting for image {0} to be in state {1}'.format(image_id, state))
             time.sleep(time_sleep)
             current_state = self._get_image_state(image_id)
         return current_state
@@ -435,7 +436,7 @@ class OpenNebulaClientCloud(BaseCloudConnector):
         protocol_separator = '://'
         parts = self.user_info.get_cloud_endpoint().split(protocol_separator)
         url = parts[0] + protocol_separator + self._create_session_string() \
-            + "@" + ''.join(parts[1:])
+              + "@" + ''.join(parts[1:])
         no_certif_check = hasattr(ssl, '_create_unverified_context') and ssl._create_unverified_context() or None
         try:
             return xmlrpclib.ServerProxy(url, context=no_certif_check)
