@@ -207,22 +207,22 @@ class CloudStackClientCloud(BaseCloudConnector):
 
         image = self._get_image(node_instance)
 
-        if node_instance.is_windows():
-            instance = self.libcloud_driver.create_node(
-                name=instance_name,
-                size=size,
-                image=image,
-                location=self.zone,
-                ex_security_groups=security_groups)
-        else:
-            instance = self.libcloud_driver.create_node(
-                name=instance_name,
-                size=size,
-                image=image,
-                location=self.zone,
-                ex_keyname=keypair,
-                ex_userdata=contextualization_script,
-                ex_security_groups=security_groups)
+        disk_size = node_instance.get_cloud_parameter('disk')
+
+        kwargs = dict(name=instance_name,
+                      size=size,
+                      image=image,
+                      location=self.zone,
+                      ex_security_groups=security_groups)
+
+        if disk_size:
+            kwargs['ex_rootdisksize'] = disk_size.replace('G', '')
+
+        if not node_instance.is_windows():
+            kwargs.update(dict(ex_keyname= keypair,
+                               ex_userdata=contextualization_script))
+
+        instance = self.libcloud_driver.create_node(**kwargs)
 
         ip = self._get_instance_ip_address(instance, ip_type)
         if not ip:
