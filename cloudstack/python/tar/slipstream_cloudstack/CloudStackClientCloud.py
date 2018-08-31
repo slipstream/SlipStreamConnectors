@@ -167,11 +167,6 @@ class CloudStackClientCloud(BaseCloudConnector):
 
         if self.is_build_image():
             raise NotImplementedError('The run category "%s" is not yet implemented' % self.run_category)
-        elif self.is_deployment():
-            try:
-                self._import_keypair(user_info)
-            except Exceptions.ExecutionException as e:
-                util.printError(e)
 
     @override
     def _finalization(self, user_info):
@@ -187,6 +182,12 @@ class CloudStackClientCloud(BaseCloudConnector):
         return self._start_image_on_cloudstack(user_info, node_instance, vm_name)
 
     def _start_image_on_cloudstack(self, user_info, node_instance, vm_name):
+        try:
+            kp_name = self._import_keypair(user_info)
+            node_instance.set_cloud_node_ssh_keypair_name(kp_name)
+        except Exceptions.ExecutionException as e:
+            util.printError(e)
+
         instance_name = self.format_instance_name(vm_name)
         instance_type = node_instance.get_instance_type()
         ip_type = node_instance.get_network_type()
