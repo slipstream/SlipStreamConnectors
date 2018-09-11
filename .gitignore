@@ -45,6 +45,7 @@ logs
 
 # Clojure
 .nrepl-history
+.nrepl-port
 .lein-env
 .lein-failures
 
