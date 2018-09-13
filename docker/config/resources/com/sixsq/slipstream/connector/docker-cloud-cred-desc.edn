@@ -1,0 +1,22 @@
+{:key    {:displayName "Certificate"
+          :category    "cloud-cred-docker"
+          :description "SSL Certificate in PEM format"
+          :type        "string"
+          :mandatory   true
+          :readOnly    false
+          :order       20}
+ :secret {:displayName "Private key"
+          :category    "cloud-cred-docker"
+          :description "SSL private key"
+          :type        "string"
+          :mandatory   true
+          :readOnly    false
+          :order       30}
+ :quota  {:displayName "User VM quota"
+          :category    "cloud-cred-docker"
+          :description "Number of VMs the user can start for this cloud"
+          :type        "string"
+          :mandatory   true
+          :readOnly    true
+          :order       0}
+ }

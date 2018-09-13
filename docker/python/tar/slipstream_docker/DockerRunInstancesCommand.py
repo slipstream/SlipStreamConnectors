@@ -17,18 +17,23 @@
  limitations under the License.
 """
 
-import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-
 from slipstream.command.CloudClientCommand import main
 from slipstream.command.RunInstancesCommand import RunInstancesCommand
 from slipstream_docker.DockerCommand import DockerCommand
 from slipstream.NodeDecorator import NodeDecorator
 from slipstream.NodeInstance import NodeInstance
+from slipstream_docker.DockerClientCloud import DockerClientCloud
+
 
 class DockerRunInstances(RunInstancesCommand, DockerCommand):
-
-    SERVICE_REQUEST = "service"
+    NETWORK_PORTS_MAPPINGS_KEY = DockerClientCloud.NETWORK_PORTS_MAPPINGS_KEY
+    RESTART_POLICY_KEY = DockerClientCloud.RESTART_POLICY_KEY
+    ENV_KEY = DockerClientCloud.ENV_KEY
+    WORKING_DIR_KEY = DockerClientCloud.WORKING_DIR_KEY
+    COMMAND_KEY = DockerClientCloud.COMMAND_KEY
+    ARGS_KEY = DockerClientCloud.ARGS_KEY
+    CPU_RATIO_KEY = DockerClientCloud.CPU_RATIO_KEY
+    MEMORY_KEY = DockerClientCloud.MEMORY_KEY
 
     def __init__(self):
         super(DockerRunInstances, self).__init__()
@@ -36,44 +41,74 @@ class DockerRunInstances(RunInstancesCommand, DockerCommand):
     def set_cloud_specific_options(self, parser):
         DockerCommand.set_cloud_specific_options(self, parser)
 
-        self.parser.add_option('--' + self.SERVICE_REQUEST, dest=self.SERVICE_REQUEST,
-                          help='Service request to be passed to Docker',
-                          default='', metavar='SERVICE-REQUEST')
-    
+        self.parser.add_option('--' + self.NETWORK_PORTS_MAPPINGS_KEY, action='append',
+                               dest=self.NETWORK_PORTS_MAPPINGS_KEY,
+                               help='Publish a service port(s) to the host. Format is HOST_PORT:SERVICE_PORT. '
+                                    'This option can be used multiple times. If HOST_PORT is omitted, '
+                                    'a random port will be assigned to the SERVICE_PORT. (e.g. 20000:22)')
+
+        self.parser.add_option('--' + self.RESTART_POLICY_KEY, default='none', dest=self.RESTART_POLICY_KEY,
+                               help='Restart when condition is met ("none"|"on-failure"|"any"). Default: "none"')
+
+        self.parser.add_option('--' + self.ENV_KEY, dest=self.ENV_KEY, action='append',
+                               help='Set environment variables. This option can be used multiple times. '
+                                    '(e.g. VAR=value)')
+
+        self.parser.add_option('--' + self.WORKING_DIR_KEY, dest=self.WORKING_DIR_KEY,
+                               help='The working directory for commands to run in.')
+
+        self.parser.add_option('--' + self.COMMAND_KEY, dest=self.COMMAND_KEY,
+                               help='The command to be run in the image.')
+
+        self.parser.add_option('--' + self.ARGS_KEY, dest=self.ARGS_KEY, action='append',
+                               help='Arguments to the command.')
+
+        self.parser.add_option('--' + self.CPU_RATIO_KEY, dest=self.CPU_RATIO_KEY,
+                               help='CPU ratio limit and reserved in float. Max is 1.0')
+
+        self.parser.add_option('--' + self.MEMORY_KEY, dest=self.MEMORY_KEY,
+                               help='Memory limit and reserved in GB. Float value.')
+
     def _set_command_specific_options(self, parser):
-        pass
+        super(DockerRunInstances, self)._set_command_specific_options(parser)
+        parser.remove_option('--' + self.PLATFORM_KEY)
+        parser.remove_option('--' + self.EXTRA_DISK_VOLATILE)
+        parser.remove_option('--' + self.LOGIN_USER_KEY)
+        parser.remove_option('--' + self.LOGIN_PASS_KEY)
+        parser.remove_option('--' + self.NETWORK_TYPE)
+        parser.remove_option('--' + NodeDecorator.NATIVE_CONTEXTUALIZATION_KEY)
 
     def _get_command_specific_user_cloud_params(self):
-        # NodeDecorator.NATIVE_CONTEXTUALIZATION_KEY doesn't apply here, and it doesn't even exist anymore
-        # so simply force return {} as it line 97 of RunInstancesCommand.py
         return {}
 
     def _get_node_instance(self):
-        # the runtime parameters are not the same as for VMs
         runtime_parameters = {
             NodeDecorator.NODE_INSTANCE_NAME_KEY: self.get_node_instance_name(),
-            'cloudservice': self._cloud_instance_name
-        }
+            'cloudservice': self._cloud_instance_name,
+            'image.id': self.get_option(self.IMAGE_ID_KEY)}
 
         return NodeInstance(runtime_parameters)
 
     def get_cloud_specific_node_inst_cloud_params(self):
         node_params = DockerCommand.get_cloud_specific_node_inst_cloud_params(self)
-        node_params[self.SERVICE_REQUEST] = self.get_option(self.SERVICE_REQUEST)
         return node_params
 
     def _get_command_specific_node_inst_cloud_params(self):
-        # LOGIN_PASS_KEY does not apply to the Docker connector
-        cloud_params = {}
-        return cloud_params
+        return {self.NETWORK_PORTS_MAPPINGS_KEY: self.get_option(self.NETWORK_PORTS_MAPPINGS_KEY),
+                self.RESTART_POLICY_KEY: self.get_option(self.RESTART_POLICY_KEY),
+                self.ENV_KEY: self.get_option(self.ENV_KEY),
+                self.WORKING_DIR_KEY: self.get_option(self.WORKING_DIR_KEY),
+                self.COMMAND_KEY: self.get_option(self.COMMAND_KEY),
+                self.ARGS_KEY: self.get_option(self.ARGS_KEY),
+                self.CPU_RATIO_KEY: self.get_option(self.CPU_RATIO_KEY),
+                self.MEMORY_KEY: self.get_option(self.MEMORY_KEY)}
 
     def get_cloud_specific_mandatory_options(self):
         return DockerCommand.get_cloud_specific_mandatory_options(self)
 
     def _get_command_mandatory_options(self):
-        # Remove USER PASS from mandatory parameters as we might be dealing
-        # with a no protected cluster
-        return [self.SERVICE_REQUEST]
+        return [self.IMAGE_ID_KEY]
+
 
 if __name__ == "__main__":
     main(DockerRunInstances)
