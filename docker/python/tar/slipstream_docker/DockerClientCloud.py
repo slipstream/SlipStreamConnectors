@@ -218,7 +218,8 @@ class DockerClientCloud(BaseCloudConnector):
             for service_id in ids:
                 response = self.docker_api.delete(self._get_full_url("services/{}".format(service_id)),
                                                   cert=auth_file.name)
-                self.validate_action(response)
+                if response.status_code != 200:
+                    self.validate_action(response)
 
     @override
     def _vm_get_ip(self, vm):
