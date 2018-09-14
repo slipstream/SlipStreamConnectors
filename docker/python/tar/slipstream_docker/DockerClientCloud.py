@@ -41,8 +41,8 @@ def get_user_info_from_cimi(cimi_connector, cimi_cloud_credential):
 
     cloud_params = {
         UserInfo.CLOUD_ENDPOINT_KEY: cimi_connector['endpoint'],
-        UserInfo.CLOUD_USERNAME_KEY: cimi_cloud_credential['key'],
-        UserInfo.CLOUD_PASSWORD_KEY: cimi_cloud_credential['secret']
+        DockerClientCloud.CERT_KEY: cimi_cloud_credential['key'],
+        DockerClientCloud.KEY_KEY: cimi_cloud_credential['secret']
     }
     user_info.set_cloud_params(cloud_params)
     return user_info
@@ -93,29 +93,28 @@ class DockerClientCloud(BaseCloudConnector):
         self._set_capabilities(contextualization=True, direct_ip_assignment=True)
         self.user_info = None
         self.docker_api = None
-        self.cert_file = NamedTemporaryFile(delete=False)
-        self.key_file = NamedTemporaryFile(delete=False)
+        self.cert_string = ''
+        self.key_string = ''
 
     @override
     def _initialization(self, user_info, **kwargs):
         util.printStep('Initialize the Docker connector.')
         self.user_info = user_info
-        cert_string = user_info.get_cloud(self.CERT_KEY).replace("\\n", "\n")
-        self.cert_file.write(cert_string)
-        self.cert_file.close()
-        key_string = user_info.get_cloud(self.KEY_KEY).replace("\\n", "\n")
-        self.key_file.write(key_string)
-        self.key_file.close()
+        self.cert_string = user_info.get_cloud(self.CERT_KEY).replace("\\n", "\n")
+        self.key_string = user_info.get_cloud(self.KEY_KEY).replace("\\n", "\n")
         self.docker_api = requests.Session()
         self.docker_api.verify = False
-        self.docker_api.cert = (self.cert_file.name, self.key_file.name)
         self.docker_api.headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
     def _get_full_url(self, action):
         return "{}/{}".format(self.user_info.get_cloud_endpoint(), action)
 
+    def write_auth(self, auth_file):
+        auth_file.write(self.cert_string + '\n' + self.key_string)
+        auth_file.flush()
+
     @staticmethod
-    def validate_start_image(response):
+    def validate_action(response):
         """Takes the raw response from _start_container_in_docker
         and checks whether the service creation request was successful or not"""
         if len(response.keys()) == 1 and response.has_key("message"):
@@ -123,10 +122,9 @@ class DockerClientCloud(BaseCloudConnector):
 
     @override
     def _start_image(self, user_info, node_instance, vm_name):
-        try:
+        with NamedTemporaryFile(bufsize=0, delete=True) as auth_file:
+            self.write_auth(auth_file)
             vm = self._start_container_in_docker(user_info, node_instance, vm_name)
-        finally:
-            self.cleanup_secrets()
         return vm
 
     def _start_container_in_docker(self, user_info, node_instance, service_name):
@@ -146,7 +144,7 @@ class DockerClientCloud(BaseCloudConnector):
 
         cpu_ratio = node_instance.get_cloud_parameter(self.CPU_RATIO_KEY)
         if cpu_ratio:
-            cpu_ratio_nano_secs = int(float(cpu_ratio) * 10 ** 9)
+            cpu_ratio_nano_secs = int(float(cpu_ratio) * 1000000000)
             service_json['TaskTemplate']['Resources']['Limits']['NanoCPUs'] = cpu_ratio_nano_secs
             service_json['TaskTemplate']['Resources']['Reservations']['NanoCPUs'] = cpu_ratio_nano_secs
 
@@ -196,32 +194,30 @@ class DockerClientCloud(BaseCloudConnector):
 
         create_response = self.docker_api.post(self._get_full_url("services/create"), json=service_json).json()
 
-        self.validate_start_image(create_response)
+        self.validate_action(create_response)
         vm_id = create_response['ID']
         vm = self.docker_api.get(self._get_full_url("services/{}".format(vm_id))).json()
 
         return vm
 
-    def cleanup_secrets(self):
-        os.unlink(self.cert_file.name)
-        os.unlink(self.key_file.name)
-
     @override
     def list_instances(self):
-        try:
+        with NamedTemporaryFile(bufsize=0, delete=True) as auth_file:
+            self.write_auth(auth_file)
             request_url = self._get_full_url("services")
-            services_list = self.docker_api.get(request_url, verify=False).json()
-        finally:
-            self.cleanup_secrets()
+            services_list = self.docker_api.get(request_url, cert=auth_file.name).json()
+            if not isinstance(services_list, list):
+                self.validate_action(services_list)
         return services_list
 
     @override
     def _stop_vms_by_ids(self, ids):
-        try:
+        with NamedTemporaryFile(bufsize=0, delete=True) as auth_file:
+            self.write_auth(auth_file)
             for service_id in ids:
-                self.docker_api.delete(self._get_full_url("services/{}".format(service_id)))
-        finally:
-            self.cleanup_secrets()
+                response = self.docker_api.delete(self._get_full_url("services/{}".format(service_id)),
+                                                  cert=auth_file.name)
+                self.validate_action(response)
 
     @override
     def _vm_get_ip(self, vm):
