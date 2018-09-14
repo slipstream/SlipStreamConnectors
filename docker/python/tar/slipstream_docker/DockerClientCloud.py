@@ -124,10 +124,10 @@ class DockerClientCloud(BaseCloudConnector):
     def _start_image(self, user_info, node_instance, vm_name):
         with NamedTemporaryFile(bufsize=0, delete=True) as auth_file:
             self.write_auth(auth_file)
-            vm = self._start_container_in_docker(user_info, node_instance, vm_name)
+            vm = self._start_container_in_docker(node_instance, vm_name, auth_file)
         return vm
 
-    def _start_container_in_docker(self, user_info, node_instance, service_name):
+    def _start_container_in_docker(self, node_instance, service_name, auth_file):
         service_json = {'Name': service_name,
                         'TaskTemplate': {'ContainerSpec': {'Image': node_instance.get_image_id()},
                                          'Resources': {'Reservations': {},
@@ -192,11 +192,12 @@ class DockerClientCloud(BaseCloudConnector):
                 ports.append(port_mapping)
             service_json['EndpointSpec'] = {'Ports': ports}
 
-        create_response = self.docker_api.post(self._get_full_url("services/create"), json=service_json).json()
+        create_response = self.docker_api.post(self._get_full_url("services/create"), json=service_json,
+                                               cert=auth_file.name).json()
 
         self.validate_action(create_response)
         vm_id = create_response['ID']
-        vm = self.docker_api.get(self._get_full_url("services/{}".format(vm_id))).json()
+        vm = self.docker_api.get(self._get_full_url("services/{}".format(vm_id)), cert=auth_file.name).json()
 
         return vm
 
