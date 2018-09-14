@@ -1,5 +1,5 @@
 (ns com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud-openstack
-    (:require
+  (:require
     [clojure.spec.alpha :as s]
     [com.sixsq.slipstream.ssclj.resources.spec.credential-template :as ct]
     [com.sixsq.slipstream.ssclj.resources.spec.credential-template-cloud :as ctc]
