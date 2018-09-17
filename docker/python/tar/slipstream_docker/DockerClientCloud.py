@@ -15,7 +15,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-import os
+import time
 import requests
 from tempfile import NamedTemporaryFile
 
@@ -90,7 +90,7 @@ class DockerClientCloud(BaseCloudConnector):
     def __init__(self, config_holder):
         super(DockerClientCloud, self).__init__(config_holder)
 
-        self._set_capabilities(contextualization=True, direct_ip_assignment=True)
+        self._set_capabilities(contextualization=True, direct_ip_assignment=False)
         self.user_info = None
         self.docker_api = None
         self.cert_string = ''
@@ -124,10 +124,10 @@ class DockerClientCloud(BaseCloudConnector):
     def _start_image(self, user_info, node_instance, vm_name):
         with NamedTemporaryFile(bufsize=0, delete=True) as auth_file:
             self.write_auth(auth_file)
-            vm = self._start_container_in_docker(node_instance, vm_name, auth_file)
+            vm = self._start_container_in_docker(node_instance, vm_name, user_info, auth_file)
         return vm
 
-    def _start_container_in_docker(self, node_instance, service_name, auth_file):
+    def _start_container_in_docker(self, node_instance, service_name, user_info, auth_file):
         service_json = {'Name': service_name,
                         'TaskTemplate': {'ContainerSpec': {'Image': node_instance.get_image_id()},
                                          'Resources': {'Reservations': {},
@@ -177,7 +177,7 @@ class DockerClientCloud(BaseCloudConnector):
                  'apt-get update && apt-get install -y wget && apt-get install -y python && ' +
                  'apt-get install -y python-pkg-resources && apt-get install -y openssh-server && ' +
                  'mkdir -p /var/run/sshd && mkdir -p $HOME/.ssh/ && '
-                 'echo "{}" > $HOME/.ssh/authorized_keys && '.format(self.user_info.get_public_keys()) +
+                 'echo "{}" > $HOME/.ssh/authorized_keys && '.format(user_info.get_public_keys()) +
                  'sed -i "s/PermitRootLogin prohibit-password/PermitRootLogin yes/" /etc/ssh/sshd_config && ' +
                  '/usr/sbin/sshd && ' +
                  ' && '.join(bootstrap_script.splitlines()[1:])]
@@ -190,7 +190,8 @@ class DockerClientCloud(BaseCloudConnector):
                 if len(temp) > 1:
                     port_mapping['PublishedPort'] = int(temp[1])
                 ports.append(port_mapping)
-            service_json['EndpointSpec'] = {'Ports': ports}
+
+        service_json['EndpointSpec'] = {'Ports': ports}
 
         create_response = self.docker_api.post(self._get_full_url("services/create"), json=service_json,
                                                cert=auth_file.name).json()
@@ -198,7 +199,7 @@ class DockerClientCloud(BaseCloudConnector):
         self.validate_action(create_response)
         vm_id = create_response['ID']
         vm = self.docker_api.get(self._get_full_url("services/{}".format(vm_id)), cert=auth_file.name).json()
-
+        self.validate_action(vm)
         return vm
 
     @override
@@ -219,7 +220,7 @@ class DockerClientCloud(BaseCloudConnector):
                 response = self.docker_api.delete(self._get_full_url("services/{}".format(service_id)),
                                                   cert=auth_file.name)
                 if response.status_code != 200:
-                    self.validate_action(response)
+                    self.validate_action(response.json())
 
     @override
     def _vm_get_ip(self, vm):
@@ -242,3 +243,20 @@ class DockerClientCloud(BaseCloudConnector):
     @override
     def _vm_get_ip_from_list_instances(self, vm_instance):
         return self._vm_get_ip(vm_instance)
+
+    @override
+    def _wait_and_get_instance_ip_address(self, vm):
+        with NamedTemporaryFile(bufsize=0, delete=True) as auth_file:
+            time_wait = 30
+            time_stop = time.time() + time_wait
+            service_id = self._vm_get_id(vm)
+
+            while time.time() < time_stop:
+                vm = self.docker_api.get(self._get_full_url("services/{}".format(service_id)),
+                                         cert=auth_file.name).json()
+                self.validate_action(vm)
+                if self._vm_get_ip(vm):
+                    return vm
+                time.sleep(3)
+        raise Exceptions.ExecutionException(
+            'Timed out after %s sec, while waiting for IPs to be assigned to service: %s' % (time_wait, service_id))
