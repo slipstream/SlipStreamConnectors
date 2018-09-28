@@ -17,6 +17,7 @@
 """
 import time
 import requests
+from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
 import slipstream.util as util
@@ -59,10 +60,11 @@ def instantiate_from_cimi(cimi_connector, cimi_cloud_credential,
     return connector_instance
 
 
+def tree():
+    return defaultdict(tree)
+
+
 class DockerClientCloud(BaseCloudConnector):
-    # TODO Add support for Centos
-    # TODO Fix _vm_get_state
-    # TODO find a way to inform user of published port
     CERT_KEY = 'cert'
     KEY_KEY = 'key'
     NETWORK_PORTS_MAPPINGS_KEY = 'publish'
@@ -120,6 +122,27 @@ class DockerClientCloud(BaseCloudConnector):
         if len(response.keys()) == 1 and response.has_key("message"):
             raise Exceptions.ExecutionException(response["message"])
 
+    @staticmethod
+    def get_container_os_preparation_script(ssh_pub_key=''):
+        centos_install_script = \
+            'yum clean all && yum install -y wget python openssh-server && ' + \
+            'mkdir -p /var/run/sshd && mkdir -p $HOME/.ssh/ && ' + \
+            'echo "{}" > $HOME/.ssh/authorized_keys && '.format(ssh_pub_key) + \
+            'sed -i "s/PermitRootLogin prohibit-password/PermitRootLogin yes/" /etc/ssh/sshd_config && ' + \
+            'ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N "" && ' + \
+            'ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -N "" -t ed25519 && ' + \
+            'ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -N "" -t ecdsa && ' + \
+            '/usr/sbin/sshd'
+        ubuntu_install_script = \
+            'apt-get update && apt-get install -y wget python python-pkg-resources openssh-server && ' + \
+            'mkdir -p /var/run/sshd && mkdir -p $HOME/.ssh/ && ' + \
+            'echo "{}" > $HOME/.ssh/authorized_keys && '.format(ssh_pub_key) + \
+            'sed -i "s/PermitRootLogin prohibit-password/PermitRootLogin yes/" /etc/ssh/sshd_config && ' + \
+            '/usr/sbin/sshd'
+
+        return 'command -v yum; if [ $? -eq 0 ]; then {}; fi && '.format(centos_install_script) + \
+               'command -v apt-get; if [ $? -eq 0 ]; then {}; fi'.format(ubuntu_install_script)
+
     @override
     def _start_image(self, user_info, node_instance, vm_name):
         with NamedTemporaryFile(bufsize=0, delete=True) as auth_file:
@@ -128,11 +151,9 @@ class DockerClientCloud(BaseCloudConnector):
         return vm
 
     def _start_container_in_docker(self, node_instance, service_name, user_info, auth_file):
-        service_json = {'Name': service_name,
-                        'TaskTemplate': {'ContainerSpec': {'Image': node_instance.get_image_id()},
-                                         'Resources': {'Reservations': {},
-                                                       'Limits': {}}},
-                        'EndpointSpec': {}}
+        service_json = tree()
+        service_json['Name'] = service_name
+        service_json['TaskTemplate']['ContainerSpec']['Image'] = node_instance.get_image_id()
 
         working_dir = node_instance.get_cloud_parameter(self.WORKING_DIR_KEY)
         if working_dir:
@@ -156,7 +177,7 @@ class DockerClientCloud(BaseCloudConnector):
 
         restart_policy = node_instance.get_cloud_parameter(self.RESTART_POLICY_KEY)
         if restart_policy:
-            service_json['TaskTemplate']['RestartPolicy'] = {'Condition': restart_policy}
+            service_json['TaskTemplate']['RestartPolicy']['Condition'] = restart_policy
 
         cmd = node_instance.get_cloud_parameter(self.COMMAND_KEY)
         if cmd:
@@ -174,12 +195,7 @@ class DockerClientCloud(BaseCloudConnector):
             service_json['TaskTemplate']['ContainerSpec']['command'] = ['/bin/sh']
             service_json['TaskTemplate']['ContainerSpec']['args'] = \
                 ['-c',
-                 'apt-get update && apt-get install -y wget && apt-get install -y python && ' +
-                 'apt-get install -y python-pkg-resources && apt-get install -y openssh-server && ' +
-                 'mkdir -p /var/run/sshd && mkdir -p $HOME/.ssh/ && '
-                 'echo "{}" > $HOME/.ssh/authorized_keys && '.format(user_info.get_public_keys()) +
-                 'sed -i "s/PermitRootLogin prohibit-password/PermitRootLogin yes/" /etc/ssh/sshd_config && ' +
-                 '/usr/sbin/sshd && ' +
+                 self.get_container_os_preparation_script(user_info.get_public_keys()) + ' && ' +
                  ' && '.join(bootstrap_script.splitlines()[1:])]
 
         publish_ports = node_instance.get_cloud_parameter(self.NETWORK_PORTS_MAPPINGS_KEY)
@@ -236,8 +252,6 @@ class DockerClientCloud(BaseCloudConnector):
 
     @override
     def _vm_get_state(self, vm_instance):
-        # FIXME: check link below to implement service state checks
-        # https://success.docker.com/article/how-to-determine-if-a-service-was-created-successfully-when-using-the-api
         return 'running'
 
     @override
