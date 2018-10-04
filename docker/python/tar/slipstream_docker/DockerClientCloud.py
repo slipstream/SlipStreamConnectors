@@ -259,18 +259,28 @@ class DockerClientCloud(BaseCloudConnector):
         return self._vm_get_ip(vm_instance)
 
     @override
-    def _wait_and_get_instance_ip_address(self, vm):
-        with NamedTemporaryFile(bufsize=0, delete=True) as auth_file:
-            time_wait = 30
-            time_stop = time.time() + time_wait
-            service_id = self._vm_get_id(vm)
+    def _vm_get_ports_mapping(self, vm_instance):
+        published_ports_list = [":".join([str(pp.get("Protocol")),
+                                          str(pp.get('PublishedPort')),
+                                          str(pp.get('TargetPort'))])
+                                for pp in vm_instance.get('Endpoint', {}).get('Ports', [])]
 
-            while time.time() < time_stop:
-                vm = self.docker_api.get(self._get_full_url("services/{}".format(service_id)),
-                                         cert=auth_file.name).json()
-                self.validate_action(vm)
-                if self._vm_get_ip(vm):
-                    return vm
-                time.sleep(3)
-        raise Exceptions.ExecutionException(
-            'Timed out after %s sec, while waiting for IPs to be assigned to service: %s' % (time_wait, service_id))
+        return " ".join(published_ports_list)
+
+
+@override
+def _wait_and_get_instance_ip_address(self, vm):
+    with NamedTemporaryFile(bufsize=0, delete=True) as auth_file:
+        time_wait = 30
+        time_stop = time.time() + time_wait
+        service_id = self._vm_get_id(vm)
+
+        while time.time() < time_stop:
+            vm = self.docker_api.get(self._get_full_url("services/{}".format(service_id)),
+                                     cert=auth_file.name).json()
+            self.validate_action(vm)
+            if self._vm_get_ip(vm):
+                return vm
+            time.sleep(3)
+    raise Exceptions.ExecutionException(
+        'Timed out after %s sec, while waiting for IPs to be assigned to service: %s' % (time_wait, service_id))
