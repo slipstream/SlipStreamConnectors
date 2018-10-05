@@ -43,9 +43,10 @@ class DockerRunInstances(RunInstancesCommand, DockerCommand):
 
         self.parser.add_option('--' + self.NETWORK_PORTS_MAPPINGS_KEY, action='append',
                                dest=self.NETWORK_PORTS_MAPPINGS_KEY,
-                               help='Publish a service port(s) to the host. Format is HOST_PORT:SERVICE_PORT. '
-                                    'This option can be used multiple times. If HOST_PORT is omitted, '
-                                    'a random port will be assigned to the SERVICE_PORT. (e.g. 20000:22)')
+                               help='Publish a service port(s) to the host. '
+                                    'Format is <PROTOCOL>:<PUBLISHED_PORT>:<TARGET_PORT>. '
+                                    'This option can be used multiple times. If PUBLISHED_PORT is omitted, '
+                                    'a random port will be assigned. (e.g. tcp:20000:22 or for dynamic port tcp::22)')
 
         self.parser.add_option('--' + self.RESTART_POLICY_KEY, default='none', dest=self.RESTART_POLICY_KEY,
                                help='Restart when condition is met ("none"|"on-failure"|"any"). Default: "none"')

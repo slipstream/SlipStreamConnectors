@@ -19,6 +19,7 @@ import time
 import requests
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
+import re
 
 import slipstream.util as util
 import slipstream.exceptions.Exceptions as Exceptions
@@ -202,8 +203,9 @@ class DockerClientCloud(BaseCloudConnector):
         if publish_ports:
             for publish_port in publish_ports:
                 temp = publish_port.split(':')
-                port_mapping = {'TargetPort': int(temp[0])}
-                if len(temp) > 1:
+                port_mapping = {'Protocol': temp[0].lower(),
+                                'TargetPort': int(temp[2])}
+                if temp[1].strip():
                     port_mapping['PublishedPort'] = int(temp[1])
                 ports.append(port_mapping)
 
@@ -242,7 +244,10 @@ class DockerClientCloud(BaseCloudConnector):
     def _vm_get_ip(self, vm):
         virtual_ips = vm.get('Endpoint', {}).get('VirtualIPs', [])
         if len(virtual_ips) > 0:
-            return virtual_ips[0]["Addr"].split('/')[0]
+            # WAIT to get local ip virtual_ips[0]["Addr"].split('/')[0], we return the endpoint ip
+            endpoint_host = re.search('(?:http.*://)?(?P<host>[^:/ ]+)',
+                                      self.user_info.get_cloud_endpoint()).group('host')
+            return endpoint_host
         else:
             return None
 
