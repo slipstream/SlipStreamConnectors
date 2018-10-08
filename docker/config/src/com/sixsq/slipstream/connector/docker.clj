@@ -29,3 +29,9 @@
 (defmethod cr/create-validate-subtype tpl/cloud-service-type
   [resource]
   (create-validate-fn resource))
+
+
+(defmethod cr/new-identifier-subtype tpl/cloud-service-type
+  [resource resource-name]
+  (if-let [name (:instanceName resource)]
+    (assoc resource :id (str (u/de-camelcase resource-name) "/" (u/random-uuid)))))
