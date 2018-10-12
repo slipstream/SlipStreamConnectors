@@ -1,6 +1,6 @@
-(def +version+ "3.61-SNAPSHOT")
+(def +version+ "3.61")
 
-(defproject com.sixsq.slipstream/SlipStreamConnector-Docker-conf "3.61-SNAPSHOT"
+(defproject com.sixsq.slipstream/SlipStreamConnector-Docker-conf "3.61"
 
   :description "Docker connector configuration"
 

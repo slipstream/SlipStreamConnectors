@@ -1,6 +1,6 @@
-(def +version+ "3.61-SNAPSHOT")
+(def +version+ "3.61")
 
-(defproject com.sixsq.slipstream/SlipStreamConnector-OpenStack-conf "3.61-SNAPSHOT"
+(defproject com.sixsq.slipstream/SlipStreamConnector-OpenStack-conf "3.61"
 
   :description "OpenStack connector configuration"
 
