@@ -18,10 +18,16 @@
 
 import datetime
 
-from libcloud.compute.drivers.cloudstack import CloudStackNodeDriver, CloudStackAddress, \
-    CloudStackIPForwardingRule, CloudStackPortForwardingRule
+from libcloud.compute.drivers.cloudstack import (CloudStackNodeDriver,
+                                                 CloudStackAddress,
+                                                 CloudStackIPForwardingRule,
+                                                 CloudStackPortForwardingRule,
+                                                 CloudStackNode,
+                                                 RESOURCE_EXTRA_ATTRIBUTES_MAP)
+from libcloud.utils.networking import is_private_subnet
 from libcloud.compute.types import LibcloudError
 from libcloud.compute.base import NodeImage
+
 
 
 def ex_authorize_security_group_ingress(self, securitygroupname, protocol,
@@ -254,8 +260,71 @@ def list_images(self, location=None):
     return images
 
 
+def _to_node(self, data, public_ips=None):
+    """
+    :param data: Node data object.
+    :type data: ``dict``
+
+    :param public_ips: A list of additional IP addresses belonging to
+                       this node. (optional)
+    :type public_ips: ``list`` or ``None``
+    """
+    id = data['id']
+
+    if 'name' in data:
+        name = data['name']
+    elif 'displayname' in data:
+        name = data['displayname']
+    else:
+        name = None
+
+    state = self.NODE_STATE_MAP[data['state']]
+
+    public_ips = public_ips if public_ips else []
+    private_ips = []
+
+    for nic in data['nic']:
+        if 'ipaddress' in nic:
+            if is_private_subnet(nic['ipaddress']):
+                private_ips.append(nic['ipaddress'])
+            else:
+                public_ips.append(nic['ipaddress'])
+
+    security_groups = data.get('securitygroup', [])
+
+    if security_groups:
+        security_groups = [sg['name'] for sg in security_groups]
+
+    affinity_groups = data.get('affinitygroup', [])
+
+    if affinity_groups:
+        affinity_groups = [ag['id'] for ag in affinity_groups]
+
+    created = data.get('created', False)
+
+    extra = self._get_extra_dict(data,
+                                 RESOURCE_EXTRA_ATTRIBUTES_MAP['node'])
+
+    # Add additional parameters to extra
+    extra['security_group'] = security_groups
+    extra['affinity_group'] = affinity_groups
+    extra['ip_addresses'] = []
+    extra['ip_forwarding_rules'] = []
+    extra['port_forwarding_rules'] = []
+    extra['created'] = created
+
+    if 'tags' in data:
+        extra['tags'] = self._get_resource_tags(data['tags'])
+
+    node = CloudStackNode(id=id, name=name, state=state,
+                          public_ips=public_ips, private_ips=private_ips,
+                          driver=self, extra=extra)
+    return node
+
+
 def patch_libcloud():
     CloudStackNodeDriver.ex_authorize_security_group_ingress = ex_authorize_security_group_ingress
     CloudStackNodeDriver.list_nodes = list_nodes
     CloudStackNodeDriver.list_images = list_images
+    CloudStackNodeDriver._to_node = _to_node
 
