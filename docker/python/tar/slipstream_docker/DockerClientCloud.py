@@ -144,6 +144,32 @@ class DockerClientCloud(BaseCloudConnector):
         return 'command -v yum; if [ $? -eq 0 ]; then {}; fi && '.format(centos_install_script) + \
                'command -v apt-get; if [ $? -eq 0 ]; then {}; fi'.format(ubuntu_install_script)
 
+    @staticmethod
+    def extend_ports_range(string_port):
+        if string_port.strip():
+            range_port = string_port.split('-')
+            range_start = int(range_port[0])
+            range_end = int(range_port[0]) if len(range_port) == 1 else int(range_port[1])
+            return range(range_start, range_end + 1)
+        return None
+
+    @staticmethod
+    def get_ports_mapping(ports, publish_ports):
+        if publish_ports:
+            for publish_port in publish_ports:
+                temp = publish_port.split(':')
+                protocol = temp[0].lower()
+                range_target = DockerClientCloud.extend_ports_range(temp[2])
+                range_published = DockerClientCloud.extend_ports_range(temp[1])
+                explicit_published = range_published is not None
+                for i in range(len(range_target)):
+                    port_mapping = {'Protocol': protocol,
+                                    'TargetPort': range_target[i]}
+                    if explicit_published:
+                        port_mapping['PublishedPort'] = range_published[i]
+                    ports.append(port_mapping)
+        return {'Ports': ports}
+
     @override
     def _start_image(self, user_info, node_instance, vm_name):
         with NamedTemporaryFile(bufsize=0, delete=True) as auth_file:
@@ -191,7 +217,7 @@ class DockerClientCloud(BaseCloudConnector):
         ports = []
 
         if not cmd and not args:
-            ports = [{'TargetPort': 22}]
+            ports = [{'TargetPort': 22, 'Protocol': 'tcp'}]
             bootstrap_script = self._get_bootstrap_script(node_instance)
             service_json['TaskTemplate']['ContainerSpec']['command'] = ['/bin/sh']
             service_json['TaskTemplate']['ContainerSpec']['args'] = \
@@ -200,16 +226,8 @@ class DockerClientCloud(BaseCloudConnector):
                  ' && '.join(bootstrap_script.splitlines()[1:])]
 
         publish_ports = node_instance.get_cloud_parameter(self.NETWORK_PORTS_MAPPINGS_KEY)
-        if publish_ports:
-            for publish_port in publish_ports:
-                temp = publish_port.split(':')
-                port_mapping = {'Protocol': temp[0].lower(),
-                                'TargetPort': int(temp[2])}
-                if temp[1].strip():
-                    port_mapping['PublishedPort'] = int(temp[1])
-                ports.append(port_mapping)
 
-        service_json['EndpointSpec'] = {'Ports': ports}
+        service_json['EndpointSpec'] = DockerClientCloud.get_ports_mapping(ports, publish_ports)
 
         create_response = self.docker_api.post(self._get_full_url("services/create"), json=service_json,
                                                cert=auth_file.name).json()

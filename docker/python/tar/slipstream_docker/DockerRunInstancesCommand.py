@@ -46,7 +46,10 @@ class DockerRunInstances(RunInstancesCommand, DockerCommand):
                                help='Publish a service port(s) to the host. '
                                     'Format is <PROTOCOL>:<PUBLISHED_PORT>:<TARGET_PORT>. '
                                     'This option can be used multiple times. If PUBLISHED_PORT is omitted, '
-                                    'a random port will be assigned. (e.g. tcp:20000:22 or for dynamic port tcp::22)')
+                                    'a random port will be assigned (e.g. tcp:20000:22 or for dynamic port tcp::22).'
+                                    'You can also specify a range of ports '
+                                    '(e.g. tcp:62000-62005:6000-6005 or tcp::6000-6005 for dynamic ports).'
+                               )
 
         self.parser.add_option('--' + self.RESTART_POLICY_KEY, default='none', dest=self.RESTART_POLICY_KEY,
                                help='Restart when condition is met ("none"|"on-failure"|"any"). Default: "none"')
