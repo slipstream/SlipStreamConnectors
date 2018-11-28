@@ -152,7 +152,7 @@ public class OpenNebulaConnector extends CliConnectorBase {
 				.getRequiredProperty(
 						constructKey(OpenNebulaUserParametersFactory.CPU_RATIO));
 		if (cpu_ratio == null || cpu_ratio.isEmpty()) {
-			throw new ValidationException("CPU Ratio value should not be empty.");
+			return "0.5";
 		} else {
 			checkConvertsToFloat(cpu_ratio, "CPU Ratio");
 			return cpu_ratio;
@@ -189,7 +189,7 @@ public class OpenNebulaConnector extends CliConnectorBase {
 	protected String getCpu(Run run) throws ValidationException {
 		String cpu = super.getCpu(run);
 		if (cpu == null || cpu.isEmpty()) {
-			throw new ValidationException("CPU value should not be empty.");
+			return OpenNebulaImageParametersFactory.defaultCPU;
 		} else {
 			checkConvertsToInt(cpu, "CPU");
 			return cpu;
@@ -200,7 +200,7 @@ public class OpenNebulaConnector extends CliConnectorBase {
 	protected String getRam(Run run) throws ValidationException {
 		String ramGB = super.getRam(run);
 		if (ramGB == null || ramGB.isEmpty()) {
-			throw new ValidationException("RAM value should not be empty.");
+			return OpenNebulaImageParametersFactory.defaultRAM;
 		} else {
 			checkConvertsToFloat(ramGB, "RAM");
 			return ramGB;

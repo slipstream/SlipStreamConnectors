@@ -42,6 +42,9 @@ public class OpenNebulaImageParametersFactory extends ModuleParametersFactoryBas
 			"Connect VM network interface on specified virtual network name. " +
 			"Format: NETWORK_NAME or NETWORK_NAME;NETWORK_UNAME";
 
+	public static String defaultCPU = "1";
+	public static String defaultRAM = "0.5";
+
 	public enum ContextualizationType {
 		ONECONTEXT("one-context"),
 		CLOUDINIT("cloud-init");
@@ -73,8 +76,8 @@ public class OpenNebulaImageParametersFactory extends ModuleParametersFactoryBas
 
 	@Override
 	protected void initReferenceParameters() throws ValidationException {
-		putMandatoryParameter(Run.CPU_PARAMETER_NAME, Run.CPU_PARAMETER_DESCRIPTION, "1", 10);
-		putMandatoryParameter(Run.RAM_PARAMETER_NAME, Run.RAM_PARAMETER_DESCRIPTION, "0.5", 11);
+		putMandatoryParameter(Run.CPU_PARAMETER_NAME, Run.CPU_PARAMETER_DESCRIPTION, defaultCPU, 10);
+		putMandatoryParameter(Run.RAM_PARAMETER_NAME, Run.RAM_PARAMETER_DESCRIPTION, defaultRAM, 11);
 		putMandatoryParameter(NETWORK_SPECIFIC_NAME, NETWORK_SPECIFIC_DESCRIPTION, "",
 				NETWORK_SPECIFIC_EXAMPLE, 12);
 		putEnumParameter(CONTEXTUALIZATION_TYPE_NAME, CONTEXTUALIZATION_TYPE_DESCRIPTION,
