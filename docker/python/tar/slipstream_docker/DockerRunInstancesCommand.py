@@ -27,6 +27,7 @@ from slipstream_docker.DockerClientCloud import DockerClientCloud
 
 class DockerRunInstances(RunInstancesCommand, DockerCommand):
     NETWORK_PORTS_MAPPINGS_KEY = DockerClientCloud.NETWORK_PORTS_MAPPINGS_KEY
+    MOUNTS_KEY = DockerClientCloud.MOUNTS_KEY
     RESTART_POLICY_KEY = DockerClientCloud.RESTART_POLICY_KEY
     ENV_KEY = DockerClientCloud.ENV_KEY
     WORKING_DIR_KEY = DockerClientCloud.WORKING_DIR_KEY
@@ -48,8 +49,15 @@ class DockerRunInstances(RunInstancesCommand, DockerCommand):
                                     'This option can be used multiple times. If PUBLISHED_PORT is omitted, '
                                     'a random port will be assigned (e.g. tcp:20000:22 or for dynamic port tcp::22).'
                                     'You can also specify a range of ports '
-                                    '(e.g. tcp:62000-62005:6000-6005 or tcp::6000-6005 for dynamic ports).'
-                               )
+                                    '(e.g. tcp:62000-62005:6000-6005 or tcp::6000-6005 for dynamic ports).')
+
+        self.parser.add_option('--' + self.MOUNTS_KEY, action='append',
+                               dest=self.MOUNTS_KEY,
+                               help='Consists of multiple key-value pairs, separated by commas and each consisting of '
+                                    'a <key>=<value> tuple. This option can be used multiple times. '
+                                    'Format is '
+                                    'type=[volume,bind,tmpfs],src=<VOLUME-NAME>,dst=<CONTAINER-PATH>,[readonly] '
+                                    '(e.g. type=volume,src=nginx-vol,dst=/usr/share/nginx/html,readonly).')
 
         self.parser.add_option('--' + self.RESTART_POLICY_KEY, default='none', dest=self.RESTART_POLICY_KEY,
                                help='Restart when condition is met ("none"|"on-failure"|"any"). Default: "none"')
@@ -99,6 +107,7 @@ class DockerRunInstances(RunInstancesCommand, DockerCommand):
 
     def _get_command_specific_node_inst_cloud_params(self):
         return {self.NETWORK_PORTS_MAPPINGS_KEY: self.get_option(self.NETWORK_PORTS_MAPPINGS_KEY),
+                self.MOUNTS_KEY: self.get_option(self.MOUNTS_KEY),
                 self.RESTART_POLICY_KEY: self.get_option(self.RESTART_POLICY_KEY),
                 self.ENV_KEY: self.get_option(self.ENV_KEY),
                 self.WORKING_DIR_KEY: self.get_option(self.WORKING_DIR_KEY),

@@ -68,7 +68,8 @@ def tree():
 class DockerClientCloud(BaseCloudConnector):
     CERT_KEY = 'cert'
     KEY_KEY = 'key'
-    NETWORK_PORTS_MAPPINGS_KEY = 'publish'
+    NETWORK_PORTS_MAPPINGS_KEY = 'ports'
+    MOUNTS_KEY = 'mounts'
     RESTART_POLICY_KEY = 'restart-policy'
     ENV_KEY = 'env'
     WORKING_DIR_KEY = 'dir'
@@ -93,7 +94,7 @@ class DockerClientCloud(BaseCloudConnector):
     def __init__(self, config_holder):
         super(DockerClientCloud, self).__init__(config_holder)
 
-        self._set_capabilities(contextualization=True, direct_ip_assignment=False)
+        self._set_capabilities(contextualization=True, direct_ip_assignment=True)
         self.user_info = None
         self.docker_api = None
         self.cert_string = ''
@@ -168,7 +169,27 @@ class DockerClientCloud(BaseCloudConnector):
                     if explicit_published:
                         port_mapping['PublishedPort'] = range_published[i]
                     ports.append(port_mapping)
-        return {'Ports': ports}
+        return ports
+
+    @staticmethod
+    def get_mounts(mounts_opt):
+        mounts = []
+        for mount in mounts_opt:
+            mount_map = {'Type': 'volume',
+                         'ReadOnly': False}
+            for el in mount.split(','):
+                kv = el.split('=')
+                k = kv[0]
+                if k == 'readonly':
+                    mount_map['ReadOnly'] = True
+                elif k == 'type':
+                    mount_map['Type'] = kv[1]
+                elif k == 'src':
+                    mount_map['Source'] = kv[1]
+                elif k == 'dst':
+                    mount_map['Target'] = kv[1]
+            mounts.append(mount_map)
+        return mounts
 
     @override
     def _start_image(self, user_info, node_instance, vm_name):
@@ -225,9 +246,13 @@ class DockerClientCloud(BaseCloudConnector):
                  self.get_container_os_preparation_script(user_info.get_public_keys()) + ' && ' +
                  ' && '.join(bootstrap_script.splitlines()[1:])]
 
-        publish_ports = node_instance.get_cloud_parameter(self.NETWORK_PORTS_MAPPINGS_KEY)
+        ports_opt = node_instance.get_cloud_parameter(self.NETWORK_PORTS_MAPPINGS_KEY)
 
-        service_json['EndpointSpec'] = DockerClientCloud.get_ports_mapping(ports, publish_ports)
+        mounts_opt = node_instance.get_cloud_parameter(self.MOUNTS_KEY)
+
+        service_json['EndpointSpec']['Ports'] = DockerClientCloud.get_ports_mapping(ports, ports_opt)
+
+        service_json['TaskTemplate']['ContainerSpec']['Mounts'] = DockerClientCloud.get_mounts(mounts_opt)
 
         create_response = self.docker_api.post(self._get_full_url("services/create"), json=service_json,
                                                cert=auth_file.name).json()
@@ -260,14 +285,7 @@ class DockerClientCloud(BaseCloudConnector):
 
     @override
     def _vm_get_ip(self, vm):
-        virtual_ips = vm.get('Endpoint', {}).get('VirtualIPs', [])
-        if len(virtual_ips) > 0:
-            # WAIT to get local ip virtual_ips[0]["Addr"].split('/')[0], we return the endpoint ip
-            endpoint_host = re.search('(?:http.*://)?(?P<host>[^:/ ]+)',
-                                      self.user_info.get_cloud_endpoint()).group('host')
-            return endpoint_host
-        else:
-            return None
+        return re.search('(?:http.*://)?(?P<host>[^:/ ]+)', self.user_info.get_cloud_endpoint()).group('host')
 
     @override
     def _vm_get_id(self, vm):
@@ -290,20 +308,3 @@ class DockerClientCloud(BaseCloudConnector):
 
         return " ".join(published_ports_list)
 
-
-@override
-def _wait_and_get_instance_ip_address(self, vm):
-    with NamedTemporaryFile(bufsize=0, delete=True) as auth_file:
-        time_wait = 30
-        time_stop = time.time() + time_wait
-        service_id = self._vm_get_id(vm)
-
-        while time.time() < time_stop:
-            vm = self.docker_api.get(self._get_full_url("services/{}".format(service_id)),
-                                     cert=auth_file.name).json()
-            self.validate_action(vm)
-            if self._vm_get_ip(vm):
-                return vm
-            time.sleep(3)
-    raise Exceptions.ExecutionException(
-        'Timed out after %s sec, while waiting for IPs to be assigned to service: %s' % (time_wait, service_id))
