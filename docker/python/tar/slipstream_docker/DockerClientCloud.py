@@ -172,22 +172,55 @@ class DockerClientCloud(BaseCloudConnector):
         return ports
 
     @staticmethod
+    def transform_in_kv_list(string):
+        result = []
+        aggregator = None
+        for el in string.split(','):
+            token = None
+            if el.endswith('"'):
+                token = ','.join([aggregator, el[:-1]])
+                aggregator = None
+            elif aggregator:
+                aggregator = ','.join([aggregator, el])
+            elif el.startswith('"'):
+                aggregator = el[1:]
+            else:
+                token = el
+
+            if token:
+                kv = token.split('=', 1)
+                result.append([kv[0], kv[1]])
+        return result
+
+    @staticmethod
     def get_mounts(mounts_opt):
         mounts = []
         for mount in mounts_opt:
-            mount_map = {'Type': 'volume',
-                         'ReadOnly': False}
-            for el in mount.split(','):
-                kv = el.split('=')
-                k = kv[0]
+            mount_map = tree()
+            mount_map['Type'] = 'volume'
+            mount_map['ReadOnly'] = False
+            for k, v in DockerClientCloud.transform_in_kv_list(mount):
                 if k == 'readonly':
                     mount_map['ReadOnly'] = True
                 elif k == 'type':
-                    mount_map['Type'] = kv[1]
+                    mount_map['Type'] = v
                 elif k == 'src':
-                    mount_map['Source'] = kv[1]
+                    mount_map['Source'] = v
                 elif k == 'dst':
-                    mount_map['Target'] = kv[1]
+                    mount_map['Target'] = v
+                elif k == 'volume-opt':
+                    opt = v.split('=', 1)
+                    mount_map['VolumeOptions']['DriverConfig']['Options'][opt[0]] = opt[1]
+                elif k == 'volume-driver':
+                    mount_map['VolumeOptions']['DriverConfig']['Name'] = v
+                elif k == 'bind-propagation':
+                    mount_map['BindOptions']['Propagation'] = v
+                elif k == 'tmpfs-size':
+                    mount_map['TmpfsOptions']['SizeBytes'] = int(v)
+                elif k == 'tmpfs-mode':
+                    mount_map['TmpfsOptions']['Mode'] = int(v)
+                elif k == 'consistency':
+                    mount_map['Consistency'] = v
             mounts.append(mount_map)
         return mounts
 
