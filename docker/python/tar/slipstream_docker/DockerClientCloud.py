@@ -189,7 +189,7 @@ class DockerClientCloud(BaseCloudConnector):
 
             if token:
                 kv = token.split('=', 1)
-                result.append([kv[0], kv[1]])
+                result.append([kv[0], kv[1] if len(kv) == 2 else True])
         return result
 
     @staticmethod
@@ -201,7 +201,7 @@ class DockerClientCloud(BaseCloudConnector):
             mount_map['ReadOnly'] = False
             for k, v in DockerClientCloud.transform_in_kv_list(mount):
                 if k == 'readonly':
-                    mount_map['ReadOnly'] = True
+                    mount_map['ReadOnly'] = v
                 elif k == 'type':
                     mount_map['Type'] = v
                 elif k == 'src':
