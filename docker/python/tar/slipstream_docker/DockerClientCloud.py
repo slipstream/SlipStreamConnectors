@@ -141,9 +141,18 @@ class DockerClientCloud(BaseCloudConnector):
             'echo "{}" > $HOME/.ssh/authorized_keys && '.format(ssh_pub_key) + \
             'sed -i "s/PermitRootLogin prohibit-password/PermitRootLogin yes/" /etc/ssh/sshd_config && ' + \
             '/usr/sbin/sshd'
+        alpine_install_script = \
+            'apk add wget python openssh && ' + \
+            'ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N "" -t rsa && ' + \
+            'ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N "" -t dsa && ' + \
+            'mkdir -p /var/run/sshd && mkdir -p $HOME/.ssh/ && ' + \
+            'echo "{}" > $HOME/.ssh/authorized_keys && '.format(ssh_pub_key) + \
+            'sed -i "s/PermitRootLogin prohibit-password/PermitRootLogin yes/" /etc/ssh/sshd_config && ' + \
+            '/usr/sbin/sshd'
 
         return 'command -v yum; if [ $? -eq 0 ]; then {}; fi && '.format(centos_install_script) + \
-               'command -v apt-get; if [ $? -eq 0 ]; then {}; fi'.format(ubuntu_install_script)
+               'command -v apt-get; if [ $? -eq 0 ]; then {}; fi && '.format(ubuntu_install_script) + \
+               'command -v apk; if [ $? -eq 0 ]; then {}; fi'.format(alpine_install_script)
 
     @staticmethod
     def extend_ports_range(string_port):
