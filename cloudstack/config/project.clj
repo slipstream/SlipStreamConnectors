@@ -1,6 +1,6 @@
-(def +version+ "3.71")
+(def +version+ "3.72-SNAPSHOT")
 
-(defproject com.sixsq.slipstream/SlipStreamConnector-CloudStack-conf "3.71"
+(defproject com.sixsq.slipstream/SlipStreamConnector-CloudStack-conf "3.72-SNAPSHOT"
 
   :description "CloudStack connector configuration"
 
